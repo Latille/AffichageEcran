@@ -1,39 +1,1335 @@
-// Soumission du formulaire de contact
-        document.getElementById('contactForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+<div id="sms-section" class="notif-section" style="display:none;">
+                <div class="search-bar">
+                    <input type="text" id="sms-search" placeholder="Rechercher un numéro...">
+                </div>
+                
+                <div class="contacts-list">
+                    <div class="empty-state">
+                        Aucun contact SMS configuré
+                    </div>
+                </div>
+            </div>
+
+            <div id="settings-section" class="notif-section" style="display:none;">
+                <div class="settings-card">
+                    <h4>⚙️ Paramètres de notification</h4>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h5>Notifications d'expiration</h5>
+                            <p>Alerter 24h avant expiration</p>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h5>Créations d'affiches</h5>
+                            <p>Notifier à chaque création</p>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h5>Mises en diffusion</h5>
+                            <p>Notifier lors du démarrage</p>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h5>Résumé quotidien</h5>
+                            <p>Envoi à 08h00 chaque jour</p>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="settings-card">
+                    <h4>📧 Serveur SMTP</h4>
+                    <div class="form-group">
+                        <label>Serveur</label>
+                        <input type="text" value="smtp.gmail.com" placeholder="smtp.exemple.com">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Port</label>
+                            <input type="number" value="587" placeholder="587">
+                        </div>
+                        <div class="form-group">
+                            <label>Sécurité</label>
+                            <select>
+                                <option value="tls">TLS</option>
+                                <option value="ssl">SSL</option>
+                                <option value="none">Aucune</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Email expéditeur</label>
+                        <input type="email" value="affichage@monmagasin.fr" placeholder="votre@email.com">
+                    </div>
+                    <button class="btn" style="margin-top: 15px;">💾 Sauvegarder</button>
+                </div>
+            </div>
+
+            <button class="fab" onclick="openContactModal()">+</button>
+        </div>
+
+        <button class="fab" onclick="openModal()">+</button>
+    </div>
+
+    <!-- Modal de création d'affiche -->
+    <div id="createModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📝 Nouvelle affiche</h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
             
-            const formData = new FormData(this);
-            const contact = {
-                nom: formData.get('contactName'),
-                role: formData.get('contactRole'),
-                priorite: formData.get('priority'),
-                actif: formData.get('activeByDefault') === 'on'
-            };
+            <form id="createForm">
+                <div class="form-group">
+                    <label for="libelle">Libellé</label>
+                    <input type="text" id="libelle" name="libelle" placeholder="Ex: Pommes Golden" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="famille">Famille du produit</label>
+                    <select id="famille" name="famille" required>
+                        <option value="">Sélectionnez une famille</option>
+                        <option value="fruits-legumes">🍎 Fruits & légumes</option>
+                        <option value="traiteur">🥘 Traiteur</option>
+                        <option value="boucherie">🥩 Boucherie</option>
+                        <option value="cremerie">🧀 Crémerie</option>
+                        <option value="epicerie">🛒 Epicerie</option>
+                        <option value="boulangerie">🥖 Boulangerie & pâtisserie</option>
+                        <option value="autre">📦 Autre</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dateDebut">Date de début</label>
+                        <input type="date" id="dateDebut" name="dateDebut" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="dateFin">Date de fin</label>
+                        <input type="date" id="dateFin" name="dateFin" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="prix">Prix de vente</label>
+                        <input type="number" id="prix" name="prix" step="0.01" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="unite">Unité de vente</label>
+                        <select id="unite" name="unite" required>
+                            <option value="kg">Kg</option>
+                            <option value="unite">Unité</option>
+                            <option value="autre">Autre</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="origine">Origine du produit</label>
+                    <input type="text" id="origine" name="origine" placeholder="Ex: France, Local, Import" required>
+                </div>
+
+                <button type="submit" class="btn">✅ Créer l'affiche</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal d'édition d'affiche -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>✏️ Modifier l'affiche</h3>
+                <span class="close" onclick="closeEditModal()">&times;</span>
+            </div>
             
-            const type = formData.get('contactType');
+            <form id="editForm">
+                <input type="hidden" id="editAfficheId" name="editAfficheId">
+                
+                <div class="form-group">
+                    <label for="editLibelle">Libellé</label>
+                    <input type="text" id="editLibelle" name="editLibelle" placeholder="Ex: Pommes Golden" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="editFamille">Famille du produit</label>
+                    <select id="editFamille" name="editFamille" required>
+                        <option value="">Sélectionnez une famille</option>
+                        <option value="fruits-legumes">🍎 Fruits & légumes</option>
+                        <option value="traiteur">🥘 Traiteur</option>
+                        <option value="boucherie">🥩 Boucherie</option>
+                        <option value="cremerie">🧀 Crémerie</option>
+                        <option value="epicerie">🛒 Epicerie</option>
+                        <option value="boulangerie">🥖 Boulangerie & pâtisserie</option>
+                        <option value="autre">📦 Autre</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editDateDebut">Date de début</label>
+                        <input type="date" id="editDateDebut" name="editDateDebut" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDateFin">Date de fin</label>
+                        <input type="date" id="editDateFin" name="editDateFin" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editPrix">Prix de vente</label>
+                        <input type="number" id="editPrix" name="editPrix" step="0.01" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editUnite">Unité de vente</label>
+                        <select id="editUnite" name="editUnite" required>
+                            <option value="kg">Kg</option>
+                            <option value="unite">Unité</option>
+                            <option value="autre">Autre</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="editOrigine">Origine du produit</label>
+                    <input type="text" id="editOrigine" name="editOrigine" placeholder="Ex: France, Local, Import" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="editStatut">Statut</label>
+                    <select id="editStatut" name="editStatut" required>
+                        <option value="a-creer">À créer</option>
+                        <option value="programmee">Programmée</option>
+                        <option value="en-diffusion">En diffusion</option>
+                        <option value="archivee">Archivée</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn">💾 Sauvegarder les modifications</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal d'édition de contact -->
+    <div id="editContactModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>✏️ Modifier le contact</h3>
+                <span class="close" onclick="closeEditContactModal()">&times;</span>
+            </div>
+            
+            <form id="editContactForm">
+                <input type="hidden" id="editContactId" name="editContactId">
+                <input type="hidden" id="editContactType" name="editContactType">
+
+                <div class="form-group">
+                    <label for="editContactName">Nom complet</label>
+                    <input type="text" id="editContactName" name="editContactName" placeholder="Ex: Sophie Martin" required>
+                </div>
+
+                <div class="form-group" id="editEmailField">
+                    <label for="editContactEmail">Adresse email</label>
+                    <input type="email" id="editContactEmail" name="editContactEmail" placeholder="sophie.martin@exemple.fr">
+                </div>
+
+                <div class="form-group" id="editSmsField" style="display:none;">
+                    <label for="editContactPhone">Numéro de téléphone</label>
+                    <input type="tel" id="editContactPhone" name="editContactPhone" placeholder="+33 6 12 34 56 78">
+                </div>
+
+                <div class="form-group">
+                    <label for="editContactRole">Rôle</label>
+                    <select id="editContactRole" name="editContactRole">
+                        <option value="manager">👔 Manager</option>
+                        <option value="admin">⚙️ Administrateur</option>
+                        <option value="commercial">💼 Commercial</option>
+                        <option value="employee">👤 Employé</option>
+                        <option value="other">📋 Autre</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="editPriority">Priorité des notifications</label>
+                    <select id="editPriority" name="editPriority">
+                        <option value="normal">🔵 Normale</option>
+                        <option value="urgent">🔴 Urgente</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="editActiveByDefault" name="editActiveByDefault">
+                        Notifications activées
+                    </label>
+                </div>
+
+                <button type="submit" class="btn">💾 Sauvegarder les modifications</button>
+            </form>
+        </div>
+    </div>
+    <div id="contactModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>👤 Nouveau contact</h3>
+                <span class="close" onclick="closeContactModal()">&times;</span>
+            </div>
+            
+            <form id="contactForm">
+                <div class="form-group">
+                    <label for="contactType">Type de contact</label>
+                    <select id="contactType" name="contactType" onchange="toggleContactFields()">
+                        <option value="email">📧 Email</option>
+                        <option value="sms">📱 SMS</option>
+                        <option value="both">📧📱 Email + SMS</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="contactName">Nom complet</label>
+                    <input type="text" id="contactName" name="contactName" placeholder="Ex: Sophie Martin" required>
+                </div>
+
+                <div class="form-group" id="emailField">
+                    <label for="contactEmail">Adresse email</label>
+                    <input type="email" id="contactEmail" name="contactEmail" placeholder="sophie.martin@exemple.fr" required>
+                </div>
+
+                <div class="form-group" id="smsField" style="display:none;">
+                    <label for="contactPhone">Numéro de téléphone</label>
+                    <input type="tel" id="contactPhone" name="contactPhone" placeholder="+33 6 12 34 56 78">
+                </div>
+
+                <div class="form-group">
+                    <label for="contactRole">Rôle</label>
+                    <select id="contactRole" name="contactRole">
+                        <option value="manager">👔 Manager</option>
+                        <option value="admin">⚙️ Administrateur</option>
+                        <option value="commercial">💼 Commercial</option>
+                        <option value="employee">👤 Employé</option>
+                        <option value="other">📋 Autre</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="priority">Priorité des notifications</label>
+                    <select id="priority" name="priority">
+                        <option value="normal">🔵 Normale</option>
+                        <option value="urgent">🔴 Urgente</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="activeByDefault" name="activeByDefault" checked>
+                        Activer les notifications par défaut
+                    </label>
+                </div>
+
+                <button type="submit" class="btn">✅ Ajouter le contact</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, getDoc, serverTimestamp, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+
+        // Configuration Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAtZUiFPFrqU-PiMpIOrPIwrjJLv_NsKRU",
+            authDomain: "gestion-affichage-publicitaire.firebaseapp.com",
+            projectId: "gestion-affichage-publicitaire",
+            storageBucket: "gestion-affichage-publicitaire.firebasestorage.app",
+            messagingSenderId: "715445646165",
+            appId: "1:715445646165:web:4da37e196e6a772f0735dc"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Variables globales
+        window.firebaseAuth = auth;
+        window.firebaseDB = db;
+        window.currentUser = null;
+
+        // Vérifier l'état de connexion
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                window.currentUser = user;
+                document.getElementById('loginModal').style.display = 'none';
+                document.getElementById('appContainer').style.display = 'block';
+                loadAllData();
+            } else {
+                window.currentUser = null;
+                document.getElementById('loginModal').style.display = 'block';
+                document.getElementById('appContainer').style.display = 'none';
+            }
+        });
+
+        // Connexion utilisateur
+        async function loginUser() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
             
             try {
-                if (currentEditingType && currentEditingId) {
-                    // Modification
-                    if (type === 'email' || type === 'both') {
-                        const contactEmail = {
-                            ...contact,
-                            email: formData.get('contactEmail')
-                        };
-                        await window.updateContact(currentEditingId, contactEmail, 'email');
+                await signInWithEmailAndPassword(auth, email, password);
+                document.getElementById('loginError').style.display = 'none';
+            } catch (error) {
+                document.getElementById('loginError').textContent = 'Erreur de connexion : ' + error.message;
+                document.getElementById('loginError').style.display = 'block';
+            }
+        }
+
+        // Déconnexion utilisateur
+        async function logoutUser() {
+            try {
+                await signOut(auth);
+            } catch (error) {
+                console.error('Erreur déconnexion:', error);
+            }
+        }
+
+        // Charger toutes les données
+        async function loadAllData() {
+            await loadAffiches();
+            await loadContacts();
+            setTimeout(() => {
+                setupSearch();
+                setupFilters();
+            }, 100);
+        }
+
+        // Charger les affiches
+        async function loadAffiches() {
+            try {
+                const q = query(collection(db, 'affiches'), orderBy('dateCreation', 'desc'));
+                const querySnapshot = await getDocs(q);
+                const affiches = [];
+                
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.dateCreation && data.dateCreation.toDate) {
+                        data.dateCreation = data.dateCreation.toDate();
                     }
-                    
-                    if (type === 'sms' || type === 'both') {
-                        const contactSMS = {
-                            ...contact,
-                            telephone: formData.get('contactPhone')
-                        };
-                        await window.updateContact(currentEditingId, contactSMS, 'sms');
+                    affiches.push({ id: doc.id, ...data });
+                });
+                
+                displayAffiches(affiches);
+                console.log('Affiches chargées:', affiches.length);
+            } catch (error) {
+                console.error('Erreur chargement affiches:', error);
+                showErrorMessage('Erreur lors du chargement des affiches');
+            }
+        }
+
+        // Charger les contacts
+        async function loadContacts() {
+            try {
+                // Charger contacts email
+                const emailQuery = query(collection(db, 'contacts_email'), orderBy('nom', 'asc'));
+                const emailSnapshot = await getDocs(emailQuery);
+                const contactsEmail = [];
+                
+                emailSnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.dateCreation && data.dateCreation.toDate) {
+                        data.dateCreation = data.dateCreation.toDate();
                     }
+                    contactsEmail.push({ id: doc.id, ...data });
+                });
+                
+                // Charger contacts SMS
+                const smsQuery = query(collection(db, 'contacts_sms'), orderBy('nom', 'asc'));
+                const smsSnapshot = await getDocs(smsQuery);
+                const contactsSMS = [];
+                
+                smsSnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.dateCreation && data.dateCreation.toDate) {
+                        data.dateCreation = data.dateCreation.toDate();
+                    }
+                    contactsSMS.push({ id: doc.id, ...data });
+                });
+                
+                displayContacts(contactsEmail, contactsSMS);
+                console.log('Contacts chargés:', contactsEmail.length + contactsSMS.length);
+            } catch (error) {
+                console.error('Erreur chargement contacts:', error);
+                showErrorMessage('Erreur lors du chargement des contacts');
+            }
+        }
+
+        // Sauvegarder une affiche
+        async function saveAffiche(affiche) {
+            try {
+                const docRef = await addDoc(collection(db, 'affiches'), {
+                    ...affiche,
+                    dateCreation: serverTimestamp(),
+                    utilisateurId: window.currentUser.uid
+                });
+                console.log('Affiche sauvée avec ID:', docRef.id);
+                await loadAffiches();
+                return docRef.id;
+            } catch (error) {
+                console.error('Erreur sauvegarde affiche:', error);
+                throw error;
+            }
+        }
+
+        // Sauvegarder un contact
+        async function saveContact(contact, type) {
+            try {
+                const collectionName = type === 'email' ? 'contacts_email' : 'contacts_sms';
+                const docRef = await addDoc(collection(db, collectionName), {
+                    ...contact,
+                    dateCreation: serverTimestamp(),
+                    utilisateurId: window.currentUser.uid
+                });
+                console.log('Contact sauvé avec ID:', docRef.id);
+                await loadContacts();
+                return docRef.id;
+            } catch (error) {
+                console.error('Erreur sauvegarde contact:', error);
+                throw error;
+            }
+        }
+
+        // Supprimer une affiche
+        async function deleteAffiche(id) {
+            try {
+                await deleteDoc(doc(db, 'affiches', id));
+                showSuccessMessage('🗑️ Affiche supprimée avec succès');
+                await loadAffiches();
+            } catch (error) {
+                console.error('Erreur suppression affiche:', error);
+                showErrorMessage('❌ Erreur lors de la suppression');
+            }
+        }
+
+        // Supprimer un contact
+        async function deleteContact(id, type) {
+            try {
+                const collectionName = type === 'email' ? 'contacts_email' : 'contacts_sms';
+                await deleteDoc(doc(db, collectionName, id));
+                showSuccessMessage('🗑️ Contact supprimé avec succès');
+                await loadContacts();
+            } catch (error) {
+                console.error('Erreur suppression contact:', error);
+                showErrorMessage('❌ Erreur lors de la suppression');
+            }
+        }
+
+        // Fonction pour activer/désactiver les notifications d'un contact
+        async function toggleContactNotifications(contactId, type, isActive) {
+            try {
+                const collectionName = type === 'email' ? 'contacts_email' : 'contacts_sms';
+                const docRef = doc(db, collectionName, contactId);
+                await updateDoc(docRef, {
+                    actif: isActive
+                });
+                console.log(`Notifications ${isActive ? 'activées' : 'désactivées'} pour le contact ${contactId}`);
+            } catch (error) {
+                console.error('Erreur mise à jour contact:', error);
+                showErrorMessage('Erreur lors de la mise à jour des notifications');
+            }
+        }
+
+        // Fonctions d'affichage
+        function displayAffiches(affiches) {
+            updateDashboardStats(affiches);
+            updateDashboardAffiches(affiches);
+            updateAffichesTab(affiches);
+        }
+
+        function displayContacts(contactsEmail, contactsSMS) {
+            updateEmailContacts(contactsEmail);
+            updateSMSContacts(contactsSMS);
+        }
+
+        // Mettre à jour les statistiques du dashboard
+        function updateDashboardStats(affiches) {
+            const stats = {
+                enDiffusion: affiches.filter(a => a.statut === 'en-diffusion').length,
+                aCreer: affiches.filter(a => a.statut === 'a-creer').length,
+                programmees: affiches.filter(a => a.statut === 'programmee').length,
+                archivees: affiches.filter(a => a.statut === 'archivee').length
+            };
+            
+            const statCards = document.querySelectorAll('.stat-card h3');
+            if (statCards.length >= 4) {
+                statCards[0].textContent = stats.enDiffusion;
+                statCards[1].textContent = stats.aCreer;
+                statCards[2].textContent = stats.programmees;
+                statCards[3].textContent = stats.archivees;
+            }
+        }
+
+        // Mettre à jour les affiches en diffusion sur le dashboard
+        function updateDashboardAffiches(affiches) {
+            const affichesEnDiffusion = affiches.filter(a => a.statut === 'en-diffusion').slice(0, 5);
+            const container = document.querySelector('.recent-items');
+            
+            if (container) {
+                if (affichesEnDiffusion.length === 0) {
+                    container.innerHTML = `
+                        <h3>📺 Affiches en diffusion</h3>
+                        <div class="empty-state">
+                            Aucune affiche en diffusion pour le moment
+                        </div>
+                    `;
+                    return;
+                }
+
+                const itemsHtml = affichesEnDiffusion.map(affiche => {
+                    const iconClass = getFamilleIconClass(affiche.famille);
+                    const icon = getFamilleIcon(affiche.famille);
+                    const dateExpiration = formatDate(affiche.dateFin);
                     
-                    alert(`🎉 Contact "${contact.nom}" modifié avec succès!`);
+                    return `
+                        <div class="item">
+                            <div class="item-icon ${iconClass}">${icon}</div>
+                            <div class="item-info">
+                                <h4>${affiche.libelle}</h4>
+                                <p>${affiche.prix}€/${affiche.unite} • ${affiche.origine} • Expire le ${dateExpiration}</p>
+                            </div>
+                            <span class="status-badge status-en-diffusion">En diffusion</span>
+                        </div>
+                    `;
+                }).join('');
+                
+                container.innerHTML = `
+                    <h3>📺 Affiches en diffusion</h3>
+                    ${itemsHtml}
+                `;
+            }
+        }
+
+        // Mettre à jour l'onglet Affiches
+        function updateAffichesTab(affiches) {
+            const container = document.querySelector('#affiches');
+            if (!container) return;
+            
+            const searchBar = container.querySelector('.search-bar');
+            const filterSection = container.querySelector('.filter-section');
+            
+            if (affiches.length === 0) {
+                container.innerHTML = '';
+                if (searchBar) container.appendChild(searchBar);
+                if (filterSection) container.appendChild(filterSection);
+                container.insertAdjacentHTML('beforeend', `
+                    <div class="empty-state">
+                        Aucune affiche créée pour le moment.<br>
+                        Cliquez sur le bouton + pour créer votre première affiche !
+                    </div>
+                `);
+                return;
+            }
+            
+            const affichesHtml = affiches.map(affiche => {
+                const iconClass = getFamilleIconClass(affiche.famille);
+                const icon = getFamilleIcon(affiche.famille);
+                const statusClass = getStatusClass(affiche.statut);
+                const statusText = getStatusText(affiche.statut);
+                const dateDebut = formatDate(affiche.dateDebut);
+                const dateFin = formatDate(affiche.dateFin);
+                
+                return `
+                    <div class="item" data-status="${affiche.statut}">
+                        <div class="item-icon ${iconClass}">${icon}</div>
+                        <div class="item-info">
+                            <h4>${affiche.libelle}</h4>
+                            <p>${affiche.prix}€/${affiche.unite} • ${affiche.origine}</p>
+                            <p class="item-dates">${dateDebut} → ${dateFin}</p>
+                        </div>
+                        <div class="item-actions">
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                            <div class="item-actions-buttons">
+                                <button class="action-btn edit-btn" onclick="editAffiche('${affiche.id}')">✏️</button>
+                                <button class="action-btn delete-btn" onclick="confirmDeleteAffiche('${affiche.id}', '${affiche.libelle}')">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = '';
+            if (searchBar) container.appendChild(searchBar);
+            if (filterSection) container.appendChild(filterSection);
+            container.insertAdjacentHTML('beforeend', affichesHtml);
+            
+            setTimeout(() => {
+                setupFilters();
+                setupSearch();
+            }, 50);
+        }
+
+        // Mettre à jour la section contacts email
+        function updateEmailContacts(contacts) {
+            const container = document.querySelector('#emails-section .contacts-list');
+            if (!container) return;
+            
+            if (contacts.length === 0) {
+                container.innerHTML = `<div class="empty-state">Aucun contact email configuré</div>`;
+                return;
+            }
+            
+            const contactsHtml = contacts.map(contact => {
+                const roleClass = getRoleClass(contact.role);
+                const roleText = getRoleText(contact.role);
+                const prioriteClass = contact.priorite === 'urgent' ? 'tag-urgent' : '';
+                const prioriteText = contact.priorite === 'urgent' ? 'Urgent' : '';
+                const isChecked = contact.actif ? 'checked' : '';
+                
+                return `
+                    <div class="contact-item">
+                        <div class="contact-icon">👤</div>
+                        <div class="contact-info">
+                            <h4>${contact.nom}</h4>
+                            <p>${contact.email}</p>
+                            <div class="contact-tags">
+                                <span class="tag ${roleClass}">${roleText}</span>
+                                ${prioriteText ? `<span class="tag ${prioriteClass}">${prioriteText}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="contact-actions">
+                            <label class="toggle">
+                                <input type="checkbox" ${isChecked} onchange="toggleContactNotifications('${contact.id}', 'email', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                            <button class="action-btn edit-btn" onclick="editContact('${contact.id}', 'email')">✏️</button>
+                            <button class="action-btn delete-btn" onclick="confirmDeleteContact('${contact.id}', '${contact.nom}', 'email')">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = contactsHtml;
+        }
+
+        // Mettre à jour la section contacts SMS
+        function updateSMSContacts(contacts) {
+            const container = document.querySelector('#sms-section .contacts-list');
+            if (!container) return;
+            
+            if (contacts.length === 0) {
+                container.innerHTML = `<div class="empty-state">Aucun contact SMS configuré</div>`;
+                return;
+            }
+            
+            const contactsHtml = contacts.map(contact => {
+                const roleClass = getRoleClass(contact.role);
+                const roleText = getRoleText(contact.role);
+                const prioriteClass = contact.priorite === 'urgent' ? 'tag-urgent' : '';
+                const prioriteText = contact.priorite === 'urgent' ? 'Urgent' : '';
+                const isChecked = contact.actif ? 'checked' : '';
+                
+                return `
+                    <div class="contact-item">
+                        <div class="contact-icon">📱</div>
+                        <div class="contact-info">
+                            <h4>${contact.nom}</h4>
+                            <p>${contact.telephone}</p>
+                            <div class="contact-tags">
+                                <span class="tag ${roleClass}">${roleText}</span>
+                                ${prioriteText ? `<span class="tag ${prioriteClass}">${prioriteText}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="contact-actions">
+                            <label class="toggle">
+                                <input type="checkbox" ${isChecked} onchange="toggleContactNotifications('${contact.id}', 'sms', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                            <button class="action-btn edit-btn" onclick="editContact('${contact.id}', 'sms')">✏️</button>
+                            <button class="action-btn delete-btn" onclick="confirmDeleteContact('${contact.id}', '${contact.nom}', 'sms')">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = contactsHtml;
+        }
+
+        // Fonctions utilitaires
+        function getFamilleIconClass(famille) {
+            const mapping = {
+                'fruits-legumes': 'category-fruits',
+                'traiteur': 'category-traiteur',
+                'boucherie': 'category-boucherie',
+                'cremerie': 'category-cremerie',
+                'epicerie': 'category-epicerie',
+                'boulangerie': 'category-boulangerie',
+                'autre': 'category-autre'
+            };
+            return mapping[famille] || 'category-autre';
+        }
+
+        function getFamilleIcon(famille) {
+            const mapping = {
+                'fruits-legumes': '🍎',
+                'traiteur': '🥘',
+                'boucherie': '🥩',
+                'cremerie': '🧀',
+                'epicerie': '🛒',
+                'boulangerie': '🥖',
+                'autre': '📦'
+            };
+            return mapping[famille] || '📦';
+        }
+
+        function getStatusClass(statut) {
+            return `status-${statut}`;
+        }
+
+        function getStatusText(statut) {
+            const mapping = {
+                'a-creer': 'À créer',
+                'programmee': 'Programmée',
+                'en-diffusion': 'En diffusion',
+                'archivee': 'Archivée'
+            };
+            return mapping[statut] || 'Inconnu';
+        }
+
+        function getRoleClass(role) {
+            return `tag-${role}`;
+        }
+
+        function getRoleText(role) {
+            const mapping = {
+                'manager': 'Manager',
+                'admin': 'Admin',
+                'commercial': 'Commercial',
+                'employee': 'Employé',
+                'other': 'Autre'
+            };
+            return mapping[role] || 'Autre';
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR', { 
+                day: '2-digit', 
+                month: '2-digit'
+            });
+        }
+
+        // Messages toast
+        function showErrorMessage(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #ff4444;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                z-index: 9999;
+                font-size: 14px;
+                max-width: 300px;
+                animation: slideIn 0.3s ease-out;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
+        }
+
+        function showSuccessMessage(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #4CAF50;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                z-index: 9999;
+                font-size: 14px;
+                max-width: 300px;
+                animation: slideIn 0.3s ease-out;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Fonctions de confirmation
+        function confirmDeleteAffiche(id, libelle) {
+            if (confirm(`🗑️ Êtes-vous sûr de vouloir supprimer l'affiche :\n"${libelle}" ?\n\nCette action est irréversible.`)) {
+                deleteAffiche(id);
+            }
+        }
+
+        function confirmDeleteContact(id, nom, type) {
+            const typeText = type === 'email' ? 'email' : 'SMS';
+            if (confirm(`🗑️ Êtes-vous sûr de vouloir supprimer le contact ${typeText} :\n"${nom}" ?\n\nCette action est irréversible.`)) {
+                deleteContact(id, type);
+            }
+        }
+
+        // Variables globales pour l'édition
+        window.currentEditingAffiche = null;
+        window.currentEditingContact = null;
+
+        // Mettre à jour une affiche
+        async function updateAffiche(id, data) {
+            try {
+                const docRef = doc(db, 'affiches', id);
+                await updateDoc(docRef, {
+                    ...data,
+                    dateModification: serverTimestamp()
+                });
+                showSuccessMessage('✅ Affiche mise à jour avec succès');
+                await loadAffiches();
+                return true;
+            } catch (error) {
+                console.error('Erreur mise à jour affiche:', error);
+                showErrorMessage('❌ Erreur lors de la mise à jour');
+                return false;
+            }
+        }
+
+        // Mettre à jour un contact
+        async function updateContact(id, data, type) {
+            try {
+                const collectionName = type === 'email' ? 'contacts_email' : 'contacts_sms';
+                const docRef = doc(db, collectionName, id);
+                await updateDoc(docRef, {
+                    ...data,
+                    dateModification: serverTimestamp()
+                });
+                showSuccessMessage('✅ Contact mis à jour avec succès');
+                await loadContacts();
+                return true;
+            } catch (error) {
+                console.error('Erreur mise à jour contact:', error);
+                showErrorMessage('❌ Erreur lors de la mise à jour');
+                return false;
+            }
+        }
+
+        // Charger une affiche pour édition
+        async function loadAfficheForEdit(id) {
+            try {
+                const docRef = doc(db, 'affiches', id);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const affiche = { id: docSnap.id, ...docSnap.data() };
+                    window.currentEditingAffiche = affiche;
+                    return affiche;
                 } else {
-                    // Création
+                    showErrorMessage('❌ Affiche non trouvée');
+                    return null;
+                }
+            } catch (error) {
+                console.error('Erreur chargement affiche:', error);
+                showErrorMessage('❌ Erreur lors du chargement');
+                return null;
+            }
+        }
+
+        // Charger un contact pour édition
+        async function loadContactForEdit(id, type) {
+            try {
+                const collectionName = type === 'email' ? 'contacts_email' : 'contacts_sms';
+                const docRef = doc(db, collectionName, id);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const contact = { id: docSnap.id, type: type, ...docSnap.data() };
+                    window.currentEditingContact = contact;
+                    return contact;
+                } else {
+                    showErrorMessage('❌ Contact non trouvé');
+                    return null;
+                }
+            } catch (error) {
+                console.error('Erreur chargement contact:', error);
+                showErrorMessage('❌ Erreur lors du chargement');
+                return null;
+            }
+        }
+
+        // Fonctions d'édition (maintenant fonctionnelles)
+        async function editAffiche(id) {
+            const affiche = await loadAfficheForEdit(id);
+            if (!affiche) return;
+            
+            // Pré-remplir le formulaire
+            document.getElementById('editAfficheId').value = affiche.id;
+            document.getElementById('editLibelle').value = affiche.libelle || '';
+            document.getElementById('editFamille').value = affiche.famille || '';
+            document.getElementById('editPrix').value = affiche.prix || '';
+            document.getElementById('editUnite').value = affiche.unite || 'kg';
+            document.getElementById('editOrigine').value = affiche.origine || '';
+            document.getElementById('editStatut').value = affiche.statut || 'a-creer';
+            
+            // Gérer les dates
+            if (affiche.dateDebut) {
+                const dateDebut = new Date(affiche.dateDebut);
+                document.getElementById('editDateDebut').value = dateDebut.toISOString().split('T')[0];
+            }
+            if (affiche.dateFin) {
+                const dateFin = new Date(affiche.dateFin);
+                document.getElementById('editDateFin').value = dateFin.toISOString().split('T')[0];
+            }
+            
+            // Ouvrir le modal
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        async function editContact(id, type) {
+            const contact = await loadContactForEdit(id, type);
+            if (!contact) return;
+            
+            // Pré-remplir le formulaire
+            document.getElementById('editContactId').value = contact.id;
+            document.getElementById('editContactType').value = type;
+            document.getElementById('editContactName').value = contact.nom || '';
+            document.getElementById('editContactRole').value = contact.role || 'employee';
+            document.getElementById('editPriority').value = contact.priorite || 'normal';
+            document.getElementById('editActiveByDefault').checked = contact.actif || false;
+            
+            // Gérer les champs spécifiques au type
+            const emailField = document.getElementById('editEmailField');
+            const smsField = document.getElementById('editSmsField');
+            const emailInput = document.getElementById('editContactEmail');
+            const smsInput = document.getElementById('editContactPhone');
+            
+            if (type === 'email') {
+                emailField.style.display = 'block';
+                smsField.style.display = 'none';
+                emailInput.value = contact.email || '';
+                emailInput.required = true;
+                smsInput.required = false;
+            } else {
+                emailField.style.display = 'none';
+                smsField.style.display = 'block';
+                smsInput.value = contact.telephone || '';
+                emailInput.required = false;
+                smsInput.required = true;
+            }
+            
+            // Ouvrir le modal
+            document.getElementById('editContactModal').style.display = 'block';
+        }
+
+        // Fonctions pour fermer les modals d'édition
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+            window.currentEditingAffiche = null;
+        }
+
+        function closeEditContactModal() {
+            document.getElementById('editContactModal').style.display = 'none';
+            window.currentEditingContact = null;
+        }
+
+        // Exposer les nouvelles fonctions
+        window.updateAffiche = updateAffiche;
+        window.updateContact = updateContact;
+        window.loadAfficheForEdit = loadAfficheForEdit;
+        window.loadContactForEdit = loadContactForEdit;
+        window.editAffiche = editAffiche;
+        window.editContact = editContact;
+        window.closeEditModal = closeEditModal;
+        window.closeEditContactModal = closeEditContactModal;
+
+        // Fonction de recherche
+        function setupSearch() {
+            const affichesSearch = document.querySelector('#affiches .search-bar input');
+            if (affichesSearch) {
+                affichesSearch.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value.toLowerCase();
+                    const items = document.querySelectorAll('#affiches .item');
+                    
+                    items.forEach(item => {
+                        const title = item.querySelector('h4').textContent.toLowerCase();
+                        const description = item.querySelector('p').textContent.toLowerCase();
+                        
+                        if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                            item.style.display = 'flex';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            }
+
+            const emailSearch = document.querySelector('#email-search');
+            if (emailSearch) {
+                emailSearch.addEventListener('input', function(e) {
+                    filterContacts(e.target.value, '#emails-section .contact-item');
+                });
+            }
+            
+            const smsSearch = document.querySelector('#sms-search');
+            if (smsSearch) {
+                smsSearch.addEventListener('input', function(e) {
+                    filterContacts(e.target.value, '#sms-section .contact-item');
+                });
+            }
+        }
+
+        function filterContacts(searchTerm, selector) {
+            const term = searchTerm.toLowerCase();
+            const contacts = document.querySelectorAll(selector);
+            
+            contacts.forEach(contact => {
+                const name = contact.querySelector('h4').textContent.toLowerCase();
+                const email = contact.querySelector('p').textContent.toLowerCase();
+                
+                if (name.includes(term) || email.includes(term)) {
+                    contact.style.display = 'flex';
+                } else {
+                    contact.style.display = 'none';
+                }
+            });
+        }
+
+        // Fonction de filtrage
+        function setupFilters() {
+            document.querySelectorAll('.filter-btn-affiches').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const filterValue = this.dataset.filter;
+                    filterAffiches(filterValue);
+                });
+            });
+        }
+
+        function filterAffiches(status) {
+            const items = document.querySelectorAll('#affiches .item');
+            const filterBtns = document.querySelectorAll('.filter-btn-affiches');
+            
+            filterBtns.forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.filter-btn-affiches[data-filter="${status}"]`).classList.add('active');
+            
+            items.forEach(item => {
+                if (status === 'all' || item.dataset.status === status) {
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+        }
+
+        // Exposer les fonctions globalement
+        window.loginUser = loginUser;
+        window.logoutUser = logoutUser;
+        window.saveAffiche = saveAffiche;
+        window.saveContact = saveContact;
+        window.deleteAffiche = deleteAffiche;
+        window.deleteContact = deleteContact;
+        window.toggleContactNotifications = toggleContactNotifications;
+        window.showErrorMessage = showErrorMessage;
+        window.showSuccessMessage = showSuccessMessage;
+        window.confirmDeleteAffiche = confirmDeleteAffiche;
+        window.confirmDeleteContact = confirmDeleteContact;
+        window.editAffiche = editAffiche;
+        window.editContact = editContact;
+    </script>
+
+    <script>
+        // Fonctions de l'interface
+        function showTab(tabName) {
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+            
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.closest('.tab').classList.add('active');
+        }
+
+        function openModal() {
+            document.getElementById('createModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('createModal').style.display = 'none';
+        }
+
+        function openContactModal() {
+            document.getElementById('contactModal').style.display = 'block';
+        }
+
+        function closeContactModal() {
+            document.getElementById('contactModal').style.display = 'none';
+        }
+
+        function toggleContactFields() {
+            const type = document.getElementById('contactType').value;
+            const emailField = document.getElementById('emailField');
+            const smsField = document.getElementById('smsField');
+            const emailInput = document.getElementById('contactEmail');
+            const smsInput = document.getElementById('contactPhone');
+            
+            if (type === 'email') {
+                emailField.style.display = 'block';
+                smsField.style.display = 'none';
+                emailInput.required = true;
+                smsInput.required = false;
+            } else if (type === 'sms') {
+                emailField.style.display = 'none';
+                smsField.style.display = 'block';
+                emailInput.required = false;
+                smsInput.required = true;
+            } else {
+                emailField.style.display = 'block';
+                smsField.style.display = 'block';
+                emailInput.required = true;
+                smsInput.required = true;
+            }
+        }
+
+        // Fermer modals en cliquant dehors
+        window.onclick = function(event) {
+            const createModal = document.getElementById('createModal');
+            const contactModal = document.getElementById('contactModal');
+            const editModal = document.getElementById('editModal');
+            const editContactModal = document.getElementById('editContactModal');
+            
+            if (event.target == createModal) {
+                createModal.style.display = 'none';
+            }
+            if (event.target == contactModal) {
+                contactModal.style.display = 'none';
+            }
+            if (event.target == editModal) {
+                closeEditModal();
+            }
+            if (event.target == editContactModal) {
+                closeEditContactModal();
+            }
+        }
+
+        // Navigation planning
+        let currentWeekStart = new Date(2025, 6, 8);
+
+        function changeWeek(direction) {
+            currentWeekStart.setDate(currentWeekStart.getDate() + (direction * 7));
+            updateWeekHeader();
+        }
+
+        function updateWeekHeader() {
+            const weekEnd = new Date(currentWeekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+            
+            const months = [
+                'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+                'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+            ];
+            
+            const startDay = currentWeekStart.getDate();
+            const endDay = weekEnd.getDate();
+            const month = months[currentWeekStart.getMonth()];
+            const year = currentWeekStart.getFullYear();
+            
+            const weekRange = `${startDay} - ${endDay} ${month} ${year}`;
+            document.getElementById('currentWeek').textContent = weekRange;
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Définir les dates par défaut
+            const today = new Date();
+            const nextWeek = new Date();
+            nextWeek.setDate(today.getDate() + 7);
+            
+            document.getElementById('dateDebut').valueAsDate = today;
+            document.getElementById('dateFin').valueAsDate = nextWeek;
+
+            // Initialiser les champs de contact
+            toggleContactFields();
+
+            // Event listener pour la connexion
+            document.getElementById('loginForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                window.loginUser();
+            });
+
+            // Event listener pour création d'affiche
+            document.getElementById('createForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const affiche = {
+                    libelle: formData.get('libelle'),
+                    famille: formData.get('famille'),
+                    dateDebut: formData.get('dateDebut'),
+                    dateFin: formData.get('dateFin'),
+                    prix: parseFloat(formData.get('prix')),
+                    unite: formData.get('unite'),
+                    origine: formData.get('origine'),
+                    statut: 'a-creer'
+                };
+                
+                try {
+                    await window.saveAffiche(affiche);
+                    window.showSuccessMessage('🎉 Affiche créée avec succès!');
+                    closeModal();
+                    this.reset();
+                    
+                    // Remettre les dates par défaut
+                    const today = new Date();
+                    const nextWeek = new Date();
+                    nextWeek.setDate(today.getDate() + 7);
+                    document.getElementById('dateDebut').valueAsDate = today;
+                    document.getElementById('dateFin').valueAsDate = nextWeek;
+                } catch (error) {
+                    window.showErrorMessage('❌ Erreur lors de la création: ' + error.message);
+                }
+            });
+
+            // Event listener pour création de contact
+            document.getElementById('contactForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const contact = {
+                    nom: formData.get('contactName'),
+                    role: formData.get('contactRole'),
+                    priorite: formData.get('priority'),
+                    actif: formData.get('activeByDefault') === 'on'
+                };
+                
+                const type = formData.get('contactType');
+                
+                try {
                     if (type === 'email' || type === 'both') {
                         const contactEmail = {
                             ...contact,
@@ -50,129 +1346,87 @@
                         await window.saveContact(contactSMS, 'sms');
                     }
                     
-                    alert(`🎉 Contact "${contact.nom}" ajouté avec succès!\nType: ${type}`);
-                }
-                
-                closeContactModal();
-                this.reset();
-                resetModalState();
-                toggleContactFields();
-            } catch (error) {
-                alert('❌ Erreur lors de la sauvegarde: ' + error.message);
-            }
-        });
-
-        // Réinitialiser l'état des modals
-        function resetModalState() {
-            currentEditingId = null;
-            currentEditingType = null;
-            
-            // Réinitialiser le modal d'affiche
-            document.querySelector('#createModal .modal-header h3').textContent = '📝 Nouvelle affiche';
-            document.querySelector('#createModal .btn').textContent = '✅ Créer l\'affiche';
-            
-            // Réinitialiser le modal de contact
-            document.querySelector('#contactModal .modal-header h3').textContent = '👤 Nouveau contact';
-            document.querySelector('#contactModal .btn').textContent = '✅ Ajouter le contact';
-        }
-
-        // Fonctions de recherche
-        document.getElementById('email-search').addEventListener('input', function() {
-            filterContacts(this.value.toLowerCase(), 'email');
-        });
-
-        document.getElementById('sms-search').addEventListener('input', function() {
-            filterContacts(this.value.toLowerCase(), 'sms');
-        });
-
-        function filterContacts(searchTerm, type) {
-            const container = document.querySelector(`#${type}s-section .contacts-list`);
-            const items = container.querySelectorAll('.contact-item');
-            
-            items.forEach(item => {
-                const name = item.querySelector('.contact-info h4').textContent.toLowerCase();
-                const contact = item.querySelector('.contact-info p').textContent.toLowerCase();
-                
-                if (name.includes(searchTerm) || contact.includes(searchTerm)) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
+                    window.showSuccessMessage(`🎉 Contact "${contact.nom}" ajouté avec succès!`);
+                    closeContactModal();
+                    this.reset();
+                    toggleContactFields();
+                } catch (error) {
+                    window.showErrorMessage('❌ Erreur lors de l\'ajout: ' + error.message);
                 }
             });
-        }
 
-        // Test des notifications
-        async function testNotifications() {
-            try {
-                const contactsEmail = window.allContactsEmail.filter(c => c.actif);
-                const contactsSMS = window.allContactsSMS.filter(c => c.actif);
+            // Event listener pour modification d'affiche
+            document.getElementById('editForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
                 
-                if (contactsEmail.length > 0) {
-                    await window.sendEmailNotification(
-                        'Test de notification',
-                        'Ceci est un test de notification par email.',
-                        contactsEmail
-                    );
+                const formData = new FormData(this);
+                const afficheId = formData.get('editAfficheId');
+                
+                const updatedData = {
+                    libelle: formData.get('editLibelle'),
+                    famille: formData.get('editFamille'),
+                    dateDebut: formData.get('editDateDebut'),
+                    dateFin: formData.get('editDateFin'),
+                    prix: parseFloat(formData.get('editPrix')),
+                    unite: formData.get('editUnite'),
+                    origine: formData.get('editOrigine'),
+                    statut: formData.get('editStatut')
+                };
+                
+                try {
+                    await window.updateAffiche(afficheId, updatedData);
+                    closeEditModal();
+                } catch (error) {
+                    window.showErrorMessage('❌ Erreur lors de la modification: ' + error.message);
+                }
+            });
+
+            // Event listener pour modification de contact
+            document.getElementById('editContactForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const contactId = formData.get('editContactId');
+                const contactType = formData.get('editContactType');
+                
+                const updatedData = {
+                    nom: formData.get('editContactName'),
+                    role: formData.get('editContactRole'),
+                    priorite: formData.get('editPriority'),
+                    actif: formData.get('editActiveByDefault') === 'on'
+                };
+                
+                // Ajouter le champ spécifique selon le type
+                if (contactType === 'email') {
+                    updatedData.email = formData.get('editContactEmail');
+                } else {
+                    updatedData.telephone = formData.get('editContactPhone');
                 }
                 
-                if (contactsSMS.length > 0) {
-                    await window.sendSMSNotification(
-                        'Test de notification SMS depuis votre app d\'affichage.',
-                        contactsSMS
-                    );
+                try {
+                    await window.updateContact(contactId, updatedData, contactType);
+                    closeEditContactModal();
+                } catch (error) {
+                    window.showErrorMessage('❌ Erreur lors de la modification: ' + error.message);
                 }
-                
-                alert('🎉 Notifications de test envoyées !');
-            } catch (error) {
-                alert('❌ Erreur lors du test: ' + error.message);
-            }
-        }
-
-        // Ajouter le bouton de test dans les paramètres
-        function addTestButton() {
-            const settingsCard = document.querySelector('#settings-section .settings-card');
-            if (settingsCard) {
-                const testButton = document.createElement('button');
-                testButton.className = 'btn';
-                testButton.textContent = '🧪 Tester les notifications';
-                testButton.onclick = testNotifications;
-                testButton.style.marginTop = '10px';
-                settingsCard.appendChild(testButton);
-            }
-        }
-
-        // Modifier les fonctions d'ouverture des modals
-        function openModal() {
-            resetModalState();
-            document.getElementById('createModal').style.display = 'block';
-        }
-
-        function openContactModal() {
-            resetModalState();
-            document.getElementById('contactModal').style.display = 'block';
-        }
-
-        // Initialiser les fonctionnalités supplémentaires
-        setTimeout(() => {
-            addTestButton();
-        }, 1000);
-
-        // Fonctions d'édition et suppression (maintenant intégrées)
-        function editAffiche(id) {
-            editAffiche(id);
-        }
-
-        function deleteAffiche(id) {
-            deleteAffiche(id);
-        }
-
-        function editContact(id, type) {
-            editContact(id, type);
-        }
-
-        function deleteContact(id, type) {
-            deleteContact(id, type);
-        }<!DOCTYPE html>
+            });
+            document.querySelectorAll('[data-notif-filter]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const filter = this.dataset.notifFilter;
+                    
+                    document.querySelectorAll('[data-notif-filter]').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    document.querySelectorAll('.notif-section').forEach(section => {
+                        section.style.display = 'none';
+                    });
+                    document.getElementById(filter + '-section').style.display = 'block';
+                });
+            });
+        });
+    </script>
+</body>
+</html><!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -185,32 +1439,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Gestion Affichage">
     <meta name="theme-color" content="#667eea">
-    <meta name="msapplication-navbutton-color" content="#667eea">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     
-    <!-- Icônes PWA -->
-    <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23667eea'/><text x='50' y='60' text-anchor='middle' font-size='60' fill='white'>📺</text></svg>">
-    <link rel="icon" type="image/png" sizes="32x32" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23667eea'/><text x='50' y='60' text-anchor='middle' font-size='60' fill='white'>📺</text></svg>">
-    <link rel="manifest" href="data:application/json,{
-        'name': 'Gestion Affichage Publicitaire',
-        'short_name': 'Affichage',
-        'description': 'Application de gestion d\'affichage publicitaire',
-        'start_url': './',
-        'display': 'standalone',
-        'theme_color': '#667eea',
-        'background_color': '#ffffff',
-        'icons': [
-            {
-                'src': 'data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><rect width=\'100\' height=\'100\' fill=\'%23667eea\'/><text x=\'50\' y=\'60\' text-anchor=\'middle\' font-size=\'60\' fill=\'white\'>📺</text></svg>',
-                'sizes': '512x512',
-                'type': 'image/svg+xml'
-            }
-        ]
-    }">
-    
-    <!-- Prévention du zoom -->
-    <meta name="format-detection" content="telephone=no">
-    <meta name="msapplication-tap-highlight" content="no">
     <style>
         * {
             margin: 0;
@@ -223,12 +1452,8 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             color: #333;
-            /* Optimisations mobile */
             -webkit-touch-callout: none;
             -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
             overflow-x: hidden;
@@ -242,7 +1467,6 @@
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
             position: relative;
             overflow: hidden;
-            /* Optimisations PWA */
             -webkit-overflow-scrolling: touch;
         }
 
@@ -259,9 +1483,23 @@
             margin-bottom: 5px;
         }
 
-        .header p {
-            font-size: 14px;
-            opacity: 0.9;
+        .logout-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
         }
 
         .tabs {
@@ -319,7 +1557,7 @@
         .stat-card {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
-            padding: 10px;
+            padding: 15px;
             border-radius: 12px;
             text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -372,6 +1610,7 @@
             justify-content: center;
             margin-right: 12px;
             font-size: 18px;
+            color: white;
         }
 
         .item-info {
@@ -387,336 +1626,6 @@
         .item-info p {
             font-size: 12px;
             color: #666;
-        }
-
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 20px;
-            font-size: 10px;
-            font-weight: 500;
-            text-transform: uppercase;
-        }
-
-        .status-a-creer {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .status-programmee {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-en-diffusion {
-            background: #cce5ff;
-            color: #004085;
-        }
-
-        .status-archivee {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #333;
-            font-size: 14px;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.3s ease;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 20px;
-            /* Optimisations tactiles */
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .timeline {
-            position: relative;
-            padding-left: 30px;
-        }
-
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 15px;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: #e9ecef;
-        }
-
-        .timeline-item {
-            position: relative;
-            margin-bottom: 25px;
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            left: -22px;
-            top: 20px;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #667eea;
-            border: 3px solid white;
-            box-shadow: 0 0 0 3px #667eea;
-        }
-
-        .timeline-item h4 {
-            margin-bottom: 8px;
-            color: #333;
-        }
-
-        .timeline-item p {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 5px;
-        }
-
-        .timeline-date {
-            font-size: 11px;
-            color: #999;
-            font-weight: 500;
-        }
-
-        .timeline-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-            flex-wrap: wrap;
-        }
-
-        .fab {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            transition: all 0.3s ease;
-            /* Optimisations tactiles */
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-        }
-
-        .fab:hover {
-            transform: scale(1.1);
-        }
-
-        .search-bar {
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        .search-bar input {
-            width: 100%;
-            padding: 12px 40px 12px 12px;
-            border: 2px solid #e9ecef;
-            border-radius: 25px;
-            font-size: 14px;
-        }
-
-        .search-bar::after {
-            content: "🔍";
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 16px;
-        }
-
-        .category-fruits { background: #4CAF50; }
-        .category-traiteur { background: #FF9800; }
-        .category-boucherie { background: #F44336; }
-        .category-cremerie { background: #2196F3; }
-        .category-epicerie { background: #9C27B0; }
-        .category-boulangerie { background: #FF5722; }
-        .category-autre { background: #607D8B; }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-        }
-
-        .modal-content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            max-width: 90%;
-            width: 350px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .modal-header h3 {
-            margin: 0;
-            color: #333;
-        }
-
-        .close {
-            font-size: 24px;
-            cursor: pointer;
-            color: #999;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-            margin-right: 8px;
-        }
-
-        .badge-prix {
-            background: #e3f2fd;
-            color: #1976d2;
-        }
-
-        .badge-origine {
-            background: #f3e5f5;
-            color: #7b1fa2;
-        }
-
-        .filter-section {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 10px;
-            margin-bottom: 20px;
-        }
-
-        .filter-section h4 {
-            margin-bottom: 12px;
-            font-size: 14px;
-            color: #333;
-        }
-
-        .filter-buttons {
-            display: flex;
-            gap: 3px;
-            flex-wrap: wrap;
-            justify-content: flex-start;
-        }
-
-        .filter-btn {
-            padding: 8px 16px;
-            border: 2px solid #e9ecef;
-            background: white;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: capitalize;
-        }
-
-        .filter-btn.active,
-        .filter-btn:hover {
-            background: #667eea;
-            border-color: #667eea;
-            color: white;
-        }
-
-        .filter-btn-affiches {
-            padding: 6px 8px;
-            border: 2px solid #e9ecef;
-            background: white;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: capitalize;
-            white-space: nowrap;
-        }
-
-        .filter-btn-affiches.active,
-        .filter-btn-affiches:hover {
-            background: #667eea;
-            border-color: #667eea;
-            color: white;
-        }
-
-        .timeline-item.hidden {
-            display: none;
-        }
-
-        .item.hidden {
-            display: none;
         }
 
         .item-actions {
@@ -767,6 +1676,446 @@
             transform: scale(1.1);
         }
 
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 500;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .status-a-creer {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-programmee {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-en-diffusion {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-archivee {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .category-fruits { background: #4CAF50; }
+        .category-traiteur { background: #FF9800; }
+        .category-boucherie { background: #F44336; }
+        .category-cremerie { background: #2196F3; }
+        .category-epicerie { background: #9C27B0; }
+        .category-boulangerie { background: #FF5722; }
+        .category-autre { background: #607D8B; }
+
+        .search-bar {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 12px 40px 12px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 14px;
+        }
+
+        .search-bar::after {
+            content: "🔍";
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+        }
+
+        .filter-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filter-section h4 {
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 3px;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
+
+        .filter-btn, .filter-btn-affiches {
+            padding: 6px 8px;
+            border: 2px solid #e9ecef;
+            background: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: capitalize;
+            white-space: nowrap;
+        }
+
+        .filter-btn.active, .filter-btn-affiches.active,
+        .filter-btn:hover, .filter-btn-affiches:hover {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+
+        .item.hidden {
+            display: none;
+        }
+
+        .fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 90%;
+            width: 350px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #333;
+        }
+
+        .close {
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .alert-error {
+            background: #ffebee;
+            border: 1px solid #f8bbd9;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: linear-gradient(135deg, #fef7ff 0%, #fdf2f8 100%);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .contact-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        .contact-info {
+            flex: 1;
+        }
+
+        .contact-info h4 {
+            font-size: 14px;
+            margin: 0 0 3px 0;
+            color: #333;
+        }
+
+        .contact-info p {
+            font-size: 12px;
+            color: #666;
+            margin: 0 0 6px 0;
+        }
+
+        .contact-tags {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .tag-manager {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .tag-admin {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .tag-commercial {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .tag-urgent {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+
+        .tag-employee {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .tag-other {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .contact-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toggle {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #667eea;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        .notif-section {
+            margin-top: 15px;
+        }
+
+        .contacts-list {
+            margin-top: 15px;
+        }
+
+        .settings-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .settings-card h4 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-info h5 {
+            margin: 0 0 4px 0;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .setting-info p {
+            margin: 0;
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 40px 20px;
+        }
+
+        #loginModal {
+            z-index: 2000;
+        }
+
+        #loginModal .modal-content {
+            width: 320px;
+        }
+
+        /* Planning styles */
         .agenda-header {
             display: flex;
             justify-content: space-between;
@@ -872,23 +2221,6 @@
             margin-left: auto;
         }
 
-        .alert-indicators {
-            display: flex;
-            align-items: center;
-            gap: 3px;
-            margin-left: auto;
-            background: #fff3cd;
-            padding: 3px 6px;
-            border-radius: 10px;
-            border: 1px solid #ffeaa7;
-        }
-
-        .alert-count {
-            font-size: 10px;
-            font-weight: 500;
-            color: #856404;
-        }
-
         .day-events {
             display: flex;
             flex-direction: column;
@@ -903,10 +2235,6 @@
             background: #f8f9fa;
             border-radius: 6px;
             transition: all 0.3s ease;
-        }
-
-        .event-item:hover {
-            background: #e9ecef;
         }
 
         .event-icon {
@@ -936,29 +2264,6 @@
             color: #666;
         }
 
-        .alert-events {
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px solid #e9ecef;
-        }
-
-        .alert-event {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 6px;
-            background: #fff3cd;
-            border-radius: 4px;
-            margin-bottom: 3px;
-            border: 1px solid #ffeaa7;
-        }
-
-        .alert-event-text {
-            font-size: 11px;
-            color: #856404;
-            font-weight: 500;
-        }
-
         .status-debut {
             background: #4CAF50;
             color: white;
@@ -974,248 +2279,73 @@
             color: white;
         }
 
-        .legend {
-            background: #f8f9fa;
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+            border: none;
             border-radius: 8px;
-            padding: 15px;
-        }
-
-        .legend h4 {
-            margin-bottom: 12px;
             font-size: 14px;
-            color: #333;
-        }
-
-        .legend-items {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .legend-color {
-            width: 16px;
-            height: 16px;
-            border-radius: 4px;
-        }
-
-        .notif-section {
-            margin-top: 15px;
-        }
-
-        .contact-item {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-            background: linear-gradient(135deg, #fef7ff 0%, #fdf2f8 100%);
-            border-radius: 12px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-        }
-
-        .contact-item:nth-child(even) {
-            background: linear-gradient(135deg, #f8faff 0%, #f1f5f9 100%);
-        }
-
-        .contact-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #667eea;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 12px;
-            font-size: 18px;
-        }
-
-        .contact-info {
-            flex: 1;
-        }
-
-        .contact-info h4 {
-            font-size: 14px;
-            margin: 0 0 3px 0;
-            color: #333;
-        }
-
-        .contact-info p {
-            font-size: 12px;
-            color: #666;
-            margin: 0 0 6px 0;
-        }
-
-        .contact-tags {
-            display: flex;
-            gap: 4px;
-            flex-wrap: wrap;
-        }
-
-        .tag {
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 10px;
             font-weight: 500;
-            text-transform: uppercase;
-        }
-
-        .tag-manager {
-            background: #e8f5e8;
-            color: #2e7d32;
-        }
-
-        .tag-admin {
-            background: #fff3e0;
-            color: #ef6c00;
-        }
-
-        .tag-commercial {
-            background: #e3f2fd;
-            color: #1976d2;
-        }
-
-        .tag-urgent {
-            background: #ffebee;
-            color: #d32f2f;
-        }
-
-        .contact-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .toggle {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 24px;
-        }
-
-        .toggle input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: 0.3s;
-            border-radius: 24px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: 0.3s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: #667eea;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(20px);
-        }
-
-        .settings-card {
-            background: white;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-        }
-
-        .settings-card h4 {
-            margin: 0 0 15px 0;
-            font-size: 16px;
-            color: #333;
-        }
-
-        .setting-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .setting-item:last-child {
-            border-bottom: none;
-        }
-
-        .setting-info h5 {
-            margin: 0 0 4px 0;
-            font-size: 14px;
-            color: #333;
-        }
-
-        .setting-info p {
-            margin: 0;
-            font-size: 12px;
-            color: #666;
-        }
-
-        .contacts-list {
-            margin-top: 15px;
-        }
-
-        .logout-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
+            padding: 10px 20px;
+            margin-right: 10px;
         }
 
-        .logout-btn:hover {
-            background: rgba(255,255,255,0.3);
-            transform: scale(1.05);
+        .btn-secondary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(108, 117, 125, 0.4);
         }
 
-        .alert-error {
-            background: #ffebee;
-            border: 1px solid #f8bbd9;
-            color: #c62828;
-            padding: 10px;
+        .form-validation-error {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+
+        .validation-message {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .edit-indicator {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
             border-radius: 6px;
+            padding: 8px 12px;
             margin-bottom: 15px;
-            font-size: 14px;
+            font-size: 13px;
+            color: #856404;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        #loginModal {
-            z-index: 2000;
+        .loading-spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 8px;
         }
 
-        #loginModal .modal-content {
-            width: 320px;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        /* Optimisations spécifiques Samsung S21 */
+        /* Responsive */
         @media screen and (max-width: 420px) {
             .container {
                 max-width: 100%;
@@ -1232,31 +2362,20 @@
                 gap: 10px;
             }
         }
-
-        /* Masquer les barres de défilement sur mobile */
-        ::-webkit-scrollbar {
-            display: none;
-        }
-
-        /* Optimisations iOS */
-        @supports (-webkit-touch-callout: none) {
-            .container {
-                min-height: -webkit-fill-available;
-            }
-        }
     </style>
 </head>
 <body>
+    <!-- Modal de connexion -->
     <div id="loginModal" class="modal" style="display:block;">
         <div class="modal-content">
             <div class="modal-header">
                 <h3>🔐 Connexion</h3>
             </div>
             
-            <form id="loginForm" onsubmit="event.preventDefault(); loginUser();">
+            <form id="loginForm">
                 <div class="form-group">
                     <label for="loginEmail">Email</label>
-                    <input type="email" id="loginEmail" name="loginEmail" required placeholder="votre@email.com">
+                    <input type="email" id="loginEmail" name="loginEmail" required placeholder="test@exemple.com">
                 </div>
 
                 <div class="form-group">
@@ -1267,10 +2386,15 @@
                 <div id="loginError" class="alert-error" style="display:none;"></div>
 
                 <button type="submit" class="btn">🔓 Se connecter</button>
+                
+                <p style="margin-top: 15px; font-size: 12px; color: #666; text-align: center;">
+                    Créez un compte dans la console Firebase ou utilisez un compte de test
+                </p>
             </form>
         </div>
     </div>
 
+    <!-- Application principale -->
     <div id="appContainer" class="container" style="display:none;">
         <div class="header">
             <h1>📺 Gestion Affichage</h1>
@@ -1296,71 +2420,36 @@
             </div>
         </div>
 
+        <!-- Dashboard -->
         <div id="dashboard" class="tab-content active">
             <div class="dashboard-stats">
                 <div class="stat-card">
-                    <h3>12</h3>
+                    <h3>0</h3>
                     <p>En diffusion</p>
                 </div>
                 <div class="stat-card">
-                    <h3>5</h3>
+                    <h3>0</h3>
                     <p>À créer</p>
                 </div>
                 <div class="stat-card">
-                    <h3>8</h3>
+                    <h3>0</h3>
                     <p>Programmées</p>
                 </div>
                 <div class="stat-card">
-                    <h3>142</h3>
+                    <h3>0</h3>
                     <p>Archivées</p>
                 </div>
             </div>
 
             <div class="recent-items">
                 <h3>📺 Affiches en diffusion</h3>
-                <div class="item">
-                    <div class="item-icon category-fruits">🍎</div>
-                    <div class="item-info">
-                        <h4>Pommes Golden</h4>
-                        <p>2.50€/kg • France • Expire le 15/07</p>
-                    </div>
-                    <span class="status-badge status-en-diffusion">En diffusion</span>
-                </div>
-                <div class="item">
-                    <div class="item-icon category-traiteur">🥘</div>
-                    <div class="item-info">
-                        <h4>Lasagnes maison</h4>
-                        <p>8.50€/kg • Maison • Expire le 14/07</p>
-                    </div>
-                    <span class="status-badge status-en-diffusion">En diffusion</span>
-                </div>
-                <div class="item">
-                    <div class="item-icon category-cremerie">🧀</div>
-                    <div class="item-info">
-                        <h4>Roquefort AOP</h4>
-                        <p>24.90€/kg • France • Expire le 16/07</p>
-                    </div>
-                    <span class="status-badge status-en-diffusion">En diffusion</span>
-                </div>
-                <div class="item">
-                    <div class="item-icon category-boucherie">🥩</div>
-                    <div class="item-info">
-                        <h4>Côte de bœuf</h4>
-                        <p>18.50€/kg • France • Expire le 12/07</p>
-                    </div>
-                    <span class="status-badge status-en-diffusion">En diffusion</span>
-                </div>
-                <div class="item">
-                    <div class="item-icon category-epicerie">🍯</div>
-                    <div class="item-info">
-                        <h4>Miel de lavande</h4>
-                        <p>12.90€/unité • Provence • Expire le 20/07</p>
-                    </div>
-                    <span class="status-badge status-en-diffusion">En diffusion</span>
+                <div class="empty-state">
+                    Aucune affiche en diffusion pour le moment
                 </div>
             </div>
         </div>
 
+        <!-- Planning -->
         <div id="planning" class="tab-content">
             <div class="agenda-header">
                 <button class="nav-btn" onclick="changeWeek(-1)">‹</button>
@@ -1371,408 +2460,26 @@
             <div class="alerts-section">
                 <div class="alert-item">
                     <span class="alert-dot">🔴</span>
-                    <span class="alert-text">3 affiches à créer/programmer cette semaine</span>
+                    <span class="alert-text">Planning disponible après création d'affiches</span>
                 </div>
             </div>
             
             <div class="agenda-container">
-                <div class="agenda-day">
-                    <div class="day-title">
-                        <span class="day-name">Mardi</span>
-                        <span class="day-date">8 juillet</span>
-                    </div>
-                    <div class="day-events">
-                        <div class="event-item">
-                            <div class="event-icon category-traiteur">🥘</div>
-                            <div class="event-content">
-                                <h4>Lasagnes maison</h4>
-                                <p>8.50€/kg • Maison</p>
-                            </div>
-                            <span class="status-badge status-debut">Démarre</span>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="agenda-day today">
                     <div class="day-title">
-                        <span class="day-name">Mercredi</span>
-                        <span class="day-date">9 juillet</span>
-                        <span class="today-indicator">Aujourd'hui</span>
+                        <span class="day-name">Aujourd'hui</span>
+                        <span class="today-indicator">Mercredi 10 Juillet</span>
                     </div>
                     <div class="day-events">
-                        <div class="event-item">
-                            <div class="event-icon category-fruits">🍎</div>
-                            <div class="event-content">
-                                <h4>Pommes Golden</h4>
-                                <p>2.50€/kg • France</p>
-                            </div>
-                            <span class="status-badge status-debut">Démarre</span>
-                        </div>
-                        <div class="event-item">
-                            <div class="event-icon category-traiteur">🥘</div>
-                            <div class="event-content">
-                                <h4>Lasagnes maison</h4>
-                                <p>8.50€/kg • Maison</p>
-                            </div>
-                            <span class="status-badge status-continue">Continue</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="agenda-day">
-                    <div class="day-title">
-                        <span class="day-name">Jeudi</span>
-                        <span class="day-date">10 juillet</span>
-                    </div>
-                    <div class="day-events">
-                        <div class="event-item">
-                            <div class="event-icon category-fruits">🍎</div>
-                            <div class="event-content">
-                                <h4>Pommes Golden</h4>
-                                <p>2.50€/kg • France</p>
-                            </div>
-                            <span class="status-badge status-continue">Continue</span>
-                        </div>
-                        <div class="event-item">
-                            <div class="event-icon category-traiteur">🥘</div>
-                            <div class="event-content">
-                                <h4>Lasagnes maison</h4>
-                                <p>8.50€/kg • Maison</p>
-                            </div>
-                            <span class="status-badge status-continue">Continue</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="agenda-day">
-                    <div class="day-title">
-                        <span class="day-name">Vendredi</span>
-                        <span class="day-date">11 juillet</span>
-                        <div class="alert-indicators">
-                            <span class="alert-dot">🔴</span>
-                            <span class="alert-count">2</span>
-                        </div>
-                    </div>
-                    <div class="day-events">
-                        <div class="event-item">
-                            <div class="event-icon category-fruits">🍎</div>
-                            <div class="event-content">
-                                <h4>Pommes Golden</h4>
-                                <p>2.50€/kg • France</p>
-                            </div>
-                            <span class="status-badge status-continue">Continue</span>
-                        </div>
-                        <div class="event-item">
-                            <div class="event-icon category-traiteur">🥘</div>
-                            <div class="event-content">
-                                <h4>Lasagnes maison</h4>
-                                <p>8.50€/kg • Maison</p>
-                            </div>
-                            <span class="status-badge status-continue">Continue</span>
-                        </div>
-                        <div class="alert-events">
-                            <div class="alert-event">
-                                <span class="alert-dot">🔴</span>
-                                <span class="alert-event-text">🥖 Pain tradition (À créer)</span>
-                            </div>
-                            <div class="alert-event">
-                                <span class="alert-dot">🔴</span>
-                                <span class="alert-event-text">🥩 Steaks hachés (À créer)</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="agenda-day">
-                    <div class="day-title">
-                        <span class="day-name">Samedi</span>
-                        <span class="day-date">12 juillet</span>
-                        <div class="alert-indicators">
-                            <span class="alert-dot">🔴</span>
-                            <span class="alert-count">1</span>
-                        </div>
-                    </div>
-                    <div class="day-events">
-                        <div class="event-item">
-                            <div class="event-icon category-fruits">🍎</div>
-                            <div class="event-content">
-                                <h4>Pommes Golden</h4>
-                                <p>2.50€/kg • France</p>
-                            </div>
-                            <span class="status-badge status-continue">Continue</span>
-                        </div>
-                        <div class="event-item">
-                            <div class="event-icon category-traiteur">🥘</div>
-                            <div class="event-content">
-                                <h4>Lasagnes maison</h4>
-                                <p>8.50€/kg • Maison</p>
-                            </div>
-                            <span class="status-badge status-continue">Continue</span>
-                        </div>
-                        <div class="alert-events">
-                            <div class="alert-event">
-                                <span class="alert-dot">🔴</span>
-                                <span class="alert-event-text">🍯 Miel de lavande (À créer)</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="agenda-day">
-                    <div class="day-title">
-                        <span class="day-name">Dimanche</span>
-                        <span class="day-date">13 juillet</span>
-                    </div>
-                    <div class="day-events">
-                        <div class="event-item">
-                            <div class="event-icon category-fruits">🍎</div>
-                            <div class="event-content">
-                                <h4>Pommes Golden</h4>
-                                <p>2.50€/kg • France</p>
-                            </div>
-                            <span class="status-badge status-continue">Continue</span>
-                        </div>
-                        <div class="event-item">
-                            <div class="event-icon category-traiteur">🥘</div>
-                            <div class="event-content">
-                                <h4>Lasagnes maison</h4>
-                                <p>8.50€/kg • Maison</p>
-                            </div>
-                            <span class="status-badge status-continue">Continue</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="agenda-day">
-                    <div class="day-title">
-                        <span class="day-name">Lundi</span>
-                        <span class="day-date">14 juillet</span>
-                    </div>
-                    <div class="day-events">
-                        <div class="event-item">
-                            <div class="event-icon category-fruits">🍎</div>
-                            <div class="event-content">
-                                <h4>Pommes Golden</h4>
-                                <p>2.50€/kg • France</p>
-                            </div>
-                            <span class="status-badge status-continue">Continue</span>
-                        </div>
-                        <div class="event-item">
-                            <div class="event-icon category-traiteur">🥘</div>
-                            <div class="event-content">
-                                <h4>Lasagnes maison</h4>
-                                <p>8.50€/kg • Maison</p>
-                            </div>
-                            <span class="status-badge status-termine">Se termine</span>
+                        <div class="empty-state" style="padding: 20px;">
+                            Aucun événement programmé
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div id="notifications" class="tab-content">
-            <div class="filter-section">
-                <h4>🔔 Gestion des notifications</h4>
-                <div class="filter-buttons">
-                    <button class="filter-btn active" data-notif-filter="emails">📧 Emails</button>
-                    <button class="filter-btn" data-notif-filter="sms">📱 SMS</button>
-                    <button class="filter-btn" data-notif-filter="settings">⚙️ Config</button>
-                </div>
-            </div>
-
-            <div id="emails-section" class="notif-section">
-                <div class="search-bar">
-                    <input type="text" id="email-search" placeholder="Rechercher un contact...">
-                </div>
-                
-                <div class="contacts-list">
-                    <div class="contact-item">
-                        <div class="contact-icon">👤</div>
-                        <div class="contact-info">
-                            <h4>Sophie Martin</h4>
-                            <p>sophie.martin@exemple.fr</p>
-                            <div class="contact-tags">
-                                <span class="tag tag-manager">Manager</span>
-                                <span class="tag tag-urgent">Urgent</span>
-                            </div>
-                        </div>
-                        <div class="contact-actions">
-                            <label class="toggle">
-                                <input type="checkbox" checked>
-                                <span class="slider"></span>
-                            </label>
-                            <button class="action-btn edit-btn" onclick="editContact('sophie')">✏️</button>
-                            <button class="action-btn delete-btn" onclick="deleteContact('sophie')">🗑️</button>
-                        </div>
-                    </div>
-
-                    <div class="contact-item">
-                        <div class="contact-icon">👤</div>
-                        <div class="contact-info">
-                            <h4>Marc Dubois</h4>
-                            <p>marc.dubois@exemple.fr</p>
-                            <div class="contact-tags">
-                                <span class="tag tag-admin">Admin</span>
-                            </div>
-                        </div>
-                        <div class="contact-actions">
-                            <label class="toggle">
-                                <input type="checkbox" checked>
-                                <span class="slider"></span>
-                            </label>
-                            <button class="action-btn edit-btn" onclick="editContact('marc')">✏️</button>
-                            <button class="action-btn delete-btn" onclick="deleteContact('marc')">🗑️</button>
-                        </div>
-                    </div>
-
-                    <div class="contact-item">
-                        <div class="contact-icon">👤</div>
-                        <div class="contact-info">
-                            <h4>Julie Lemoine</h4>
-                            <p>julie.lemoine@exemple.fr</p>
-                            <div class="contact-tags">
-                                <span class="tag tag-commercial">Commercial</span>
-                            </div>
-                        </div>
-                        <div class="contact-actions">
-                            <label class="toggle">
-                                <input type="checkbox">
-                                <span class="slider"></span>
-                            </label>
-                            <button class="action-btn edit-btn" onclick="editContact('julie')">✏️</button>
-                            <button class="action-btn delete-btn" onclick="deleteContact('julie')">🗑️</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="sms-section" class="notif-section" style="display:none;">
-                <div class="search-bar">
-                    <input type="text" id="sms-search" placeholder="Rechercher un numéro...">
-                </div>
-                
-                <div class="contacts-list">
-                    <div class="contact-item">
-                        <div class="contact-icon">📱</div>
-                        <div class="contact-info">
-                            <h4>Sophie Martin</h4>
-                            <p>+33 6 12 34 56 78</p>
-                            <div class="contact-tags">
-                                <span class="tag tag-manager">Manager</span>
-                                <span class="tag tag-urgent">Urgent</span>
-                            </div>
-                        </div>
-                        <div class="contact-actions">
-                            <label class="toggle">
-                                <input type="checkbox" checked>
-                                <span class="slider"></span>
-                            </label>
-                            <button class="action-btn edit-btn" onclick="editContact('sophie-sms')">✏️</button>
-                            <button class="action-btn delete-btn" onclick="deleteContact('sophie-sms')">🗑️</button>
-                        </div>
-                    </div>
-
-                    <div class="contact-item">
-                        <div class="contact-icon">📱</div>
-                        <div class="contact-info">
-                            <h4>Marc Dubois</h4>
-                            <p>+33 6 98 76 54 32</p>
-                            <div class="contact-tags">
-                                <span class="tag tag-admin">Admin</span>
-                            </div>
-                        </div>
-                        <div class="contact-actions">
-                            <label class="toggle">
-                                <input type="checkbox">
-                                <span class="slider"></span>
-                            </label>
-                            <button class="action-btn edit-btn" onclick="editContact('marc-sms')">✏️</button>
-                            <button class="action-btn delete-btn" onclick="deleteContact('marc-sms')">🗑️</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="settings-section" class="notif-section" style="display:none;">
-                <div class="settings-card">
-                    <h4>⚙️ Paramètres de notification</h4>
-                    
-                    <div class="setting-item">
-                        <div class="setting-info">
-                            <h5>Notifications d'expiration</h5>
-                            <p>Alerter 24h avant expiration</p>
-                        </div>
-                        <label class="toggle">
-                            <input type="checkbox" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-
-                    <div class="setting-item">
-                        <div class="setting-info">
-                            <h5>Créations d'affiches</h5>
-                            <p>Notifier à chaque création</p>
-                        </div>
-                        <label class="toggle">
-                            <input type="checkbox" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-
-                    <div class="setting-item">
-                        <div class="setting-info">
-                            <h5>Mises en diffusion</h5>
-                            <p>Notifier lors du démarrage</p>
-                        </div>
-                        <label class="toggle">
-                            <input type="checkbox">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-
-                    <div class="setting-item">
-                        <div class="setting-info">
-                            <h5>Résumé quotidien</h5>
-                            <p>Envoi à 08h00 chaque jour</p>
-                        </div>
-                        <label class="toggle">
-                            <input type="checkbox" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="settings-card">
-                    <h4>📧 Serveur SMTP</h4>
-                    <div class="form-group">
-                        <label>Serveur</label>
-                        <input type="text" value="smtp.gmail.com" placeholder="smtp.exemple.com">
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Port</label>
-                            <input type="number" value="587" placeholder="587">
-                        </div>
-                        <div class="form-group">
-                            <label>Sécurité</label>
-                            <select>
-                                <option value="tls">TLS</option>
-                                <option value="ssl">SSL</option>
-                                <option value="none">Aucune</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Email expéditeur</label>
-                        <input type="email" value="affichage@monmagasin.fr" placeholder="votre@email.com">
-                    </div>
-                    <button class="btn" style="margin-top: 15px;">💾 Sauvegarder</button>
-                </div>
-            </div>
-
-            <button class="fab" onclick="openContactModal()">+</button>
-        </div>
-
+        <!-- Affiches -->
         <div id="affiches" class="tab-content">
             <div class="search-bar">
                 <input type="text" placeholder="Rechercher une affiche...">
@@ -1789,1075 +2496,34 @@
                 </div>
             </div>
             
-            <div class="item" data-status="en-diffusion">
-                <div class="item-icon category-fruits">🍎</div>
-                <div class="item-info">
-                    <h4>Pommes Golden</h4>
-                    <p>2.50€/kg • France</p>
-                    <p class="item-dates">09/07 → 15/07</p>
-                </div>
-                <div class="item-actions">
-                    <span class="status-badge status-en-diffusion">En diffusion</span>
-                    <div class="item-actions-buttons">
-                        <button class="action-btn edit-btn" onclick="editAffiche('pommes')">✏️</button>
-                        <button class="action-btn delete-btn" onclick="deleteAffiche('pommes')">🗑️</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="item" data-status="programmee">
-                <div class="item-icon category-boucherie">🥩</div>
-                <div class="item-info">
-                    <h4>Steaks hachés 15% MG</h4>
-                    <p>12.90€/kg • France</p>
-                    <p class="item-dates">10/07 → 17/07</p>
-                </div>
-                <div class="item-actions">
-                    <span class="status-badge status-programmee">Programmée</span>
-                    <div class="item-actions-buttons">
-                        <button class="action-btn edit-btn" onclick="editAffiche('steaks')">✏️</button>
-                        <button class="action-btn delete-btn" onclick="deleteAffiche('steaks')">🗑️</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="item" data-status="a-creer">
-                <div class="item-icon category-boulangerie">🥖</div>
-                <div class="item-info">
-                    <h4>Pain tradition</h4>
-                    <p>1.20€/unité • Local</p>
-                    <p class="item-dates">11/07 → 18/07</p>
-                </div>
-                <div class="item-actions">
-                    <span class="status-badge status-a-creer">À créer</span>
-                    <div class="item-actions-buttons">
-                        <button class="action-btn edit-btn" onclick="editAffiche('pain')">✏️</button>
-                        <button class="action-btn delete-btn" onclick="deleteAffiche('pain')">🗑️</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="item" data-status="archivee">
-                <div class="item-icon category-cremerie">🧀</div>
-                <div class="item-info">
-                    <h4>Camembert AOP</h4>
-                    <p>3.80€/unité • Normandie</p>
-                    <p class="item-dates">01/07 → 08/07</p>
-                </div>
-                <div class="item-actions">
-                    <span class="status-badge status-archivee">Archivée</span>
-                    <div class="item-actions-buttons">
-                        <button class="action-btn edit-btn" onclick="editAffiche('camembert')">✏️</button>
-                        <button class="action-btn delete-btn" onclick="deleteAffiche('camembert')">🗑️</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="item" data-status="en-diffusion">
-                <div class="item-icon category-traiteur">🥘</div>
-                <div class="item-info">
-                    <h4>Lasagnes maison</h4>
-                    <p>8.50€/kg • Maison</p>
-                    <p class="item-dates">08/07 → 14/07</p>
-                </div>
-                <div class="item-actions">
-                    <span class="status-badge status-en-diffusion">En diffusion</span>
-                    <div class="item-actions-buttons">
-                        <button class="action-btn edit-btn" onclick="editAffiche('lasagnes')">✏️</button>
-                        <button class="action-btn delete-btn" onclick="deleteAffiche('lasagnes')">🗑️</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="item" data-status="archivee">
-                <div class="item-icon category-epicerie">🍯</div>
-                <div class="item-info">
-                    <h4>Miel de lavande</h4>
-                    <p>12.90€/unité • Provence</p>
-                    <p class="item-dates">28/06 → 05/07</p>
-                </div>
-                <div class="item-actions">
-                    <span class="status-badge status-archivee">Archivée</span>
-                    <div class="item-actions-buttons">
-                        <button class="action-btn edit-btn" onclick="editAffiche('miel')">✏️</button>
-                        <button class="action-btn delete-btn" onclick="deleteAffiche('miel')">🗑️</button>
-                    </div>
-                </div>
+            <div class="empty-state">
+                Aucune affiche créée pour le moment.<br>
+                Cliquez sur le bouton + pour créer votre première affiche !
             </div>
         </div>
 
-        <button class="fab" onclick="openModal()">+</button>
-    </div>
-
-    <!-- Modal de création -->
-    <div id="createModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>📝 Nouvelle affiche</h3>
-                <span class="close" onclick="closeModal()">&times;</span>
+        <!-- Notifications -->
+        <div id="notifications" class="tab-content">
+            <div class="filter-section">
+                <h4>🔔 Gestion des notifications</h4>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-notif-filter="emails">📧 Emails</button>
+                    <button class="filter-btn" data-notif-filter="sms">📱 SMS</button>
+                    <button class="filter-btn" data-notif-filter="settings">⚙️ Config</button>
+                </div>
             </div>
-            
-            <form id="createForm">
-                <div class="form-group">
-                    <label for="libelle">Libellé</label>
-                    <input type="text" id="libelle" name="libelle" placeholder="Ex: Pommes Golden">
-                </div>
 
-                <div class="form-group">
-                    <label for="famille">Famille du produit</label>
-                    <select id="famille" name="famille">
-                        <option value="">Sélectionnez une famille</option>
-                        <option value="fruits-legumes">🍎 Fruits & légumes</option>
-                        <option value="traiteur">🥘 Traiteur</option>
-                        <option value="boucherie">🥩 Boucherie</option>
-                        <option value="cremerie">🧀 Crémerie</option>
-                        <option value="epicerie">🛒 Epicerie</option>
-                        <option value="boulangerie">🥖 Boulangerie & pâtisserie</option>
-                        <option value="autre">📦 Autre</option>
-                    </select>
+            <div id="emails-section" class="notif-section">
+                <div class="search-bar">
+                    <input type="text" id="email-search" placeholder="Rechercher un contact...">
                 </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="dateDebut">Date de début</label>
-                        <input type="date" id="dateDebut" name="dateDebut">
-                    </div>
-                    <div class="form-group">
-                        <label for="dateFin">Date de fin</label>
-                        <input type="date" id="dateFin" name="dateFin">
+                
+                <div class="contacts-list">
+                    <div class="empty-state">
+                        Aucun contact email configuré
                     </div>
                 </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="prix">Prix de vente</label>
-                        <input type="number" id="prix" name="prix" step="0.01" placeholder="0.00">
-                    </div>
-                    <div class="form-group">
-                        <label for="unite">Unité de vente</label>
-                        <select id="unite" name="unite">
-                            <option value="kg">Kg</option>
-                            <option value="unite">Unité</option>
-                            <option value="autre">Autre</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="origine">Origine du produit</label>
-                    <input type="text" id="origine" name="origine" placeholder="Ex: France, Local, Import">
-                </div>
-
-                <button type="submit" class="btn">✅ Créer l'affiche</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal de création de contact -->
-    <div id="contactModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>👤 Nouveau contact</h3>
-                <span class="close" onclick="closeContactModal()">&times;</span>
             </div>
-            
-            <form id="contactForm">
-                <div class="form-group">
-                    <label for="contactType">Type de contact</label>
-                    <select id="contactType" name="contactType" onchange="toggleContactFields()">
-                        <option value="email">📧 Email</option>
-                        <option value="sms">📱 SMS</option>
-                        <option value="both">📧📱 Email + SMS</option>
-                    </select>
-                </div>
 
-                <div class="form-group">
-                    <label for="contactName">Nom complet</label>
-                    <input type="text" id="contactName" name="contactName" placeholder="Ex: Sophie Martin">
-                </div>
-
-                <div class="form-group" id="emailField">
-                    <label for="contactEmail">Adresse email</label>
-                    <input type="email" id="contactEmail" name="contactEmail" placeholder="sophie.martin@exemple.fr">
-                </div>
-
-                <div class="form-group" id="smsField" style="display:none;">
-                    <label for="contactPhone">Numéro de téléphone</label>
-                    <input type="tel" id="contactPhone" name="contactPhone" placeholder="+33 6 12 34 56 78">
-                </div>
-
-                <div class="form-group">
-                    <label for="contactRole">Rôle</label>
-                    <select id="contactRole" name="contactRole">
-                        <option value="manager">👔 Manager</option>
-                        <option value="admin">⚙️ Administrateur</option>
-                        <option value="commercial">💼 Commercial</option>
-                        <option value="employee">👤 Employé</option>
-                        <option value="other">📋 Autre</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="priority">Priorité des notifications</label>
-                    <select id="priority" name="priority">
-                        <option value="normal">🔵 Normale</option>
-                        <option value="urgent">🔴 Urgente</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" id="activeByDefault" name="activeByDefault" checked>
-                        Activer les notifications par défaut
-                    </label>
-                </div>
-
-                <button type="submit" class="btn">✅ Ajouter le contact</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Firebase SDKs -->
-    <script type="module">
-        // Import Firebase modules
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
-        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
-        import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging.js';
-
-        // Configuration Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyAtZUiFPFrqU-PiMpIOrPIwrjJLv_NsKRU",
-            authDomain: "gestion-affichage-publicitaire.firebaseapp.com",
-            projectId: "gestion-affichage-publicitaire",
-            storageBucket: "gestion-affichage-publicitaire.firebasestorage.app",
-            messagingSenderId: "715445646165",
-            appId: "1:715445646165:web:4da37e196e6a772f0735dc"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        // const messaging = getMessaging(app); // Décommenter quand les notifications seront configurées
-
-        // Variables globales
-        window.firebaseAuth = auth;
-        window.firebaseDB = db;
-        window.currentUser = null;
-
-        // Vérifier l'état de connexion
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                window.currentUser = user;
-                document.getElementById('loginModal').style.display = 'none';
-                document.getElementById('appContainer').style.display = 'block';
-                loadAllData();
-            } else {
-                window.currentUser = null;
-                document.getElementById('loginModal').style.display = 'block';
-                document.getElementById('appContainer').style.display = 'none';
-            }
-        });
-
-        // Connexion utilisateur
-        async function loginUser() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-                document.getElementById('loginError').style.display = 'none';
-            } catch (error) {
-                document.getElementById('loginError').textContent = 'Erreur de connexion : ' + error.message;
-                document.getElementById('loginError').style.display = 'block';
-            }
-        }
-
-        // Déconnexion utilisateur
-        async function logoutUser() {
-            try {
-                await signOut(auth);
-            } catch (error) {
-                console.error('Erreur déconnexion:', error);
-            }
-        }
-
-        // Charger toutes les données
-        async function loadAllData() {
-            await loadAffiches();
-            await loadContacts();
-            updateDashboard();
-        }
-
-        // Charger les affiches
-        async function loadAffiches() {
-            try {
-                const q = query(collection(db, 'affiches'), orderBy('dateCreation', 'desc'));
-                const querySnapshot = await getDocs(q);
-                const affiches = [];
-                
-                querySnapshot.forEach((doc) => {
-                    affiches.push({ id: doc.id, ...doc.data() });
-                });
-                
-                displayAffiches(affiches);
-                updateDashboardStats(affiches);
-            } catch (error) {
-                console.error('Erreur chargement affiches:', error);
-            }
-        }
-
-        // Sauvegarder une affiche
-        async function saveAffiche(affiche) {
-            try {
-                const docRef = await addDoc(collection(db, 'affiches'), {
-                    ...affiche,
-                    dateCreation: serverTimestamp(),
-                    utilisateurId: window.currentUser.uid
-                });
-                console.log('Affiche sauvée avec ID:', docRef.id);
-                await loadAffiches();
-                return docRef.id;
-            } catch (error) {
-                console.error('Erreur sauvegarde affiche:', error);
-                throw error;
-            }
-        }
-
-        // Modifier une affiche
-        async function updateAffiche(id, affiche) {
-            try {
-                await updateDoc(doc(db, 'affiches', id), {
-                    ...affiche,
-                    dateModification: serverTimestamp()
-                });
-                console.log('Affiche modifiée:', id);
-                await loadAffiches();
-            } catch (error) {
-                console.error('Erreur modification affiche:', error);
-                throw error;
-            }
-        }
-
-        // Supprimer une affiche
-        async function deleteAffiches(id) {
-            try {
-                await deleteDoc(doc(db, 'affiches', id));
-                console.log('Affiche supprimée:', id);
-                await loadAffiches();
-            } catch (error) {
-                console.error('Erreur suppression affiche:', error);
-                throw error;
-            }
-        }
-
-        // Charger les contacts
-        async function loadContacts() {
-            try {
-                // Charger contacts email
-                const emailQuery = query(collection(db, 'contacts_email'), orderBy('nom', 'asc'));
-                const emailSnapshot = await getDocs(emailQuery);
-                const contactsEmail = [];
-                
-                emailSnapshot.forEach((doc) => {
-                    contactsEmail.push({ id: doc.id, ...doc.data() });
-                });
-                
-                // Charger contacts SMS
-                const smsQuery = query(collection(db, 'contacts_sms'), orderBy('nom', 'asc'));
-                const smsSnapshot = await getDocs(smsQuery);
-                const contactsSMS = [];
-                
-                smsSnapshot.forEach((doc) => {
-                    contactsSMS.push({ id: doc.id, ...doc.data() });
-                });
-                
-                displayContacts(contactsEmail, contactsSMS);
-            } catch (error) {
-                console.error('Erreur chargement contacts:', error);
-            }
-        }
-
-        // Sauvegarder un contact
-        async function saveContact(contact, type) {
-            try {
-                const collectionName = type === 'email' ? 'contacts_email' : 'contacts_sms';
-                const docRef = await addDoc(collection(db, collectionName), {
-                    ...contact,
-                    dateCreation: serverTimestamp(),
-                    utilisateurId: window.currentUser.uid
-                });
-                console.log('Contact sauvé avec ID:', docRef.id);
-                await loadContacts();
-                return docRef.id;
-            } catch (error) {
-                console.error('Erreur sauvegarde contact:', error);
-                throw error;
-            }
-        }
-
-        // Modifier un contact
-        async function updateContact(id, contact, type) {
-            try {
-                const collectionName = type === 'email' ? 'contacts_email' : 'contacts_sms';
-                await updateDoc(doc(db, collectionName, id), {
-                    ...contact,
-                    dateModification: serverTimestamp()
-                });
-                console.log('Contact modifié:', id);
-                await loadContacts();
-            } catch (error) {
-                console.error('Erreur modification contact:', error);
-                throw error;
-            }
-        }
-
-        // Supprimer un contact
-        async function deleteContacts(id, type) {
-            try {
-                const collectionName = type === 'email' ? 'contacts_email' : 'contacts_sms';
-                await deleteDoc(doc(db, collectionName, id));
-                console.log('Contact supprimé:', id);
-                await loadContacts();
-            } catch (error) {
-                console.error('Erreur suppression contact:', error);
-                throw error;
-            }
-        }
-
-        // Mettre à jour le dashboard
-        function updateDashboardStats(affiches) {
-            const stats = {
-                enDiffusion: 0,
-                aCreer: 0,
-                programmees: 0,
-                archivees: 0
-            };
-            
-            affiches.forEach(affiche => {
-                switch(affiche.statut) {
-                    case 'en-diffusion':
-                        stats.enDiffusion++;
-                        break;
-                    case 'a-creer':
-                        stats.aCreer++;
-                        break;
-                    case 'programmee':
-                        stats.programmees++;
-                        break;
-                    case 'archivee':
-                        stats.archivees++;
-                        break;
-                }
-            });
-            
-            // Mettre à jour les cartes du dashboard
-            const statCards = document.querySelectorAll('.stat-card h3');
-            if (statCards.length >= 4) {
-                statCards[0].textContent = stats.enDiffusion;
-                statCards[1].textContent = stats.aCreer;
-                statCards[2].textContent = stats.programmees;
-                statCards[3].textContent = stats.archivees;
-            }
-            
-            // Mettre à jour la liste des affiches en diffusion
-            updateDashboardList(affiches.filter(a => a.statut === 'en-diffusion'));
-        }
-
-        // Mettre à jour la liste du dashboard
-        function updateDashboardList(affiches) {
-            const container = document.querySelector('.recent-items');
-            const existingItems = container.querySelectorAll('.item');
-            
-            // Supprimer les anciens éléments
-            existingItems.forEach(item => item.remove());
-            
-            // Ajouter les nouvelles affiches
-            affiches.slice(0, 5).forEach(affiche => {
-                const item = createAfficheItem(affiche, true);
-                container.appendChild(item);
-            });
-        }
-
-        // Envoyer notification email
-        async function sendEmailNotification(subject, message, contacts) {
-            try {
-                // Simulation d'envoi d'email
-                // Dans un vrai projet, vous utiliseriez une API comme EmailJS ou un service backend
-                const emailData = {
-                    subject: subject,
-                    message: message,
-                    contacts: contacts,
-                    timestamp: new Date().toISOString()
-                };
-                
-                // Sauvegarder dans l'historique des notifications
-                await addDoc(collection(db, 'notifications_history'), {
-                    ...emailData,
-                    type: 'email',
-                    userId: window.currentUser.uid,
-                    dateEnvoi: serverTimestamp()
-                });
-                
-                console.log('Notification email envoyée:', emailData);
-                return true;
-            } catch (error) {
-                console.error('Erreur envoi email:', error);
-                return false;
-            }
-        }
-
-        // Envoyer notification SMS
-        async function sendSMSNotification(message, contacts) {
-            try {
-                // Simulation d'envoi de SMS
-                // Dans un vrai projet, vous utiliseriez une API comme Twilio
-                const smsData = {
-                    message: message,
-                    contacts: contacts,
-                    timestamp: new Date().toISOString()
-                };
-                
-                // Sauvegarder dans l'historique des notifications
-                await addDoc(collection(db, 'notifications_history'), {
-                    ...smsData,
-                    type: 'sms',
-                    userId: window.currentUser.uid,
-                    dateEnvoi: serverTimestamp()
-                });
-                
-                console.log('Notification SMS envoyée:', smsData);
-                return true;
-            } catch (error) {
-                console.error('Erreur envoi SMS:', error);
-                return false;
-            }
-        }
-
-        // Exposer les fonctions globalement
-        window.loginUser = loginUser;
-        window.logoutUser = logoutUser;
-        window.saveAffiche = saveAffiche;
-        window.updateAffiche = updateAffiche;
-        window.deleteAffiches = deleteAffiches;
-        window.saveContact = saveContact;
-        window.updateContact = updateContact;
-        window.deleteContacts = deleteContacts;
-        window.loadAffiches = loadAffiches;
-        window.loadContacts = loadContacts;
-        window.sendEmailNotification = sendEmailNotification;
-        window.sendSMSNotification = sendSMSNotification;
-        window.allAffiches = [];
-        window.allContactsEmail = [];
-        window.allContactsSMS = [];
-    </script>
-
-    <script>
-        // Variables globales pour les données
-        let currentEditingId = null;
-        let currentEditingType = null;
-
-        // Créer un élément d'affiche
-        function createAfficheItem(affiche, isDashboard = false) {
-            const item = document.createElement('div');
-            item.className = 'item';
-            item.setAttribute('data-status', affiche.statut);
-            
-            const familleClass = getFamilleClass(affiche.famille);
-            const familleIcon = getFamilleIcon(affiche.famille);
-            
-            const dateDebut = affiche.dateDebut ? new Date(affiche.dateDebut).toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit'}) : '';
-            const dateFin = affiche.dateFin ? new Date(affiche.dateFin).toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit'}) : '';
-            
-            item.innerHTML = `
-                <div class="item-icon ${familleClass}">${familleIcon}</div>
-                <div class="item-info">
-                    <h4>${affiche.libelle}</h4>
-                    <p>${affiche.prix}€/${affiche.unite} • ${affiche.origine}</p>
-                    ${!isDashboard ? `<p class="item-dates">${dateDebut} → ${dateFin}</p>` : ''}
-                </div>
-                ${isDashboard ? 
-                    `<span class="status-badge status-${affiche.statut}">${getStatusLabel(affiche.statut)}</span>` :
-                    `<div class="item-actions">
-                        <span class="status-badge status-${affiche.statut}">${getStatusLabel(affiche.statut)}</span>
-                        <div class="item-actions-buttons">
-                            <button class="action-btn edit-btn" onclick="editAffiche('${affiche.id}')">✏️</button>
-                            <button class="action-btn delete-btn" onclick="deleteAffiche('${affiche.id}')">🗑️</button>
-                        </div>
-                    </div>`
-                }
-            `;
-            
-            return item;
-        }
-
-        // Créer un élément de contact
-        function createContactItem(contact, type) {
-            const item = document.createElement('div');
-            item.className = 'contact-item';
-            
-            const icon = type === 'email' ? '👤' : '📱';
-            const contactInfo = type === 'email' ? contact.email : contact.telephone;
-            
-            item.innerHTML = `
-                <div class="contact-icon">${icon}</div>
-                <div class="contact-info">
-                    <h4>${contact.nom}</h4>
-                    <p>${contactInfo}</p>
-                    <div class="contact-tags">
-                        <span class="tag tag-${contact.role}">${getRoleLabel(contact.role)}</span>
-                        ${contact.priorite === 'urgent' ? '<span class="tag tag-urgent">Urgent</span>' : ''}
-                    </div>
-                </div>
-                <div class="contact-actions">
-                    <label class="toggle">
-                        <input type="checkbox" ${contact.actif ? 'checked' : ''} onchange="toggleContact('${contact.id}', '${type}', this.checked)">
-                        <span class="slider"></span>
-                    </label>
-                    <button class="action-btn edit-btn" onclick="editContact('${contact.id}', '${type}')">✏️</button>
-                    <button class="action-btn delete-btn" onclick="deleteContact('${contact.id}', '${type}')">🗑️</button>
-                </div>
-            `;
-            
-            return item;
-        }
-
-        // Fonctions utilitaires
-        function getFamilleClass(famille) {
-            const classes = {
-                'fruits-legumes': 'category-fruits',
-                'traiteur': 'category-traiteur',
-                'boucherie': 'category-boucherie',
-                'cremerie': 'category-cremerie',
-                'epicerie': 'category-epicerie',
-                'boulangerie': 'category-boulangerie'
-            };
-            return classes[famille] || 'category-autre';
-        }
-
-        function getFamilleIcon(famille) {
-            const icons = {
-                'fruits-legumes': '🍎',
-                'traiteur': '🥘',
-                'boucherie': '🥩',
-                'cremerie': '🧀',
-                'epicerie': '🍯',
-                'boulangerie': '🥖'
-            };
-            return icons[famille] || '📦';
-        }
-
-        function getStatusLabel(statut) {
-            const labels = {
-                'a-creer': 'À créer',
-                'programmee': 'Programmée',
-                'en-diffusion': 'En diffusion',
-                'archivee': 'Archivée'
-            };
-            return labels[statut] || statut;
-        }
-
-        function getRoleLabel(role) {
-            const labels = {
-                'manager': 'Manager',
-                'admin': 'Admin',
-                'commercial': 'Commercial',
-                'employee': 'Employé'
-            };
-            return labels[role] || role;
-        }
-        function showTab(tabName) {
-            // Cache tous les contenus
-            const contents = document.querySelectorAll('.tab-content');
-            contents.forEach(content => content.classList.remove('active'));
-            
-            // Désactive tous les onglets
-            const tabs = document.querySelectorAll('.tab');
-            tabs.forEach(tab => tab.classList.remove('active'));
-            
-            // Active l'onglet et le contenu sélectionnés
-            document.getElementById(tabName).classList.add('active');
-            event.target.closest('.tab').classList.add('active');
-        }
-
-        function openModal() {
-            document.getElementById('createModal').style.display = 'block';
-        }
-
-        function closeModal() {
-            document.getElementById('createModal').style.display = 'none';
-        }
-
-        // Fermer le modal en cliquant en dehors
-        window.onclick = function(event) {
-            const modal = document.getElementById('createModal');
-            const contactModal = document.getElementById('contactModal');
-            if (event.target == contactModal) {
-                contactModal.style.display = 'none';
-            }
-        }
-
-        // Simuler la soumission du formulaire
-        document.getElementById('createForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const affiche = {
-                libelle: formData.get('libelle'),
-                famille: formData.get('famille'),
-                dateDebut: formData.get('dateDebut'),
-                dateFin: formData.get('dateFin'),
-                prix: parseFloat(formData.get('prix')),
-                unite: formData.get('unite'),
-                origine: formData.get('origine'),
-                statut: 'a-creer'
-            };
-            
-            try {
-                if (currentEditingType === 'affiche' && currentEditingId) {
-                    // Modification
-                    await window.updateAffiche(currentEditingId, affiche);
-                    alert('🎉 Affiche modifiée avec succès!');
-                    
-                    // Notification de modification
-                    const contactsActifs = window.allContactsEmail.filter(c => c.actif);
-                    if (contactsActifs.length > 0) {
-                        await window.sendEmailNotification(
-                            'Affiche modifiée',
-                            `L'affiche "${affiche.libelle}" a été modifiée.`,
-                            contactsActifs
-                        );
-                    }
-                } else {
-                    // Création
-                    await window.saveAffiche(affiche);
-                    alert('🎉 Affiche créée avec succès!\nStatut: "À créer"');
-                    
-                    // Notification de création
-                    const contactsActifs = window.allContactsEmail.filter(c => c.actif);
-                    if (contactsActifs.length > 0) {
-                        await window.sendEmailNotification(
-                            'Nouvelle affiche créée',
-                            `Une nouvelle affiche "${affiche.libelle}" a été créée.`,
-                            contactsActifs
-                        );
-                    }
-                }
-                
-                closeModal();
-                this.reset();
-                resetModalState();
-            } catch (error) {
-                alert('❌ Erreur lors de la sauvegarde: ' + error.message);
-            }
-        });
-
-        // Définir la date par défaut (aujourd'hui)
-        document.getElementById('dateDebut').valueAsDate = new Date();
-        
-        // Définir la date de fin par défaut (dans 7 jours)
-        const dateFin = new Date();
-        dateFin.setDate(dateFin.getDate() + 7);
-        document.getElementById('dateFin').valueAsDate = dateFin;
-
-        // Navigation de l'agenda par semaine
-        let currentWeekStart = new Date(2025, 6, 8); // 8 juillet 2025
-
-        function changeWeek(direction) {
-            currentWeekStart.setDate(currentWeekStart.getDate() + (direction * 7));
-            updateWeekHeader();
-        }
-
-        function updateWeekHeader() {
-            const weekEnd = new Date(currentWeekStart);
-            weekEnd.setDate(weekEnd.getDate() + 6);
-            
-            const months = [
-                'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-                'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
-            ];
-            
-            const startDay = currentWeekStart.getDate();
-            const endDay = weekEnd.getDate();
-            const month = months[currentWeekStart.getMonth()];
-            const year = currentWeekStart.getFullYear();
-            
-            const weekRange = `${startDay} - ${endDay} ${month} ${year}`;
-            document.getElementById('currentWeek').textContent = weekRange;
-        }
-
-        // Gestion des filtres de l'onglet Affiches
-        function filterAffiches(status) {
-            const items = document.querySelectorAll('#affiches .item');
-            const filterBtns = document.querySelectorAll('.filter-btn-affiches');
-            
-            // Mettre à jour les boutons actifs
-            filterBtns.forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`.filter-btn-affiches[data-filter="${status}"]`).classList.add('active');
-            
-            // Filtrer les éléments
-            items.forEach(item => {
-                if (status === 'all' || item.dataset.status === status) {
-                    item.classList.remove('hidden');
-                } else {
-                    item.classList.add('hidden');
-                }
-            });
-        }
-
-        // Ajouter les événements aux boutons de filtre des affiches
-        document.querySelectorAll('.filter-btn-affiches').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const filterValue = this.dataset.filter;
-                filterAffiches(filterValue);
-            });
-        });
-
-        // Fonctions d'édition et suppression
-        function editAffiche(id) {
-            alert(`✏️ Éditer l'affiche: ${id}\n\nCette fonction ouvrirait un formulaire de modification avec les données pré-remplies.`);
-        }
-
-        function deleteAffiche(id) {
-            if (confirm(`🗑️ Êtes-vous sûr de vouloir supprimer cette affiche ?\n\nCette action est irréversible.`)) {
-                alert(`✅ Affiche "${id}" supprimée avec succès !`);
-                // Ici vous supprimeriez l'élément de la liste
-            }
-        }
-
-        // Gestion des notifications
-        function openContactModal() {
-            document.getElementById('contactModal').style.display = 'block';
-        }
-
-        function closeContactModal() {
-            document.getElementById('contactModal').style.display = 'none';
-        }
-
-        function toggleContactFields() {
-            const type = document.getElementById('contactType').value;
-            const emailField = document.getElementById('emailField');
-            const smsField = document.getElementById('smsField');
-            
-            emailField.style.display = (type === 'email' || type === 'both') ? 'block' : 'none';
-            smsField.style.display = (type === 'sms' || type === 'both') ? 'block' : 'none';
-        }
-
-        // Gestion des filtres de notifications
-        document.querySelectorAll('[data-notif-filter]').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const filter = this.dataset.notifFilter;
-                
-                // Mettre à jour les boutons actifs
-                document.querySelectorAll('[data-notif-filter]').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                
-                // Afficher/masquer les sections
-                document.querySelectorAll('.notif-section').forEach(section => {
-                    section.style.display = 'none';
-                });
-                document.getElementById(filter + '-section').style.display = 'block';
-            });
-        });
-
-        // Soumission du formulaire de contact
-        document.getElementById('contactForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const contact = {
-                nom: formData.get('contactName'),
-                role: formData.get('contactRole'),
-                priorite: formData.get('priority'),
-                actif: formData.get('activeByDefault') === 'on'
-            };
-            
-            const type = formData.get('contactType');
-            
-            try {
-                if (type === 'email' || type === 'both') {
-                    const contactEmail = {
-                        ...contact,
-                        email: formData.get('contactEmail')
-                    };
-                    await window.saveContact(contactEmail, 'email');
-                }
-                
-                if (type === 'sms' || type === 'both') {
-                    const contactSMS = {
-                        ...contact,
-                        telephone: formData.get('contactPhone')
-                    };
-                    await window.saveContact(contactSMS, 'sms');
-                }
-                
-                alert(`🎉 Contact "${contact.nom}" ajouté avec succès!\nType: ${type}`);
-                closeContactModal();
-                this.reset();
-                toggleContactFields();
-            } catch (error) {
-                alert('❌ Erreur lors de l\'ajout: ' + error.message);
-            }
-        });
-
-        // Fonctions d'affichage des données
-        function displayAffiches(affiches) {
-            window.allAffiches = affiches;
-            
-            // Afficher dans l'onglet Affiches
-            const affichesContainer = document.querySelector('#affiches');
-            const existingItems = affichesContainer.querySelectorAll('.item');
-            
-            // Supprimer les anciens éléments (sauf search-bar et filter-section)
-            existingItems.forEach(item => item.remove());
-            
-            // Ajouter les nouvelles affiches
-            affiches.forEach(affiche => {
-                const item = createAfficheItem(affiche, false);
-                affichesContainer.appendChild(item);
-            });
-            
-            // Réappliquer les filtres
-            const activeFilter = document.querySelector('.filter-btn-affiches.active');
-            if (activeFilter) {
-                filterAffiches(activeFilter.dataset.filter);
-            }
-        }
-
-        function displayContacts(contactsEmail, contactsSMS) {
-            window.allContactsEmail = contactsEmail;
-            window.allContactsSMS = contactsSMS;
-            
-            // Afficher les contacts email
-            const emailContainer = document.querySelector('#emails-section .contacts-list');
-            emailContainer.innerHTML = '';
-            
-            contactsEmail.forEach(contact => {
-                const item = createContactItem(contact, 'email');
-                emailContainer.appendChild(item);
-            });
-            
-            // Afficher les contacts SMS
-            const smsContainer = document.querySelector('#sms-section .contacts-list');
-            smsContainer.innerHTML = '';
-            
-            contactsSMS.forEach(contact => {
-                const item = createContactItem(contact, 'sms');
-                smsContainer.appendChild(item);
-            });
-        }
-
-        // Fonctions d'édition
-        function editAfficheFunc(id) {
-            const affiche = window.allAffiches.find(a => a.id === id);
-            if (!affiche) return;
-            
-            currentEditingId = id;
-            currentEditingType = 'affiche';
-            
-            // Remplir le formulaire
-            document.getElementById('libelle').value = affiche.libelle;
-            document.getElementById('famille').value = affiche.famille;
-            document.getElementById('dateDebut').value = affiche.dateDebut;
-            document.getElementById('dateFin').value = affiche.dateFin;
-            document.getElementById('prix').value = affiche.prix;
-            document.getElementById('unite').value = affiche.unite;
-            document.getElementById('origine').value = affiche.origine;
-            
-            // Changer le titre et le bouton du modal
-            document.querySelector('#createModal .modal-header h3').textContent = '✏️ Modifier l\'affiche';
-            document.querySelector('#createModal .btn').textContent = '💾 Modifier l\'affiche';
-            
-            openModal();
-        }
-
-        async function deleteAfficheFunc(id) {
-            const affiche = window.allAffiches.find(a => a.id === id);
-            if (!affiche) return;
-            
-            if (confirm(`🗑️ Êtes-vous sûr de vouloir supprimer l'affiche "${affiche.libelle}" ?\n\nCette action est irréversible.`)) {
-                try {
-                    await window.deleteAffiches(id);
-                    
-                    // Envoyer notification de suppression
-                    const contactsActifs = window.allContactsEmail.filter(c => c.actif);
-                    if (contactsActifs.length > 0) {
-                        await window.sendEmailNotification(
-                            'Affiche supprimée',
-                            `L'affiche "${affiche.libelle}" a été supprimée.`,
-                            contactsActifs
-                        );
-                    }
-                    
-                    alert(`✅ Affiche "${affiche.libelle}" supprimée avec succès !`);
-                } catch (error) {
-                    alert('❌ Erreur lors de la suppression: ' + error.message);
-                }
-            }
-        }
-
-        function editContactFunc(id, type) {
-            const contacts = type === 'email' ? window.allContactsEmail : window.allContactsSMS;
-            const contact = contacts.find(c => c.id === id);
-            if (!contact) return;
-            
-            currentEditingId = id;
-            currentEditingType = type;
-            
-            // Remplir le formulaire
-            document.getElementById('contactType').value = type;
-            document.getElementById('contactName').value = contact.nom;
-            document.getElementById('contactRole').value = contact.role;
-            document.getElementById('priority').value = contact.priorite;
-            document.getElementById('activeByDefault').checked = contact.actif;
-            
-            if (type === 'email') {
-                document.getElementById('contactEmail').value = contact.email;
-            } else {
-                document.getElementById('contactPhone').value = contact.telephone;
-            }
-            
-            // Changer le titre et le bouton du modal
-            document.querySelector('#contactModal .modal-header h3').textContent = '✏️ Modifier le contact';
-            document.querySelector('#contactModal .btn').textContent = '💾 Modifier le contact';
-            
-            toggleContactFields();
-            openContactModal();
-        }
-
-        async function deleteContactFunc(id, type) {
-            const contacts = type === 'email' ? window.allContactsEmail : window.allContactsSMS;
-            const contact = contacts.find(c => c.id === id);
-            if (!contact) return;
-            
-            if (confirm(`🗑️ Supprimer le contact "${contact.nom}" ?\n\nCette action est irréversible.`)) {
-                try {
-                    await window.deleteContacts(id, type);
-                    alert(`✅ Contact "${contact.nom}" supprimé !`);
-                } catch (error) {
-                    alert('❌ Erreur lors de la suppression: ' + error.message);
-                }
-            }
-        }
-
-        // Redéfinir les fonctions globales
-        window.editAffiche = editAfficheFunc;
-        window.deleteAffiche = deleteAfficheFunc;
-        window.editContact = editContactFunc;
-        window.deleteContact = deleteContactFunc;
-
-        // Fonctions de gestion des contacts
-        function editContact(id) {
-            alert(`✏️ Éditer le contact: ${id}\n\nCette fonction ouvrirait le formulaire de modification.`);
-        }
-
-        function deleteContact(id) {
-            if (confirm(`🗑️ Supprimer ce contact ?\n\nCette action est irréversible.`)) {
-                alert(`✅ Contact "${id}" supprimé !`);
-                // TODO: Implémenter la suppression dans Firebase
-            }
-        }
-    </script>
-</body>
-</html>
+            <div id="sms-section" class="notif-section" style="display:none;">
+                <div

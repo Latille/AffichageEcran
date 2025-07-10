@@ -1,0 +1,2166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion Affichage Publicitaire</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 420px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .tab-icon {
+            font-size: 18px;
+        }
+
+        .tab-text {
+            font-size: 12px;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+            height: calc(100vh - 140px);
+            overflow-y: auto;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 10px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .recent-items {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .recent-items h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: linear-gradient(135deg, #fef7ff 0%, #fdf2f8 100%);
+            color: #333;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .item:nth-child(even) {
+            background: linear-gradient(135deg, #f8faff 0%, #f1f5f9 100%);
+        }
+
+        .item-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-info h4 {
+            font-size: 14px;
+            margin-bottom: 3px;
+            color: #333;
+        }
+
+        .item-info p {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .status-a-creer {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-programmee {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-en-diffusion {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-archivee {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e9ecef;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 25px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -22px;
+            top: 20px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #667eea;
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px #667eea;
+        }
+
+        .timeline-item h4 {
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .timeline-item p {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .timeline-date {
+            font-size: 11px;
+            color: #999;
+            font-weight: 500;
+        }
+
+        .timeline-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+        }
+
+        .search-bar {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 12px 40px 12px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 14px;
+        }
+
+        .search-bar::after {
+            content: "🔍";
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+        }
+
+        .category-fruits { background: #4CAF50; }
+        .category-traiteur { background: #FF9800; }
+        .category-boucherie { background: #F44336; }
+        .category-cremerie { background: #2196F3; }
+        .category-epicerie { background: #9C27B0; }
+        .category-boulangerie { background: #FF5722; }
+        .category-autre { background: #607D8B; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 90%;
+            width: 350px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #333;
+        }
+
+        .close {
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-right: 8px;
+        }
+
+        .badge-prix {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .badge-origine {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .filter-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filter-section h4 {
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 3px;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #e9ecef;
+            background: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: capitalize;
+        }
+
+        .filter-btn.active,
+        .filter-btn:hover {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+
+        .filter-btn-affiches {
+            padding: 6px 8px;
+            border: 2px solid #e9ecef;
+            background: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: capitalize;
+            white-space: nowrap;
+        }
+
+        .filter-btn-affiches.active,
+        .filter-btn-affiches:hover {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+
+        .timeline-item.hidden {
+            display: none;
+        }
+
+        .item.hidden {
+            display: none;
+        }
+
+        .item-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .item-actions-buttons {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .edit-btn {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .edit-btn:hover {
+            background: #1976d2;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .delete-btn {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+
+        .delete-btn:hover {
+            background: #d32f2f;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .agenda-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 0 10px;
+        }
+
+        .agenda-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .nav-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: #5a67d8;
+            transform: scale(1.1);
+        }
+
+        .alerts-section {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .alert-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .alert-dot {
+            font-size: 12px;
+        }
+
+        .alert-text {
+            font-size: 13px;
+            color: #856404;
+            font-weight: 500;
+        }
+
+        .agenda-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .agenda-day {
+            background: white;
+            border-radius: 10px;
+            padding: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            border: 2px solid transparent;
+        }
+
+        .agenda-day.today {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%);
+        }
+
+        .day-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .day-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .day-date {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .today-indicator {
+            background: #667eea;
+            color: white;
+            padding: 3px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 500;
+            margin-left: auto;
+        }
+
+        .alert-indicators {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            margin-left: auto;
+            background: #fff3cd;
+            padding: 3px 6px;
+            border-radius: 10px;
+            border: 1px solid #ffeaa7;
+        }
+
+        .alert-count {
+            font-size: 10px;
+            font-weight: 500;
+            color: #856404;
+        }
+
+        .day-events {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .event-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .event-item:hover {
+            background: #e9ecef;
+        }
+
+        .event-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+        }
+
+        .event-content {
+            flex: 1;
+        }
+
+        .event-content h4 {
+            margin: 0 0 2px 0;
+            font-size: 13px;
+            color: #333;
+        }
+
+        .event-content p {
+            margin: 0;
+            font-size: 11px;
+            color: #666;
+        }
+
+        .alert-events {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .alert-event {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 6px;
+            background: #fff3cd;
+            border-radius: 4px;
+            margin-bottom: 3px;
+            border: 1px solid #ffeaa7;
+        }
+
+        .alert-event-text {
+            font-size: 11px;
+            color: #856404;
+            font-weight: 500;
+        }
+
+        .status-debut {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .status-continue {
+            background: #2196F3;
+            color: white;
+        }
+
+        .status-termine {
+            background: #FF5722;
+            color: white;
+        }
+
+        .legend {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .legend h4 {
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        .notif-section {
+            margin-top: 15px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: linear-gradient(135deg, #fef7ff 0%, #fdf2f8 100%);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .contact-item:nth-child(even) {
+            background: linear-gradient(135deg, #f8faff 0%, #f1f5f9 100%);
+        }
+
+        .contact-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        .contact-info {
+            flex: 1;
+        }
+
+        .contact-info h4 {
+            font-size: 14px;
+            margin: 0 0 3px 0;
+            color: #333;
+        }
+
+        .contact-info p {
+            font-size: 12px;
+            color: #666;
+            margin: 0 0 6px 0;
+        }
+
+        .contact-tags {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .tag-manager {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .tag-admin {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .tag-commercial {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .tag-urgent {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+
+        .contact-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toggle {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #667eea;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        .settings-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .settings-card h4 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .setting-info h5 {
+            margin: 0 0 4px 0;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .setting-info p {
+            margin: 0;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .contacts-list {
+            margin-top: 15px;
+        }
+
+        .logout-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+
+        .alert-error {
+            background: #ffebee;
+            border: 1px solid #f8bbd9;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        #loginModal {
+            z-index: 2000;
+        }
+
+        #loginModal .modal-content {
+            width: 320px;
+        }
+    </style>
+</head>
+<body>
+    <div id="loginModal" class="modal" style="display:block;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🔐 Connexion</h3>
+            </div>
+            
+            <form id="loginForm" onsubmit="event.preventDefault(); loginUser();">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" name="loginEmail" required placeholder="votre@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="loginPassword">Mot de passe</label>
+                    <input type="password" id="loginPassword" name="loginPassword" required placeholder="••••••••">
+                </div>
+
+                <div id="loginError" class="alert-error" style="display:none;"></div>
+
+                <button type="submit" class="btn">🔓 Se connecter</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="appContainer" class="container" style="display:none;">
+        <div class="header">
+            <h1>📺 Gestion Affichage</h1>
+            <button onclick="logoutUser()" class="logout-btn">🚪 Déconnexion</button>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('dashboard')">
+                <div class="tab-icon">📊</div>
+                <div class="tab-text">Dashboard</div>
+            </div>
+            <div class="tab" onclick="showTab('planning')">
+                <div class="tab-icon">📅</div>
+                <div class="tab-text">Planning</div>
+            </div>
+            <div class="tab" onclick="showTab('affiches')">
+                <div class="tab-icon">📋</div>
+                <div class="tab-text">Affiches</div>
+            </div>
+            <div class="tab" onclick="showTab('notifications')">
+                <div class="tab-icon">🔔</div>
+                <div class="tab-text">Notifs</div>
+            </div>
+        </div>
+
+        <div id="dashboard" class="tab-content active">
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <h3>12</h3>
+                    <p>En diffusion</p>
+                </div>
+                <div class="stat-card">
+                    <h3>5</h3>
+                    <p>À créer</p>
+                </div>
+                <div class="stat-card">
+                    <h3>8</h3>
+                    <p>Programmées</p>
+                </div>
+                <div class="stat-card">
+                    <h3>142</h3>
+                    <p>Archivées</p>
+                </div>
+            </div>
+
+            <div class="recent-items">
+                <h3>📺 Affiches en diffusion</h3>
+                <div class="item">
+                    <div class="item-icon category-fruits">🍎</div>
+                    <div class="item-info">
+                        <h4>Pommes Golden</h4>
+                        <p>2.50€/kg • France • Expire le 15/07</p>
+                    </div>
+                    <span class="status-badge status-en-diffusion">En diffusion</span>
+                </div>
+                <div class="item">
+                    <div class="item-icon category-traiteur">🥘</div>
+                    <div class="item-info">
+                        <h4>Lasagnes maison</h4>
+                        <p>8.50€/kg • Maison • Expire le 14/07</p>
+                    </div>
+                    <span class="status-badge status-en-diffusion">En diffusion</span>
+                </div>
+                <div class="item">
+                    <div class="item-icon category-cremerie">🧀</div>
+                    <div class="item-info">
+                        <h4>Roquefort AOP</h4>
+                        <p>24.90€/kg • France • Expire le 16/07</p>
+                    </div>
+                    <span class="status-badge status-en-diffusion">En diffusion</span>
+                </div>
+                <div class="item">
+                    <div class="item-icon category-boucherie">🥩</div>
+                    <div class="item-info">
+                        <h4>Côte de bœuf</h4>
+                        <p>18.50€/kg • France • Expire le 12/07</p>
+                    </div>
+                    <span class="status-badge status-en-diffusion">En diffusion</span>
+                </div>
+                <div class="item">
+                    <div class="item-icon category-epicerie">🍯</div>
+                    <div class="item-info">
+                        <h4>Miel de lavande</h4>
+                        <p>12.90€/unité • Provence • Expire le 20/07</p>
+                    </div>
+                    <span class="status-badge status-en-diffusion">En diffusion</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="planning" class="tab-content">
+            <div class="agenda-header">
+                <button class="nav-btn" onclick="changeWeek(-1)">‹</button>
+                <h3 id="currentWeek">8 - 14 Juillet 2025</h3>
+                <button class="nav-btn" onclick="changeWeek(1)">›</button>
+            </div>
+            
+            <div class="alerts-section">
+                <div class="alert-item">
+                    <span class="alert-dot">🔴</span>
+                    <span class="alert-text">3 affiches à créer/programmer cette semaine</span>
+                </div>
+            </div>
+            
+            <div class="agenda-container">
+                <div class="agenda-day">
+                    <div class="day-title">
+                        <span class="day-name">Mardi</span>
+                        <span class="day-date">8 juillet</span>
+                    </div>
+                    <div class="day-events">
+                        <div class="event-item">
+                            <div class="event-icon category-traiteur">🥘</div>
+                            <div class="event-content">
+                                <h4>Lasagnes maison</h4>
+                                <p>8.50€/kg • Maison</p>
+                            </div>
+                            <span class="status-badge status-debut">Démarre</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="agenda-day today">
+                    <div class="day-title">
+                        <span class="day-name">Mercredi</span>
+                        <span class="day-date">9 juillet</span>
+                        <span class="today-indicator">Aujourd'hui</span>
+                    </div>
+                    <div class="day-events">
+                        <div class="event-item">
+                            <div class="event-icon category-fruits">🍎</div>
+                            <div class="event-content">
+                                <h4>Pommes Golden</h4>
+                                <p>2.50€/kg • France</p>
+                            </div>
+                            <span class="status-badge status-debut">Démarre</span>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-icon category-traiteur">🥘</div>
+                            <div class="event-content">
+                                <h4>Lasagnes maison</h4>
+                                <p>8.50€/kg • Maison</p>
+                            </div>
+                            <span class="status-badge status-continue">Continue</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="agenda-day">
+                    <div class="day-title">
+                        <span class="day-name">Jeudi</span>
+                        <span class="day-date">10 juillet</span>
+                    </div>
+                    <div class="day-events">
+                        <div class="event-item">
+                            <div class="event-icon category-fruits">🍎</div>
+                            <div class="event-content">
+                                <h4>Pommes Golden</h4>
+                                <p>2.50€/kg • France</p>
+                            </div>
+                            <span class="status-badge status-continue">Continue</span>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-icon category-traiteur">🥘</div>
+                            <div class="event-content">
+                                <h4>Lasagnes maison</h4>
+                                <p>8.50€/kg • Maison</p>
+                            </div>
+                            <span class="status-badge status-continue">Continue</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="agenda-day">
+                    <div class="day-title">
+                        <span class="day-name">Vendredi</span>
+                        <span class="day-date">11 juillet</span>
+                        <div class="alert-indicators">
+                            <span class="alert-dot">🔴</span>
+                            <span class="alert-count">2</span>
+                        </div>
+                    </div>
+                    <div class="day-events">
+                        <div class="event-item">
+                            <div class="event-icon category-fruits">🍎</div>
+                            <div class="event-content">
+                                <h4>Pommes Golden</h4>
+                                <p>2.50€/kg • France</p>
+                            </div>
+                            <span class="status-badge status-continue">Continue</span>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-icon category-traiteur">🥘</div>
+                            <div class="event-content">
+                                <h4>Lasagnes maison</h4>
+                                <p>8.50€/kg • Maison</p>
+                            </div>
+                            <span class="status-badge status-continue">Continue</span>
+                        </div>
+                        <div class="alert-events">
+                            <div class="alert-event">
+                                <span class="alert-dot">🔴</span>
+                                <span class="alert-event-text">🥖 Pain tradition (À créer)</span>
+                            </div>
+                            <div class="alert-event">
+                                <span class="alert-dot">🔴</span>
+                                <span class="alert-event-text">🥩 Steaks hachés (À créer)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="agenda-day">
+                    <div class="day-title">
+                        <span class="day-name">Samedi</span>
+                        <span class="day-date">12 juillet</span>
+                        <div class="alert-indicators">
+                            <span class="alert-dot">🔴</span>
+                            <span class="alert-count">1</span>
+                        </div>
+                    </div>
+                    <div class="day-events">
+                        <div class="event-item">
+                            <div class="event-icon category-fruits">🍎</div>
+                            <div class="event-content">
+                                <h4>Pommes Golden</h4>
+                                <p>2.50€/kg • France</p>
+                            </div>
+                            <span class="status-badge status-continue">Continue</span>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-icon category-traiteur">🥘</div>
+                            <div class="event-content">
+                                <h4>Lasagnes maison</h4>
+                                <p>8.50€/kg • Maison</p>
+                            </div>
+                            <span class="status-badge status-continue">Continue</span>
+                        </div>
+                        <div class="alert-events">
+                            <div class="alert-event">
+                                <span class="alert-dot">🔴</span>
+                                <span class="alert-event-text">🍯 Miel de lavande (À créer)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="agenda-day">
+                    <div class="day-title">
+                        <span class="day-name">Dimanche</span>
+                        <span class="day-date">13 juillet</span>
+                    </div>
+                    <div class="day-events">
+                        <div class="event-item">
+                            <div class="event-icon category-fruits">🍎</div>
+                            <div class="event-content">
+                                <h4>Pommes Golden</h4>
+                                <p>2.50€/kg • France</p>
+                            </div>
+                            <span class="status-badge status-continue">Continue</span>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-icon category-traiteur">🥘</div>
+                            <div class="event-content">
+                                <h4>Lasagnes maison</h4>
+                                <p>8.50€/kg • Maison</p>
+                            </div>
+                            <span class="status-badge status-continue">Continue</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="agenda-day">
+                    <div class="day-title">
+                        <span class="day-name">Lundi</span>
+                        <span class="day-date">14 juillet</span>
+                    </div>
+                    <div class="day-events">
+                        <div class="event-item">
+                            <div class="event-icon category-fruits">🍎</div>
+                            <div class="event-content">
+                                <h4>Pommes Golden</h4>
+                                <p>2.50€/kg • France</p>
+                            </div>
+                            <span class="status-badge status-continue">Continue</span>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-icon category-traiteur">🥘</div>
+                            <div class="event-content">
+                                <h4>Lasagnes maison</h4>
+                                <p>8.50€/kg • Maison</p>
+                            </div>
+                            <span class="status-badge status-termine">Se termine</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="notifications" class="tab-content">
+            <div class="filter-section">
+                <h4>🔔 Gestion des notifications</h4>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-notif-filter="emails">📧 Emails</button>
+                    <button class="filter-btn" data-notif-filter="sms">📱 SMS</button>
+                    <button class="filter-btn" data-notif-filter="settings">⚙️ Config</button>
+                </div>
+            </div>
+
+            <div id="emails-section" class="notif-section">
+                <div class="search-bar">
+                    <input type="text" id="email-search" placeholder="Rechercher un contact...">
+                </div>
+                
+                <div class="contacts-list">
+                    <div class="contact-item">
+                        <div class="contact-icon">👤</div>
+                        <div class="contact-info">
+                            <h4>Sophie Martin</h4>
+                            <p>sophie.martin@exemple.fr</p>
+                            <div class="contact-tags">
+                                <span class="tag tag-manager">Manager</span>
+                                <span class="tag tag-urgent">Urgent</span>
+                            </div>
+                        </div>
+                        <div class="contact-actions">
+                            <label class="toggle">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                            <button class="action-btn edit-btn" onclick="editContact('sophie')">✏️</button>
+                            <button class="action-btn delete-btn" onclick="deleteContact('sophie')">🗑️</button>
+                        </div>
+                    </div>
+
+                    <div class="contact-item">
+                        <div class="contact-icon">👤</div>
+                        <div class="contact-info">
+                            <h4>Marc Dubois</h4>
+                            <p>marc.dubois@exemple.fr</p>
+                            <div class="contact-tags">
+                                <span class="tag tag-admin">Admin</span>
+                            </div>
+                        </div>
+                        <div class="contact-actions">
+                            <label class="toggle">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                            <button class="action-btn edit-btn" onclick="editContact('marc')">✏️</button>
+                            <button class="action-btn delete-btn" onclick="deleteContact('marc')">🗑️</button>
+                        </div>
+                    </div>
+
+                    <div class="contact-item">
+                        <div class="contact-icon">👤</div>
+                        <div class="contact-info">
+                            <h4>Julie Lemoine</h4>
+                            <p>julie.lemoine@exemple.fr</p>
+                            <div class="contact-tags">
+                                <span class="tag tag-commercial">Commercial</span>
+                            </div>
+                        </div>
+                        <div class="contact-actions">
+                            <label class="toggle">
+                                <input type="checkbox">
+                                <span class="slider"></span>
+                            </label>
+                            <button class="action-btn edit-btn" onclick="editContact('julie')">✏️</button>
+                            <button class="action-btn delete-btn" onclick="deleteContact('julie')">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="sms-section" class="notif-section" style="display:none;">
+                <div class="search-bar">
+                    <input type="text" id="sms-search" placeholder="Rechercher un numéro...">
+                </div>
+                
+                <div class="contacts-list">
+                    <div class="contact-item">
+                        <div class="contact-icon">📱</div>
+                        <div class="contact-info">
+                            <h4>Sophie Martin</h4>
+                            <p>+33 6 12 34 56 78</p>
+                            <div class="contact-tags">
+                                <span class="tag tag-manager">Manager</span>
+                                <span class="tag tag-urgent">Urgent</span>
+                            </div>
+                        </div>
+                        <div class="contact-actions">
+                            <label class="toggle">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                            <button class="action-btn edit-btn" onclick="editContact('sophie-sms')">✏️</button>
+                            <button class="action-btn delete-btn" onclick="deleteContact('sophie-sms')">🗑️</button>
+                        </div>
+                    </div>
+
+                    <div class="contact-item">
+                        <div class="contact-icon">📱</div>
+                        <div class="contact-info">
+                            <h4>Marc Dubois</h4>
+                            <p>+33 6 98 76 54 32</p>
+                            <div class="contact-tags">
+                                <span class="tag tag-admin">Admin</span>
+                            </div>
+                        </div>
+                        <div class="contact-actions">
+                            <label class="toggle">
+                                <input type="checkbox">
+                                <span class="slider"></span>
+                            </label>
+                            <button class="action-btn edit-btn" onclick="editContact('marc-sms')">✏️</button>
+                            <button class="action-btn delete-btn" onclick="deleteContact('marc-sms')">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="settings-section" class="notif-section" style="display:none;">
+                <div class="settings-card">
+                    <h4>⚙️ Paramètres de notification</h4>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h5>Notifications d'expiration</h5>
+                            <p>Alerter 24h avant expiration</p>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h5>Créations d'affiches</h5>
+                            <p>Notifier à chaque création</p>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h5>Mises en diffusion</h5>
+                            <p>Notifier lors du démarrage</p>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h5>Résumé quotidien</h5>
+                            <p>Envoi à 08h00 chaque jour</p>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="settings-card">
+                    <h4>📧 Serveur SMTP</h4>
+                    <div class="form-group">
+                        <label>Serveur</label>
+                        <input type="text" value="smtp.gmail.com" placeholder="smtp.exemple.com">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Port</label>
+                            <input type="number" value="587" placeholder="587">
+                        </div>
+                        <div class="form-group">
+                            <label>Sécurité</label>
+                            <select>
+                                <option value="tls">TLS</option>
+                                <option value="ssl">SSL</option>
+                                <option value="none">Aucune</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Email expéditeur</label>
+                        <input type="email" value="affichage@monmagasin.fr" placeholder="votre@email.com">
+                    </div>
+                    <button class="btn" style="margin-top: 15px;">💾 Sauvegarder</button>
+                </div>
+            </div>
+
+            <button class="fab" onclick="openContactModal()">+</button>
+        </div>
+
+        <div id="affiches" class="tab-content">
+            <div class="search-bar">
+                <input type="text" placeholder="Rechercher une affiche...">
+            </div>
+            
+            <div class="filter-section">
+                <h4>🔍 Filtrer par état</h4>
+                <div class="filter-buttons">
+                    <button class="filter-btn-affiches active" data-filter="all">Tous</button>
+                    <button class="filter-btn-affiches" data-filter="a-creer">À créer</button>
+                    <button class="filter-btn-affiches" data-filter="programmee">Prog.</button>
+                    <button class="filter-btn-affiches" data-filter="en-diffusion">Diff.</button>
+                    <button class="filter-btn-affiches" data-filter="archivee">Archiv.</button>
+                </div>
+            </div>
+            
+            <div class="item" data-status="en-diffusion">
+                <div class="item-icon category-fruits">🍎</div>
+                <div class="item-info">
+                    <h4>Pommes Golden</h4>
+                    <p>2.50€/kg • France</p>
+                    <p class="item-dates">09/07 → 15/07</p>
+                </div>
+                <div class="item-actions">
+                    <span class="status-badge status-en-diffusion">En diffusion</span>
+                    <div class="item-actions-buttons">
+                        <button class="action-btn edit-btn" onclick="editAffiche('pommes')">✏️</button>
+                        <button class="action-btn delete-btn" onclick="deleteAffiche('pommes')">🗑️</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="item" data-status="programmee">
+                <div class="item-icon category-boucherie">🥩</div>
+                <div class="item-info">
+                    <h4>Steaks hachés 15% MG</h4>
+                    <p>12.90€/kg • France</p>
+                    <p class="item-dates">10/07 → 17/07</p>
+                </div>
+                <div class="item-actions">
+                    <span class="status-badge status-programmee">Programmée</span>
+                    <div class="item-actions-buttons">
+                        <button class="action-btn edit-btn" onclick="editAffiche('steaks')">✏️</button>
+                        <button class="action-btn delete-btn" onclick="deleteAffiche('steaks')">🗑️</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="item" data-status="a-creer">
+                <div class="item-icon category-boulangerie">🥖</div>
+                <div class="item-info">
+                    <h4>Pain tradition</h4>
+                    <p>1.20€/unité • Local</p>
+                    <p class="item-dates">11/07 → 18/07</p>
+                </div>
+                <div class="item-actions">
+                    <span class="status-badge status-a-creer">À créer</span>
+                    <div class="item-actions-buttons">
+                        <button class="action-btn edit-btn" onclick="editAffiche('pain')">✏️</button>
+                        <button class="action-btn delete-btn" onclick="deleteAffiche('pain')">🗑️</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="item" data-status="archivee">
+                <div class="item-icon category-cremerie">🧀</div>
+                <div class="item-info">
+                    <h4>Camembert AOP</h4>
+                    <p>3.80€/unité • Normandie</p>
+                    <p class="item-dates">01/07 → 08/07</p>
+                </div>
+                <div class="item-actions">
+                    <span class="status-badge status-archivee">Archivée</span>
+                    <div class="item-actions-buttons">
+                        <button class="action-btn edit-btn" onclick="editAffiche('camembert')">✏️</button>
+                        <button class="action-btn delete-btn" onclick="deleteAffiche('camembert')">🗑️</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="item" data-status="en-diffusion">
+                <div class="item-icon category-traiteur">🥘</div>
+                <div class="item-info">
+                    <h4>Lasagnes maison</h4>
+                    <p>8.50€/kg • Maison</p>
+                    <p class="item-dates">08/07 → 14/07</p>
+                </div>
+                <div class="item-actions">
+                    <span class="status-badge status-en-diffusion">En diffusion</span>
+                    <div class="item-actions-buttons">
+                        <button class="action-btn edit-btn" onclick="editAffiche('lasagnes')">✏️</button>
+                        <button class="action-btn delete-btn" onclick="deleteAffiche('lasagnes')">🗑️</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="item" data-status="archivee">
+                <div class="item-icon category-epicerie">🍯</div>
+                <div class="item-info">
+                    <h4>Miel de lavande</h4>
+                    <p>12.90€/unité • Provence</p>
+                    <p class="item-dates">28/06 → 05/07</p>
+                </div>
+                <div class="item-actions">
+                    <span class="status-badge status-archivee">Archivée</span>
+                    <div class="item-actions-buttons">
+                        <button class="action-btn edit-btn" onclick="editAffiche('miel')">✏️</button>
+                        <button class="action-btn delete-btn" onclick="deleteAffiche('miel')">🗑️</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="fab" onclick="openModal()">+</button>
+    </div>
+
+    <!-- Modal de création -->
+    <div id="createModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📝 Nouvelle affiche</h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            
+            <form id="createForm">
+                <div class="form-group">
+                    <label for="libelle">Libellé</label>
+                    <input type="text" id="libelle" name="libelle" placeholder="Ex: Pommes Golden">
+                </div>
+
+                <div class="form-group">
+                    <label for="famille">Famille du produit</label>
+                    <select id="famille" name="famille">
+                        <option value="">Sélectionnez une famille</option>
+                        <option value="fruits-legumes">🍎 Fruits & légumes</option>
+                        <option value="traiteur">🥘 Traiteur</option>
+                        <option value="boucherie">🥩 Boucherie</option>
+                        <option value="cremerie">🧀 Crémerie</option>
+                        <option value="epicerie">🛒 Epicerie</option>
+                        <option value="boulangerie">🥖 Boulangerie & pâtisserie</option>
+                        <option value="autre">📦 Autre</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dateDebut">Date de début</label>
+                        <input type="date" id="dateDebut" name="dateDebut">
+                    </div>
+                    <div class="form-group">
+                        <label for="dateFin">Date de fin</label>
+                        <input type="date" id="dateFin" name="dateFin">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="prix">Prix de vente</label>
+                        <input type="number" id="prix" name="prix" step="0.01" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="unite">Unité de vente</label>
+                        <select id="unite" name="unite">
+                            <option value="kg">Kg</option>
+                            <option value="unite">Unité</option>
+                            <option value="autre">Autre</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="origine">Origine du produit</label>
+                    <input type="text" id="origine" name="origine" placeholder="Ex: France, Local, Import">
+                </div>
+
+                <button type="submit" class="btn">✅ Créer l'affiche</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de création de contact -->
+    <div id="contactModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>👤 Nouveau contact</h3>
+                <span class="close" onclick="closeContactModal()">&times;</span>
+            </div>
+            
+            <form id="contactForm">
+                <div class="form-group">
+                    <label for="contactType">Type de contact</label>
+                    <select id="contactType" name="contactType" onchange="toggleContactFields()">
+                        <option value="email">📧 Email</option>
+                        <option value="sms">📱 SMS</option>
+                        <option value="both">📧📱 Email + SMS</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="contactName">Nom complet</label>
+                    <input type="text" id="contactName" name="contactName" placeholder="Ex: Sophie Martin">
+                </div>
+
+                <div class="form-group" id="emailField">
+                    <label for="contactEmail">Adresse email</label>
+                    <input type="email" id="contactEmail" name="contactEmail" placeholder="sophie.martin@exemple.fr">
+                </div>
+
+                <div class="form-group" id="smsField" style="display:none;">
+                    <label for="contactPhone">Numéro de téléphone</label>
+                    <input type="tel" id="contactPhone" name="contactPhone" placeholder="+33 6 12 34 56 78">
+                </div>
+
+                <div class="form-group">
+                    <label for="contactRole">Rôle</label>
+                    <select id="contactRole" name="contactRole">
+                        <option value="manager">👔 Manager</option>
+                        <option value="admin">⚙️ Administrateur</option>
+                        <option value="commercial">💼 Commercial</option>
+                        <option value="employee">👤 Employé</option>
+                        <option value="other">📋 Autre</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="priority">Priorité des notifications</label>
+                    <select id="priority" name="priority">
+                        <option value="normal">🔵 Normale</option>
+                        <option value="urgent">🔴 Urgente</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="activeByDefault" name="activeByDefault" checked>
+                        Activer les notifications par défaut
+                    </label>
+                </div>
+
+                <button type="submit" class="btn">✅ Ajouter le contact</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+        import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging.js';
+
+        // Configuration Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAtZUiFPFrqU-PiMpIOrPIwrjJLv_NsKRU",
+            authDomain: "gestion-affichage-publicitaire.firebaseapp.com",
+            projectId: "gestion-affichage-publicitaire",
+            storageBucket: "gestion-affichage-publicitaire.firebasestorage.app",
+            messagingSenderId: "715445646165",
+            appId: "1:715445646165:web:4da37e196e6a772f0735dc"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        // const messaging = getMessaging(app); // Décommenter quand les notifications seront configurées
+
+        // Variables globales
+        window.firebaseAuth = auth;
+        window.firebaseDB = db;
+        window.currentUser = null;
+
+        // Vérifier l'état de connexion
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                window.currentUser = user;
+                document.getElementById('loginModal').style.display = 'none';
+                document.getElementById('appContainer').style.display = 'block';
+                loadAllData();
+            } else {
+                window.currentUser = null;
+                document.getElementById('loginModal').style.display = 'block';
+                document.getElementById('appContainer').style.display = 'none';
+            }
+        });
+
+        // Connexion utilisateur
+        async function loginUser() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                document.getElementById('loginError').style.display = 'none';
+            } catch (error) {
+                document.getElementById('loginError').textContent = 'Erreur de connexion : ' + error.message;
+                document.getElementById('loginError').style.display = 'block';
+            }
+        }
+
+        // Déconnexion utilisateur
+        async function logoutUser() {
+            try {
+                await signOut(auth);
+            } catch (error) {
+                console.error('Erreur déconnexion:', error);
+            }
+        }
+
+        // Charger toutes les données
+        async function loadAllData() {
+            await loadAffiches();
+            await loadContacts();
+            updateDashboard();
+        }
+
+        // Charger les affiches
+        async function loadAffiches() {
+            try {
+                const q = query(collection(db, 'affiches'), orderBy('dateCreation', 'desc'));
+                const querySnapshot = await getDocs(q);
+                const affiches = [];
+                
+                querySnapshot.forEach((doc) => {
+                    affiches.push({ id: doc.id, ...doc.data() });
+                });
+                
+                displayAffiches(affiches);
+            } catch (error) {
+                console.error('Erreur chargement affiches:', error);
+            }
+        }
+
+        // Sauvegarder une affiche
+        async function saveAffiche(affiche) {
+            try {
+                const docRef = await addDoc(collection(db, 'affiches'), {
+                    ...affiche,
+                    dateCreation: serverTimestamp(),
+                    utilisateurId: window.currentUser.uid
+                });
+                console.log('Affiche sauvée avec ID:', docRef.id);
+                await loadAffiches();
+                return docRef.id;
+            } catch (error) {
+                console.error('Erreur sauvegarde affiche:', error);
+                throw error;
+            }
+        }
+
+        // Charger les contacts
+        async function loadContacts() {
+            try {
+                // Charger contacts email
+                const emailQuery = query(collection(db, 'contacts_email'), orderBy('nom', 'asc'));
+                const emailSnapshot = await getDocs(emailQuery);
+                const contactsEmail = [];
+                
+                emailSnapshot.forEach((doc) => {
+                    contactsEmail.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // Charger contacts SMS
+                const smsQuery = query(collection(db, 'contacts_sms'), orderBy('nom', 'asc'));
+                const smsSnapshot = await getDocs(smsQuery);
+                const contactsSMS = [];
+                
+                smsSnapshot.forEach((doc) => {
+                    contactsSMS.push({ id: doc.id, ...doc.data() });
+                });
+                
+                displayContacts(contactsEmail, contactsSMS);
+            } catch (error) {
+                console.error('Erreur chargement contacts:', error);
+            }
+        }
+
+        // Sauvegarder un contact
+        async function saveContact(contact, type) {
+            try {
+                const collectionName = type === 'email' ? 'contacts_email' : 'contacts_sms';
+                const docRef = await addDoc(collection(db, collectionName), {
+                    ...contact,
+                    dateCreation: serverTimestamp(),
+                    utilisateurId: window.currentUser.uid
+                });
+                console.log('Contact sauvé avec ID:', docRef.id);
+                await loadContacts();
+                return docRef.id;
+            } catch (error) {
+                console.error('Erreur sauvegarde contact:', error);
+                throw error;
+            }
+        }
+
+        // Mettre à jour le dashboard
+        function updateDashboard() {
+            // Cette fonction sera appelée après le chargement des données
+            // pour mettre à jour les statistiques du dashboard
+        }
+
+        // Exposer les fonctions globalement
+        window.loginUser = loginUser;
+        window.logoutUser = logoutUser;
+        window.saveAffiche = saveAffiche;
+        window.saveContact = saveContact;
+        window.loadAffiches = loadAffiches;
+        window.loadContacts = loadContacts;
+    </script>
+
+    <script>
+        function showTab(tabName) {
+            // Cache tous les contenus
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+            
+            // Désactive tous les onglets
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Active l'onglet et le contenu sélectionnés
+            document.getElementById(tabName).classList.add('active');
+            event.target.closest('.tab').classList.add('active');
+        }
+
+        function openModal() {
+            document.getElementById('createModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('createModal').style.display = 'none';
+        }
+
+        // Fermer le modal en cliquant en dehors
+        window.onclick = function(event) {
+            const modal = document.getElementById('createModal');
+            const contactModal = document.getElementById('contactModal');
+            if (event.target == contactModal) {
+                contactModal.style.display = 'none';
+            }
+        }
+
+        // Simuler la soumission du formulaire
+        document.getElementById('createForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const affiche = {
+                libelle: formData.get('libelle'),
+                famille: formData.get('famille'),
+                dateDebut: formData.get('dateDebut'),
+                dateFin: formData.get('dateFin'),
+                prix: parseFloat(formData.get('prix')),
+                unite: formData.get('unite'),
+                origine: formData.get('origine'),
+                statut: 'a-creer'
+            };
+            
+            try {
+                await window.saveAffiche(affiche);
+                alert('🎉 Affiche créée avec succès!\nStatut: "À créer"');
+                closeModal();
+                this.reset();
+            } catch (error) {
+                alert('❌ Erreur lors de la création: ' + error.message);
+            }
+        });
+
+        // Définir la date par défaut (aujourd'hui)
+        document.getElementById('dateDebut').valueAsDate = new Date();
+        
+        // Définir la date de fin par défaut (dans 7 jours)
+        const dateFin = new Date();
+        dateFin.setDate(dateFin.getDate() + 7);
+        document.getElementById('dateFin').valueAsDate = dateFin;
+
+        // Navigation de l'agenda par semaine
+        let currentWeekStart = new Date(2025, 6, 8); // 8 juillet 2025
+
+        function changeWeek(direction) {
+            currentWeekStart.setDate(currentWeekStart.getDate() + (direction * 7));
+            updateWeekHeader();
+        }
+
+        function updateWeekHeader() {
+            const weekEnd = new Date(currentWeekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+            
+            const months = [
+                'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+                'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+            ];
+            
+            const startDay = currentWeekStart.getDate();
+            const endDay = weekEnd.getDate();
+            const month = months[currentWeekStart.getMonth()];
+            const year = currentWeekStart.getFullYear();
+            
+            const weekRange = `${startDay} - ${endDay} ${month} ${year}`;
+            document.getElementById('currentWeek').textContent = weekRange;
+        }
+
+        // Gestion des filtres de l'onglet Affiches
+        function filterAffiches(status) {
+            const items = document.querySelectorAll('#affiches .item');
+            const filterBtns = document.querySelectorAll('.filter-btn-affiches');
+            
+            // Mettre à jour les boutons actifs
+            filterBtns.forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.filter-btn-affiches[data-filter="${status}"]`).classList.add('active');
+            
+            // Filtrer les éléments
+            items.forEach(item => {
+                if (status === 'all' || item.dataset.status === status) {
+                    item.classList.remove('hidden');
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+        }
+
+        // Ajouter les événements aux boutons de filtre des affiches
+        document.querySelectorAll('.filter-btn-affiches').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const filterValue = this.dataset.filter;
+                filterAffiches(filterValue);
+            });
+        });
+
+        // Fonctions d'édition et suppression
+        function editAffiche(id) {
+            alert(`✏️ Éditer l'affiche: ${id}\n\nCette fonction ouvrirait un formulaire de modification avec les données pré-remplies.`);
+        }
+
+        function deleteAffiche(id) {
+            if (confirm(`🗑️ Êtes-vous sûr de vouloir supprimer cette affiche ?\n\nCette action est irréversible.`)) {
+                alert(`✅ Affiche "${id}" supprimée avec succès !`);
+                // Ici vous supprimeriez l'élément de la liste
+            }
+        }
+
+        // Gestion des notifications
+        function openContactModal() {
+            document.getElementById('contactModal').style.display = 'block';
+        }
+
+        function closeContactModal() {
+            document.getElementById('contactModal').style.display = 'none';
+        }
+
+        function toggleContactFields() {
+            const type = document.getElementById('contactType').value;
+            const emailField = document.getElementById('emailField');
+            const smsField = document.getElementById('smsField');
+            
+            emailField.style.display = (type === 'email' || type === 'both') ? 'block' : 'none';
+            smsField.style.display = (type === 'sms' || type === 'both') ? 'block' : 'none';
+        }
+
+        // Gestion des filtres de notifications
+        document.querySelectorAll('[data-notif-filter]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const filter = this.dataset.notifFilter;
+                
+                // Mettre à jour les boutons actifs
+                document.querySelectorAll('[data-notif-filter]').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Afficher/masquer les sections
+                document.querySelectorAll('.notif-section').forEach(section => {
+                    section.style.display = 'none';
+                });
+                document.getElementById(filter + '-section').style.display = 'block';
+            });
+        });
+
+        // Soumission du formulaire de contact
+        document.getElementById('contactForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const contact = {
+                nom: formData.get('contactName'),
+                role: formData.get('contactRole'),
+                priorite: formData.get('priority'),
+                actif: formData.get('activeByDefault') === 'on'
+            };
+            
+            const type = formData.get('contactType');
+            
+            try {
+                if (type === 'email' || type === 'both') {
+                    const contactEmail = {
+                        ...contact,
+                        email: formData.get('contactEmail')
+                    };
+                    await window.saveContact(contactEmail, 'email');
+                }
+                
+                if (type === 'sms' || type === 'both') {
+                    const contactSMS = {
+                        ...contact,
+                        telephone: formData.get('contactPhone')
+                    };
+                    await window.saveContact(contactSMS, 'sms');
+                }
+                
+                alert(`🎉 Contact "${contact.nom}" ajouté avec succès!\nType: ${type}`);
+                closeContactModal();
+                this.reset();
+                toggleContactFields();
+            } catch (error) {
+                alert('❌ Erreur lors de l\'ajout: ' + error.message);
+            }
+        });
+
+        // Fonctions d'affichage des données
+        function displayAffiches(affiches) {
+            // Cette fonction sera appelée pour afficher les affiches depuis Firebase
+            console.log('Affiches chargées:', affiches);
+            // TODO: Mettre à jour l'interface avec les vraies données
+        }
+
+        function displayContacts(contactsEmail, contactsSMS) {
+            // Cette fonction sera appelée pour afficher les contacts depuis Firebase
+            console.log('Contacts email:', contactsEmail);
+            console.log('Contacts SMS:', contactsSMS);
+            // TODO: Mettre à jour l'interface avec les vraies données
+        }
+
+        // Fonctions de gestion des contacts
+        function editContact(id) {
+            alert(`✏️ Éditer le contact: ${id}\n\nCette fonction ouvrirait le formulaire de modification.`);
+        }
+
+        function deleteContact(id) {
+            if (confirm(`🗑️ Supprimer ce contact ?\n\nCette action est irréversible.`)) {
+                alert(`✅ Contact "${id}" supprimé !`);
+                // TODO: Implémenter la suppression dans Firebase
+            }
+        }
+    </script>
+</body>
+</html>

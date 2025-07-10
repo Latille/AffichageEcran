@@ -103,42 +103,42 @@
             
             <form id="createForm">
                 <div class="form-group">
-                    <label for="libelle">Libellé</label>
+                    <label for="libelle">Libellé *</label>
                     <input type="text" id="libelle" name="libelle" placeholder="Ex: Pommes Golden" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="famille">Famille du produit</label>
+                    <label for="famille">Famille *</label>
                     <select id="famille" name="famille" required>
-                        <option value="">Sélectionnez une famille</option>
+                        <option value="">Choisir une famille</option>
                         <option value="fruits-legumes">🍎 Fruits & légumes</option>
                         <option value="traiteur">🥘 Traiteur</option>
                         <option value="boucherie">🥩 Boucherie</option>
                         <option value="cremerie">🧀 Crémerie</option>
                         <option value="epicerie">🛒 Epicerie</option>
-                        <option value="boulangerie">🥖 Boulangerie & pâtisserie</option>
+                        <option value="boulangerie">🥖 Boulangerie</option>
                         <option value="autre">📦 Autre</option>
                     </select>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="dateDebut">Date de début</label>
+                        <label for="dateDebut">Début *</label>
                         <input type="date" id="dateDebut" name="dateDebut" required>
                     </div>
                     <div class="form-group">
-                        <label for="dateFin">Date de fin</label>
+                        <label for="dateFin">Fin *</label>
                         <input type="date" id="dateFin" name="dateFin" required>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="prix">Prix de vente</label>
+                        <label for="prix">Prix *</label>
                         <input type="number" id="prix" name="prix" step="0.01" placeholder="0.00" required>
                     </div>
                     <div class="form-group">
-                        <label for="unite">Unité de vente</label>
+                        <label for="unite">Unité *</label>
                         <select id="unite" name="unite" required>
                             <option value="kg">Kg</option>
                             <option value="unite">Unité</option>
@@ -148,8 +148,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="origine">Origine du produit</label>
-                    <input type="text" id="origine" name="origine" placeholder="Ex: France, Local, Import" required>
+                    <label for="origine">Origine *</label>
+                    <input type="text" id="origine" name="origine" placeholder="Ex: France, Local" required>
                 </div>
 
                 <button type="submit" class="btn">✅ Créer l'affiche</button>
@@ -169,42 +169,42 @@
                 <input type="hidden" id="editAfficheId" name="editAfficheId">
                 
                 <div class="form-group">
-                    <label for="editLibelle">Libellé</label>
+                    <label for="editLibelle">Libellé *</label>
                     <input type="text" id="editLibelle" name="editLibelle" placeholder="Ex: Pommes Golden" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="editFamille">Famille du produit</label>
+                    <label for="editFamille">Famille *</label>
                     <select id="editFamille" name="editFamille" required>
-                        <option value="">Sélectionnez une famille</option>
+                        <option value="">Choisir une famille</option>
                         <option value="fruits-legumes">🍎 Fruits & légumes</option>
                         <option value="traiteur">🥘 Traiteur</option>
                         <option value="boucherie">🥩 Boucherie</option>
                         <option value="cremerie">🧀 Crémerie</option>
                         <option value="epicerie">🛒 Epicerie</option>
-                        <option value="boulangerie">🥖 Boulangerie & pâtisserie</option>
+                        <option value="boulangerie">🥖 Boulangerie</option>
                         <option value="autre">📦 Autre</option>
                     </select>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="editDateDebut">Date de début</label>
+                        <label for="editDateDebut">Début *</label>
                         <input type="date" id="editDateDebut" name="editDateDebut" required>
                     </div>
                     <div class="form-group">
-                        <label for="editDateFin">Date de fin</label>
+                        <label for="editDateFin">Fin *</label>
                         <input type="date" id="editDateFin" name="editDateFin" required>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="editPrix">Prix de vente</label>
+                        <label for="editPrix">Prix *</label>
                         <input type="number" id="editPrix" name="editPrix" step="0.01" placeholder="0.00" required>
                     </div>
                     <div class="form-group">
-                        <label for="editUnite">Unité de vente</label>
+                        <label for="editUnite">Unité *</label>
                         <select id="editUnite" name="editUnite" required>
                             <option value="kg">Kg</option>
                             <option value="unite">Unité</option>
@@ -214,12 +214,12 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="editOrigine">Origine du produit</label>
-                    <input type="text" id="editOrigine" name="editOrigine" placeholder="Ex: France, Local, Import" required>
+                    <label for="editOrigine">Origine *</label>
+                    <input type="text" id="editOrigine" name="editOrigine" placeholder="Ex: France, Local" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="editStatut">Statut</label>
+                    <label for="editStatut">Statut *</label>
                     <select id="editStatut" name="editStatut" required>
                         <option value="a-creer">À créer</option>
                         <option value="programmee">Programmée</option>
@@ -228,7 +228,7 @@
                     </select>
                 </div>
 
-                <button type="submit" class="btn">💾 Sauvegarder les modifications</button>
+                <button type="submit" class="btn">💾 Sauvegarder</button>
             </form>
         </div>
     </div>
@@ -1474,19 +1474,28 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 12px;
-            text-align: center;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-logo {
+            font-size: 20px;
         }
 
         .header h1 {
-            font-size: 20px;
-            margin-bottom: 5px;
+            font-size: 18px;
+            margin: 0;
         }
 
         .logout-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
             background: rgba(255,255,255,0.2);
             border: 1px solid rgba(255,255,255,0.3);
             color: white;
@@ -1817,11 +1826,11 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: white;
-            padding: 20px;
+            padding: 16px;
             border-radius: 12px;
             max-width: 90%;
             width: 350px;
-            max-height: 80vh;
+            max-height: 85vh;
             overflow-y: auto;
         }
 
@@ -1829,12 +1838,15 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e9ecef;
         }
 
         .modal-header h3 {
             margin: 0;
             color: #333;
+            font-size: 18px;
         }
 
         .close {
@@ -1844,24 +1856,24 @@
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 12px;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             font-weight: 500;
             color: #333;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .form-group input,
         .form-group select,
         .form-group textarea {
             width: 100%;
-            padding: 12px;
+            padding: 8px 10px;
             border: 2px solid #e9ecef;
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 14px;
             transition: border-color 0.3s ease;
         }
@@ -1876,12 +1888,12 @@
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 10px;
         }
 
         .btn {
             width: 100%;
-            padding: 15px;
+            padding: 12px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
@@ -1890,7 +1902,7 @@
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-top: 20px;
+            margin-top: 15px;
         }
 
         .btn:hover {
@@ -2397,7 +2409,10 @@
     <!-- Application principale -->
     <div id="appContainer" class="container" style="display:none;">
         <div class="header">
-            <h1>📺 Gestion Affichage</h1>
+            <div class="header-left">
+                <div class="header-logo">📺</div>
+                <h1>Gestion Affichage</h1>
+            </div>
             <button onclick="logoutUser()" class="logout-btn">🚪 Déconnexion</button>
         </div>
 

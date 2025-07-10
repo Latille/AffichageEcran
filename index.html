@@ -1,4 +1,178 @@
-<!DOCTYPE html>
+// Soumission du formulaire de contact
+        document.getElementById('contactForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const contact = {
+                nom: formData.get('contactName'),
+                role: formData.get('contactRole'),
+                priorite: formData.get('priority'),
+                actif: formData.get('activeByDefault') === 'on'
+            };
+            
+            const type = formData.get('contactType');
+            
+            try {
+                if (currentEditingType && currentEditingId) {
+                    // Modification
+                    if (type === 'email' || type === 'both') {
+                        const contactEmail = {
+                            ...contact,
+                            email: formData.get('contactEmail')
+                        };
+                        await window.updateContact(currentEditingId, contactEmail, 'email');
+                    }
+                    
+                    if (type === 'sms' || type === 'both') {
+                        const contactSMS = {
+                            ...contact,
+                            telephone: formData.get('contactPhone')
+                        };
+                        await window.updateContact(currentEditingId, contactSMS, 'sms');
+                    }
+                    
+                    alert(`🎉 Contact "${contact.nom}" modifié avec succès!`);
+                } else {
+                    // Création
+                    if (type === 'email' || type === 'both') {
+                        const contactEmail = {
+                            ...contact,
+                            email: formData.get('contactEmail')
+                        };
+                        await window.saveContact(contactEmail, 'email');
+                    }
+                    
+                    if (type === 'sms' || type === 'both') {
+                        const contactSMS = {
+                            ...contact,
+                            telephone: formData.get('contactPhone')
+                        };
+                        await window.saveContact(contactSMS, 'sms');
+                    }
+                    
+                    alert(`🎉 Contact "${contact.nom}" ajouté avec succès!\nType: ${type}`);
+                }
+                
+                closeContactModal();
+                this.reset();
+                resetModalState();
+                toggleContactFields();
+            } catch (error) {
+                alert('❌ Erreur lors de la sauvegarde: ' + error.message);
+            }
+        });
+
+        // Réinitialiser l'état des modals
+        function resetModalState() {
+            currentEditingId = null;
+            currentEditingType = null;
+            
+            // Réinitialiser le modal d'affiche
+            document.querySelector('#createModal .modal-header h3').textContent = '📝 Nouvelle affiche';
+            document.querySelector('#createModal .btn').textContent = '✅ Créer l\'affiche';
+            
+            // Réinitialiser le modal de contact
+            document.querySelector('#contactModal .modal-header h3').textContent = '👤 Nouveau contact';
+            document.querySelector('#contactModal .btn').textContent = '✅ Ajouter le contact';
+        }
+
+        // Fonctions de recherche
+        document.getElementById('email-search').addEventListener('input', function() {
+            filterContacts(this.value.toLowerCase(), 'email');
+        });
+
+        document.getElementById('sms-search').addEventListener('input', function() {
+            filterContacts(this.value.toLowerCase(), 'sms');
+        });
+
+        function filterContacts(searchTerm, type) {
+            const container = document.querySelector(`#${type}s-section .contacts-list`);
+            const items = container.querySelectorAll('.contact-item');
+            
+            items.forEach(item => {
+                const name = item.querySelector('.contact-info h4').textContent.toLowerCase();
+                const contact = item.querySelector('.contact-info p').textContent.toLowerCase();
+                
+                if (name.includes(searchTerm) || contact.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // Test des notifications
+        async function testNotifications() {
+            try {
+                const contactsEmail = window.allContactsEmail.filter(c => c.actif);
+                const contactsSMS = window.allContactsSMS.filter(c => c.actif);
+                
+                if (contactsEmail.length > 0) {
+                    await window.sendEmailNotification(
+                        'Test de notification',
+                        'Ceci est un test de notification par email.',
+                        contactsEmail
+                    );
+                }
+                
+                if (contactsSMS.length > 0) {
+                    await window.sendSMSNotification(
+                        'Test de notification SMS depuis votre app d\'affichage.',
+                        contactsSMS
+                    );
+                }
+                
+                alert('🎉 Notifications de test envoyées !');
+            } catch (error) {
+                alert('❌ Erreur lors du test: ' + error.message);
+            }
+        }
+
+        // Ajouter le bouton de test dans les paramètres
+        function addTestButton() {
+            const settingsCard = document.querySelector('#settings-section .settings-card');
+            if (settingsCard) {
+                const testButton = document.createElement('button');
+                testButton.className = 'btn';
+                testButton.textContent = '🧪 Tester les notifications';
+                testButton.onclick = testNotifications;
+                testButton.style.marginTop = '10px';
+                settingsCard.appendChild(testButton);
+            }
+        }
+
+        // Modifier les fonctions d'ouverture des modals
+        function openModal() {
+            resetModalState();
+            document.getElementById('createModal').style.display = 'block';
+        }
+
+        function openContactModal() {
+            resetModalState();
+            document.getElementById('contactModal').style.display = 'block';
+        }
+
+        // Initialiser les fonctionnalités supplémentaires
+        setTimeout(() => {
+            addTestButton();
+        }, 1000);
+
+        // Fonctions d'édition et suppression (maintenant intégrées)
+        function editAffiche(id) {
+            editAffiche(id);
+        }
+
+        function deleteAffiche(id) {
+            deleteAffiche(id);
+        }
+
+        function editContact(id, type) {
+            editContact(id, type);
+        }
+
+        function deleteContact(id, type) {
+            deleteContact(id, type);
+        }<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -1928,6 +2102,7 @@
                 });
                 
                 displayAffiches(affiches);
+                updateDashboardStats(affiches);
             } catch (error) {
                 console.error('Erreur chargement affiches:', error);
             }
@@ -1946,6 +2121,33 @@
                 return docRef.id;
             } catch (error) {
                 console.error('Erreur sauvegarde affiche:', error);
+                throw error;
+            }
+        }
+
+        // Modifier une affiche
+        async function updateAffiche(id, affiche) {
+            try {
+                await updateDoc(doc(db, 'affiches', id), {
+                    ...affiche,
+                    dateModification: serverTimestamp()
+                });
+                console.log('Affiche modifiée:', id);
+                await loadAffiches();
+            } catch (error) {
+                console.error('Erreur modification affiche:', error);
+                throw error;
+            }
+        }
+
+        // Supprimer une affiche
+        async function deleteAffiches(id) {
+            try {
+                await deleteDoc(doc(db, 'affiches', id));
+                console.log('Affiche supprimée:', id);
+                await loadAffiches();
+            } catch (error) {
+                console.error('Erreur suppression affiche:', error);
                 throw error;
             }
         }
@@ -1995,22 +2197,276 @@
             }
         }
 
+        // Modifier un contact
+        async function updateContact(id, contact, type) {
+            try {
+                const collectionName = type === 'email' ? 'contacts_email' : 'contacts_sms';
+                await updateDoc(doc(db, collectionName, id), {
+                    ...contact,
+                    dateModification: serverTimestamp()
+                });
+                console.log('Contact modifié:', id);
+                await loadContacts();
+            } catch (error) {
+                console.error('Erreur modification contact:', error);
+                throw error;
+            }
+        }
+
+        // Supprimer un contact
+        async function deleteContacts(id, type) {
+            try {
+                const collectionName = type === 'email' ? 'contacts_email' : 'contacts_sms';
+                await deleteDoc(doc(db, collectionName, id));
+                console.log('Contact supprimé:', id);
+                await loadContacts();
+            } catch (error) {
+                console.error('Erreur suppression contact:', error);
+                throw error;
+            }
+        }
+
         // Mettre à jour le dashboard
-        function updateDashboard() {
-            // Cette fonction sera appelée après le chargement des données
-            // pour mettre à jour les statistiques du dashboard
+        function updateDashboardStats(affiches) {
+            const stats = {
+                enDiffusion: 0,
+                aCreer: 0,
+                programmees: 0,
+                archivees: 0
+            };
+            
+            affiches.forEach(affiche => {
+                switch(affiche.statut) {
+                    case 'en-diffusion':
+                        stats.enDiffusion++;
+                        break;
+                    case 'a-creer':
+                        stats.aCreer++;
+                        break;
+                    case 'programmee':
+                        stats.programmees++;
+                        break;
+                    case 'archivee':
+                        stats.archivees++;
+                        break;
+                }
+            });
+            
+            // Mettre à jour les cartes du dashboard
+            const statCards = document.querySelectorAll('.stat-card h3');
+            if (statCards.length >= 4) {
+                statCards[0].textContent = stats.enDiffusion;
+                statCards[1].textContent = stats.aCreer;
+                statCards[2].textContent = stats.programmees;
+                statCards[3].textContent = stats.archivees;
+            }
+            
+            // Mettre à jour la liste des affiches en diffusion
+            updateDashboardList(affiches.filter(a => a.statut === 'en-diffusion'));
+        }
+
+        // Mettre à jour la liste du dashboard
+        function updateDashboardList(affiches) {
+            const container = document.querySelector('.recent-items');
+            const existingItems = container.querySelectorAll('.item');
+            
+            // Supprimer les anciens éléments
+            existingItems.forEach(item => item.remove());
+            
+            // Ajouter les nouvelles affiches
+            affiches.slice(0, 5).forEach(affiche => {
+                const item = createAfficheItem(affiche, true);
+                container.appendChild(item);
+            });
+        }
+
+        // Envoyer notification email
+        async function sendEmailNotification(subject, message, contacts) {
+            try {
+                // Simulation d'envoi d'email
+                // Dans un vrai projet, vous utiliseriez une API comme EmailJS ou un service backend
+                const emailData = {
+                    subject: subject,
+                    message: message,
+                    contacts: contacts,
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Sauvegarder dans l'historique des notifications
+                await addDoc(collection(db, 'notifications_history'), {
+                    ...emailData,
+                    type: 'email',
+                    userId: window.currentUser.uid,
+                    dateEnvoi: serverTimestamp()
+                });
+                
+                console.log('Notification email envoyée:', emailData);
+                return true;
+            } catch (error) {
+                console.error('Erreur envoi email:', error);
+                return false;
+            }
+        }
+
+        // Envoyer notification SMS
+        async function sendSMSNotification(message, contacts) {
+            try {
+                // Simulation d'envoi de SMS
+                // Dans un vrai projet, vous utiliseriez une API comme Twilio
+                const smsData = {
+                    message: message,
+                    contacts: contacts,
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Sauvegarder dans l'historique des notifications
+                await addDoc(collection(db, 'notifications_history'), {
+                    ...smsData,
+                    type: 'sms',
+                    userId: window.currentUser.uid,
+                    dateEnvoi: serverTimestamp()
+                });
+                
+                console.log('Notification SMS envoyée:', smsData);
+                return true;
+            } catch (error) {
+                console.error('Erreur envoi SMS:', error);
+                return false;
+            }
         }
 
         // Exposer les fonctions globalement
         window.loginUser = loginUser;
         window.logoutUser = logoutUser;
         window.saveAffiche = saveAffiche;
+        window.updateAffiche = updateAffiche;
+        window.deleteAffiches = deleteAffiches;
         window.saveContact = saveContact;
+        window.updateContact = updateContact;
+        window.deleteContacts = deleteContacts;
         window.loadAffiches = loadAffiches;
         window.loadContacts = loadContacts;
+        window.sendEmailNotification = sendEmailNotification;
+        window.sendSMSNotification = sendSMSNotification;
+        window.allAffiches = [];
+        window.allContactsEmail = [];
+        window.allContactsSMS = [];
     </script>
 
     <script>
+        // Variables globales pour les données
+        let currentEditingId = null;
+        let currentEditingType = null;
+
+        // Créer un élément d'affiche
+        function createAfficheItem(affiche, isDashboard = false) {
+            const item = document.createElement('div');
+            item.className = 'item';
+            item.setAttribute('data-status', affiche.statut);
+            
+            const familleClass = getFamilleClass(affiche.famille);
+            const familleIcon = getFamilleIcon(affiche.famille);
+            
+            const dateDebut = affiche.dateDebut ? new Date(affiche.dateDebut).toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit'}) : '';
+            const dateFin = affiche.dateFin ? new Date(affiche.dateFin).toLocaleDateString('fr-FR', {day: '2-digit', month: '2-digit'}) : '';
+            
+            item.innerHTML = `
+                <div class="item-icon ${familleClass}">${familleIcon}</div>
+                <div class="item-info">
+                    <h4>${affiche.libelle}</h4>
+                    <p>${affiche.prix}€/${affiche.unite} • ${affiche.origine}</p>
+                    ${!isDashboard ? `<p class="item-dates">${dateDebut} → ${dateFin}</p>` : ''}
+                </div>
+                ${isDashboard ? 
+                    `<span class="status-badge status-${affiche.statut}">${getStatusLabel(affiche.statut)}</span>` :
+                    `<div class="item-actions">
+                        <span class="status-badge status-${affiche.statut}">${getStatusLabel(affiche.statut)}</span>
+                        <div class="item-actions-buttons">
+                            <button class="action-btn edit-btn" onclick="editAffiche('${affiche.id}')">✏️</button>
+                            <button class="action-btn delete-btn" onclick="deleteAffiche('${affiche.id}')">🗑️</button>
+                        </div>
+                    </div>`
+                }
+            `;
+            
+            return item;
+        }
+
+        // Créer un élément de contact
+        function createContactItem(contact, type) {
+            const item = document.createElement('div');
+            item.className = 'contact-item';
+            
+            const icon = type === 'email' ? '👤' : '📱';
+            const contactInfo = type === 'email' ? contact.email : contact.telephone;
+            
+            item.innerHTML = `
+                <div class="contact-icon">${icon}</div>
+                <div class="contact-info">
+                    <h4>${contact.nom}</h4>
+                    <p>${contactInfo}</p>
+                    <div class="contact-tags">
+                        <span class="tag tag-${contact.role}">${getRoleLabel(contact.role)}</span>
+                        ${contact.priorite === 'urgent' ? '<span class="tag tag-urgent">Urgent</span>' : ''}
+                    </div>
+                </div>
+                <div class="contact-actions">
+                    <label class="toggle">
+                        <input type="checkbox" ${contact.actif ? 'checked' : ''} onchange="toggleContact('${contact.id}', '${type}', this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                    <button class="action-btn edit-btn" onclick="editContact('${contact.id}', '${type}')">✏️</button>
+                    <button class="action-btn delete-btn" onclick="deleteContact('${contact.id}', '${type}')">🗑️</button>
+                </div>
+            `;
+            
+            return item;
+        }
+
+        // Fonctions utilitaires
+        function getFamilleClass(famille) {
+            const classes = {
+                'fruits-legumes': 'category-fruits',
+                'traiteur': 'category-traiteur',
+                'boucherie': 'category-boucherie',
+                'cremerie': 'category-cremerie',
+                'epicerie': 'category-epicerie',
+                'boulangerie': 'category-boulangerie'
+            };
+            return classes[famille] || 'category-autre';
+        }
+
+        function getFamilleIcon(famille) {
+            const icons = {
+                'fruits-legumes': '🍎',
+                'traiteur': '🥘',
+                'boucherie': '🥩',
+                'cremerie': '🧀',
+                'epicerie': '🍯',
+                'boulangerie': '🥖'
+            };
+            return icons[famille] || '📦';
+        }
+
+        function getStatusLabel(statut) {
+            const labels = {
+                'a-creer': 'À créer',
+                'programmee': 'Programmée',
+                'en-diffusion': 'En diffusion',
+                'archivee': 'Archivée'
+            };
+            return labels[statut] || statut;
+        }
+
+        function getRoleLabel(role) {
+            const labels = {
+                'manager': 'Manager',
+                'admin': 'Admin',
+                'commercial': 'Commercial',
+                'employee': 'Employé'
+            };
+            return labels[role] || role;
+        }
         function showTab(tabName) {
             // Cache tous les contenus
             const contents = document.querySelectorAll('.tab-content');
@@ -2059,12 +2515,41 @@
             };
             
             try {
-                await window.saveAffiche(affiche);
-                alert('🎉 Affiche créée avec succès!\nStatut: "À créer"');
+                if (currentEditingType === 'affiche' && currentEditingId) {
+                    // Modification
+                    await window.updateAffiche(currentEditingId, affiche);
+                    alert('🎉 Affiche modifiée avec succès!');
+                    
+                    // Notification de modification
+                    const contactsActifs = window.allContactsEmail.filter(c => c.actif);
+                    if (contactsActifs.length > 0) {
+                        await window.sendEmailNotification(
+                            'Affiche modifiée',
+                            `L'affiche "${affiche.libelle}" a été modifiée.`,
+                            contactsActifs
+                        );
+                    }
+                } else {
+                    // Création
+                    await window.saveAffiche(affiche);
+                    alert('🎉 Affiche créée avec succès!\nStatut: "À créer"');
+                    
+                    // Notification de création
+                    const contactsActifs = window.allContactsEmail.filter(c => c.actif);
+                    if (contactsActifs.length > 0) {
+                        await window.sendEmailNotification(
+                            'Nouvelle affiche créée',
+                            `Une nouvelle affiche "${affiche.libelle}" a été créée.`,
+                            contactsActifs
+                        );
+                    }
+                }
+                
                 closeModal();
                 this.reset();
+                resetModalState();
             } catch (error) {
-                alert('❌ Erreur lors de la création: ' + error.message);
+                alert('❌ Erreur lors de la sauvegarde: ' + error.message);
             }
         });
 
@@ -2218,17 +2703,149 @@
 
         // Fonctions d'affichage des données
         function displayAffiches(affiches) {
-            // Cette fonction sera appelée pour afficher les affiches depuis Firebase
-            console.log('Affiches chargées:', affiches);
-            // TODO: Mettre à jour l'interface avec les vraies données
+            window.allAffiches = affiches;
+            
+            // Afficher dans l'onglet Affiches
+            const affichesContainer = document.querySelector('#affiches');
+            const existingItems = affichesContainer.querySelectorAll('.item');
+            
+            // Supprimer les anciens éléments (sauf search-bar et filter-section)
+            existingItems.forEach(item => item.remove());
+            
+            // Ajouter les nouvelles affiches
+            affiches.forEach(affiche => {
+                const item = createAfficheItem(affiche, false);
+                affichesContainer.appendChild(item);
+            });
+            
+            // Réappliquer les filtres
+            const activeFilter = document.querySelector('.filter-btn-affiches.active');
+            if (activeFilter) {
+                filterAffiches(activeFilter.dataset.filter);
+            }
         }
 
         function displayContacts(contactsEmail, contactsSMS) {
-            // Cette fonction sera appelée pour afficher les contacts depuis Firebase
-            console.log('Contacts email:', contactsEmail);
-            console.log('Contacts SMS:', contactsSMS);
-            // TODO: Mettre à jour l'interface avec les vraies données
+            window.allContactsEmail = contactsEmail;
+            window.allContactsSMS = contactsSMS;
+            
+            // Afficher les contacts email
+            const emailContainer = document.querySelector('#emails-section .contacts-list');
+            emailContainer.innerHTML = '';
+            
+            contactsEmail.forEach(contact => {
+                const item = createContactItem(contact, 'email');
+                emailContainer.appendChild(item);
+            });
+            
+            // Afficher les contacts SMS
+            const smsContainer = document.querySelector('#sms-section .contacts-list');
+            smsContainer.innerHTML = '';
+            
+            contactsSMS.forEach(contact => {
+                const item = createContactItem(contact, 'sms');
+                smsContainer.appendChild(item);
+            });
         }
+
+        // Fonctions d'édition
+        function editAfficheFunc(id) {
+            const affiche = window.allAffiches.find(a => a.id === id);
+            if (!affiche) return;
+            
+            currentEditingId = id;
+            currentEditingType = 'affiche';
+            
+            // Remplir le formulaire
+            document.getElementById('libelle').value = affiche.libelle;
+            document.getElementById('famille').value = affiche.famille;
+            document.getElementById('dateDebut').value = affiche.dateDebut;
+            document.getElementById('dateFin').value = affiche.dateFin;
+            document.getElementById('prix').value = affiche.prix;
+            document.getElementById('unite').value = affiche.unite;
+            document.getElementById('origine').value = affiche.origine;
+            
+            // Changer le titre et le bouton du modal
+            document.querySelector('#createModal .modal-header h3').textContent = '✏️ Modifier l\'affiche';
+            document.querySelector('#createModal .btn').textContent = '💾 Modifier l\'affiche';
+            
+            openModal();
+        }
+
+        async function deleteAfficheFunc(id) {
+            const affiche = window.allAffiches.find(a => a.id === id);
+            if (!affiche) return;
+            
+            if (confirm(`🗑️ Êtes-vous sûr de vouloir supprimer l'affiche "${affiche.libelle}" ?\n\nCette action est irréversible.`)) {
+                try {
+                    await window.deleteAffiches(id);
+                    
+                    // Envoyer notification de suppression
+                    const contactsActifs = window.allContactsEmail.filter(c => c.actif);
+                    if (contactsActifs.length > 0) {
+                        await window.sendEmailNotification(
+                            'Affiche supprimée',
+                            `L'affiche "${affiche.libelle}" a été supprimée.`,
+                            contactsActifs
+                        );
+                    }
+                    
+                    alert(`✅ Affiche "${affiche.libelle}" supprimée avec succès !`);
+                } catch (error) {
+                    alert('❌ Erreur lors de la suppression: ' + error.message);
+                }
+            }
+        }
+
+        function editContactFunc(id, type) {
+            const contacts = type === 'email' ? window.allContactsEmail : window.allContactsSMS;
+            const contact = contacts.find(c => c.id === id);
+            if (!contact) return;
+            
+            currentEditingId = id;
+            currentEditingType = type;
+            
+            // Remplir le formulaire
+            document.getElementById('contactType').value = type;
+            document.getElementById('contactName').value = contact.nom;
+            document.getElementById('contactRole').value = contact.role;
+            document.getElementById('priority').value = contact.priorite;
+            document.getElementById('activeByDefault').checked = contact.actif;
+            
+            if (type === 'email') {
+                document.getElementById('contactEmail').value = contact.email;
+            } else {
+                document.getElementById('contactPhone').value = contact.telephone;
+            }
+            
+            // Changer le titre et le bouton du modal
+            document.querySelector('#contactModal .modal-header h3').textContent = '✏️ Modifier le contact';
+            document.querySelector('#contactModal .btn').textContent = '💾 Modifier le contact';
+            
+            toggleContactFields();
+            openContactModal();
+        }
+
+        async function deleteContactFunc(id, type) {
+            const contacts = type === 'email' ? window.allContactsEmail : window.allContactsSMS;
+            const contact = contacts.find(c => c.id === id);
+            if (!contact) return;
+            
+            if (confirm(`🗑️ Supprimer le contact "${contact.nom}" ?\n\nCette action est irréversible.`)) {
+                try {
+                    await window.deleteContacts(id, type);
+                    alert(`✅ Contact "${contact.nom}" supprimé !`);
+                } catch (error) {
+                    alert('❌ Erreur lors de la suppression: ' + error.message);
+                }
+            }
+        }
+
+        // Redéfinir les fonctions globales
+        window.editAffiche = editAfficheFunc;
+        window.deleteAffiche = deleteAfficheFunc;
+        window.editContact = editContactFunc;
+        window.deleteContact = deleteContactFunc;
 
         // Fonctions de gestion des contacts
         function editContact(id) {

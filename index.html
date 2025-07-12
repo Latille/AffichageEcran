@@ -564,9 +564,18 @@
 
         // Fonctions d'affichage
         function displayAffiches(affiches) {
+            console.log('🎯 displayAffiches appelée avec:', affiches.length, 'affiches');
+            
+            // Sauvegarder les données pour utilisation ultérieure
+            window.lastLoadedAffiches = affiches;
+            
             updateDashboardStats(affiches);
             updateDashboardAffiches(affiches);
             updateAffichesTab(affiches);
+            
+            // Appel direct de updatePlanningTab (maintenant définie globalement)
+            console.log('🔄 Appel updatePlanningTab...');
+            updatePlanningTab(affiches);
         }
 
         function displayContacts(contactsEmail, contactsSMS) {
@@ -1009,6 +1018,12 @@
             
             // Ouvrir le modal
             document.getElementById('editModal').style.display = 'block';
+            
+            // Réinitialiser et reconfigurer la validation
+            setTimeout(() => {
+                resetDateValidation();
+                setupDateValidation();
+            }, 100);
         }
 
         async function editContact(id, type) {
@@ -1051,6 +1066,7 @@
         function closeEditModal() {
             document.getElementById('editModal').style.display = 'none';
             window.currentEditingAffiche = null;
+            resetDateValidation(); // Nettoyer la validation
         }
 
         function closeEditContactModal() {
@@ -1163,8 +1179,294 @@
     </script>
 
     <script>
+        // Variables globales pour le planning
+        window.lastLoadedAffiches = [];
+
+        // Validation des dates dans les formulaires
+        function setupDateValidation() {
+            console.log('🔧 Configuration de la validation des dates...');
+            
+            const validateDates = (dateDebutId, dateFinId) => {
+                const dateDebut = document.getElementById(dateDebutId);
+                const dateFin = document.getElementById(dateFinId);
+                
+                if (!dateDebut || !dateFin) return;
+                
+                console.log(`🔧 Configuration validation pour ${dateDebutId} et ${dateFinId}`);
+                
+                const validateDateFin = () => {
+                    if (!dateDebut.value || !dateFin.value) return;
+                    
+                    // Utiliser des chaînes pour éviter les problèmes de fuseau horaire
+                    const debutStr = dateDebut.value;
+                    const finStr = dateFin.value;
+                    
+                    console.log(`✅ Validation: début=${debutStr}, fin=${finStr}`);
+                    
+                    // Comparer les chaînes directement (format YYYY-MM-DD)
+                    if (finStr < debutStr) {
+                        console.log('❌ Date de fin antérieure à date de début');
+                        dateFin.setCustomValidity('La date de fin doit être égale ou postérieure à la date de début');
+                        dateFin.classList.add('form-validation-error');
+                        
+                        // Afficher un message d'erreur
+                        let errorMsg = dateFin.parentNode.querySelector('.validation-message');
+                        if (!errorMsg) {
+                            errorMsg = document.createElement('span');
+                            errorMsg.className = 'validation-message';
+                            dateFin.parentNode.appendChild(errorMsg);
+                        }
+                        errorMsg.textContent = 'La date de fin doit être égale ou postérieure à la date de début';
+                        
+                        // Désactiver le bouton de soumission
+                        const submitBtn = dateFin.closest('form').querySelector('button[type="submit"]');
+                        if (submitBtn) {
+                            submitBtn.disabled = true;
+                            submitBtn.style.opacity = '0.5';
+                            submitBtn.style.cursor = 'not-allowed';
+                        }
+                    } else {
+                        console.log('✅ Dates valides (fin >= début)');
+                        dateFin.setCustomValidity('');
+                        dateFin.classList.remove('form-validation-error');
+                        
+                        // Supprimer le message d'erreur
+                        const errorMsg = dateFin.parentNode.querySelector('.validation-message');
+                        if (errorMsg) {
+                            errorMsg.remove();
+                        }
+                        
+                        // Réactiver le bouton de soumission
+                        const submitBtn = dateFin.closest('form').querySelector('button[type="submit"]');
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.style.opacity = '1';
+                            submitBtn.style.cursor = 'pointer';
+                        }
+                    }
+                };
+                
+                const updateMinDate = () => {
+                    if (dateDebut.value) {
+                        // Autoriser le même jour (date de début = date de fin)
+                        dateFin.min = dateDebut.value;
+                        console.log(`🗓️ Min date mis à jour: ${dateFin.min}`);
+                        
+                        // Valider immédiatement si une date de fin est déjà sélectionnée
+                        validateDateFin();
+                    } else {
+                        dateFin.min = '';
+                    }
+                };
+                
+                // Supprimer tous les événements existants
+                dateDebut.removeEventListener('change', updateMinDate);
+                dateDebut.removeEventListener('input', updateMinDate);
+                dateFin.removeEventListener('change', validateDateFin);
+                dateFin.removeEventListener('input', validateDateFin);
+                
+                // Ajouter les nouveaux événements
+                dateDebut.addEventListener('change', updateMinDate);
+                dateDebut.addEventListener('input', updateMinDate);
+                dateFin.addEventListener('change', validateDateFin);
+                dateFin.addEventListener('input', validateDateFin);
+                
+                // Validation initiale
+                updateMinDate();
+                console.log(`✅ Validation configurée pour ${dateDebutId} et ${dateFinId}`);
+            };
+            
+            // Validation pour les formulaires de création et d'édition
+            validateDates('dateDebut', 'dateFin');
+            validateDates('editDateDebut', 'editDateFin');
+        }
+
+        // Réinitialiser la validation quand on ouvre un nouveau formulaire
+        function resetDateValidation() {
+            const inputs = ['dateDebut', 'dateFin', 'editDateDebut', 'editDateFin'];
+            inputs.forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.setCustomValidity('');
+                    input.classList.remove('form-validation-error');
+                    input.min = '';
+                    const errorMsg = input.parentNode.querySelector('.validation-message');
+                    if (errorMsg) {
+                        errorMsg.remove();
+                    }
+                    
+                    // Réactiver le bouton de soumission
+                    const form = input.closest('form');
+                    if (form) {
+                        const submitBtn = form.querySelector('button[type="submit"]');
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.style.opacity = '1';
+                            submitBtn.style.cursor = 'pointer';
+                        }
+                    }
+                }
+            });
+        }
+
+        // Mettre à jour le planning avec debug
+        function updatePlanningTab(affiches) {
+            console.log('📅 updatePlanningTab appelée avec:', affiches);
+            
+            const container = document.querySelector('#planningAffiches');
+            if (!container) {
+                console.log('❌ Container #planningAffiches non trouvé');
+                return;
+            }
+            
+            console.log('📅 Planning - Toutes les affiches:', affiches);
+            
+            // Filtrer les affiches (exclure les archivées ET filtrer par semaine courante)
+            const affichesPlanning = affiches.filter(a => {
+                // Exclure les archivées
+                if (a.statut === 'archivee') {
+                    console.log(`📋 Affiche "${a.libelle}" - Archivée, exclue`);
+                    return false;
+                }
+                
+                // Vérifier si l'affiche est active pendant la semaine courante
+                const isActiveThisWeek = isAfficheActiveInWeek(a, currentWeekStart);
+                console.log(`📋 Affiche "${a.libelle}" - Statut: ${a.statut} - Active cette semaine: ${isActiveThisWeek}`);
+                
+                return isActiveThisWeek;
+            });
+            
+            console.log('📅 Planning - Affiches filtrées pour cette semaine:', affichesPlanning);
+            
+            if (affichesPlanning.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        Aucune affiche active pour cette semaine
+                    </div>
+                `;
+                return;
+            }
+            
+            // Générer le HTML des affiches pour le planning
+            const planningHtml = affichesPlanning.map(affiche => {
+                const iconClass = getFamilleIconClass(affiche.famille);
+                const icon = getFamilleIcon(affiche.famille);
+                const statusClass = `status-${affiche.statut}`;
+                const statusText = getStatusText(affiche.statut);
+                const dateDebut = formatDate(affiche.dateDebut);
+                const dateFin = formatDate(affiche.dateFin);
+                
+                // Debug des dates
+                console.log(`📋 ${affiche.libelle} - Début: ${affiche.dateDebut} (${dateDebut}) - Fin: ${affiche.dateFin} (${dateFin})`);
+                
+                return `
+                    <div class="planning-item ${statusClass}">
+                        <div class="planning-item-icon ${iconClass}">${icon}</div>
+                        <div class="planning-item-info">
+                            <h4>${affiche.libelle}</h4>
+                            <p>${affiche.prix}€/${affiche.unite} • ${affiche.origine}</p>
+                            <p class="item-dates">${dateDebut} → ${dateFin}</p>
+                        </div>
+                        <div class="planning-item-actions">
+                            <span class="planning-status-badge ${statusClass}">${statusText}</span>
+                            <div class="planning-item-actions-buttons">
+                                <button class="action-btn edit-btn" onclick="editAffiche('${affiche.id}')">✏️</button>
+                                <button class="action-btn delete-btn" onclick="confirmDeleteAffiche('${affiche.id}', '${affiche.libelle}')">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = planningHtml;
+            console.log('📅 Planning HTML généré et inséré');
+        }
+
+        // Vérifier si une affiche est active pendant une semaine donnée
+        function isAfficheActiveInWeek(affiche, weekStart) {
+            if (!affiche.dateDebut || !affiche.dateFin) {
+                console.log(`⚠️ Affiche "${affiche.libelle}" sans dates valides`);
+                return false;
+            }
+            
+            // Convertir les dates de l'affiche en objets Date
+            const afficheDebut = new Date(affiche.dateDebut);
+            const afficheFin = new Date(affiche.dateFin);
+            
+            // Calculer la fin de la semaine courante
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+            
+            // Normaliser toutes les dates à minuit pour éviter les problèmes d'heures
+            afficheDebut.setHours(0, 0, 0, 0);
+            afficheFin.setHours(23, 59, 59, 999);
+            weekStart.setHours(0, 0, 0, 0);
+            weekEnd.setHours(23, 59, 59, 999);
+            
+            // L'affiche est active si elle chevauche avec la semaine
+            // Chevauchement = (début affiche <= fin semaine) ET (fin affiche >= début semaine)
+            const isActive = afficheDebut <= weekEnd && afficheFin >= weekStart;
+            
+            console.log(`📅 Vérification affiche "${affiche.libelle}":
+                - Affiche: ${afficheDebut.toLocaleDateString('fr-FR')} → ${afficheFin.toLocaleDateString('fr-FR')}
+                - Semaine: ${weekStart.toLocaleDateString('fr-FR')} → ${weekEnd.toLocaleDateString('fr-FR')}
+                - Début affiche (${afficheDebut.getTime()}) <= Fin semaine (${weekEnd.getTime()}) ? ${afficheDebut <= weekEnd}
+                - Fin affiche (${afficheFin.getTime()}) >= Début semaine (${weekStart.getTime()}) ? ${afficheFin >= weekStart}
+                - Active: ${isActive}`);
+            
+            return isActive;
+        }
+
+        // Fonctions utilitaires pour le planning
+        function getFamilleIconClass(famille) {
+            const mapping = {
+                'fruits-legumes': 'category-fruits',
+                'traiteur': 'category-traiteur',
+                'boucherie': 'category-boucherie',
+                'cremerie': 'category-cremerie',
+                'epicerie': 'category-epicerie',
+                'boulangerie': 'category-boulangerie',
+                'autre': 'category-autre'
+            };
+            return mapping[famille] || 'category-autre';
+        }
+
+        function getFamilleIcon(famille) {
+            const mapping = {
+                'fruits-legumes': '🍎',
+                'traiteur': '🥘',
+                'boucherie': '🥩',
+                'cremerie': '🧀',
+                'epicerie': '🛒',
+                'boulangerie': '🥖',
+                'autre': '📦'
+            };
+            return mapping[famille] || '📦';
+        }
+
+        function getStatusText(statut) {
+            const mapping = {
+                'a-creer': 'À créer',
+                'programmee': 'Programmée',
+                'en-diffusion': 'En diffusion',
+                'archivee': 'Archivée'
+            };
+            return mapping[statut] || 'Inconnu';
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR', { 
+                day: '2-digit', 
+                month: '2-digit'
+            });
+        }
+
         // Fonctions de l'interface
         function showTab(tabName) {
+            console.log('🔄 Changement vers onglet:', tabName);
+            
             const contents = document.querySelectorAll('.tab-content');
             contents.forEach(content => content.classList.remove('active'));
             
@@ -1173,14 +1475,28 @@
             
             document.getElementById(tabName).classList.add('active');
             event.target.closest('.tab').classList.add('active');
+            
+            // Initialiser le header de semaine si on va dans l'onglet planning
+            if (tabName === 'planning') {
+                console.log('📅 Initialisation onglet Planning...');
+                setTimeout(updateWeekHeader, 50);
+                
+                // Forcer la mise à jour du planning si on a déjà des données
+                if (window.lastLoadedAffiches && window.lastLoadedAffiches.length > 0) {
+                    console.log('🔄 Forcer mise à jour planning avec données existantes:', window.lastLoadedAffiches.length, 'affiches');
+                    updatePlanningTab(window.lastLoadedAffiches);
+                }
+            }
         }
 
         function openModal() {
             document.getElementById('createModal').style.display = 'block';
+            resetDateValidation(); // Réinitialiser la validation
         }
 
         function closeModal() {
             document.getElementById('createModal').style.display = 'none';
+            resetDateValidation(); // Nettoyer la validation
         }
 
         function openContactModal() {
@@ -1237,12 +1553,18 @@
             }
         }
 
-        // Navigation planning
+        // Navigation planning avec numéro de semaine
         let currentWeekStart = new Date(2025, 6, 8);
 
         function changeWeek(direction) {
             currentWeekStart.setDate(currentWeekStart.getDate() + (direction * 7));
             updateWeekHeader();
+            
+            // Mettre à jour le planning avec les nouvelles dates
+            if (window.lastLoadedAffiches && window.lastLoadedAffiches.length > 0) {
+                console.log('🔄 Mise à jour planning après changement de semaine');
+                updatePlanningTab(window.lastLoadedAffiches);
+            }
         }
 
         function updateWeekHeader() {
@@ -1259,9 +1581,34 @@
             const month = months[currentWeekStart.getMonth()];
             const year = currentWeekStart.getFullYear();
             
+            // Calculer le numéro de semaine
+            const weekNumber = getWeekNumber(currentWeekStart);
+            
             const weekRange = `${startDay} - ${endDay} ${month} ${year}`;
-            document.getElementById('currentWeek').textContent = weekRange;
+            
+            // Vérifier que les éléments existent avant de les modifier
+            const currentWeekElement = document.getElementById('currentWeek');
+            const weekNumberElement = document.getElementById('weekNumber');
+            
+            if (currentWeekElement) {
+                currentWeekElement.textContent = weekRange;
+            }
+            
+            if (weekNumberElement) {
+                weekNumberElement.textContent = `Semaine ${weekNumber}`;
+            }
         }
+
+        function getWeekNumber(date) {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        }
+
+        // Initialiser le header de semaine seulement si on est dans l'onglet planning
+        // updateWeekHeader(); // Supprimé pour éviter l'erreur au chargement
 
         // Event listeners
         document.addEventListener('DOMContentLoaded', function() {
@@ -1282,11 +1629,22 @@
                 window.loginUser();
             });
 
-            // Event listener pour création d'affiche
+            // Event listener pour création d'affiche avec validation
             document.getElementById('createForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
-                const formData = new FormData(this);
+                // Vérifier la validation des dates avant soumission
+                const dateDebut = document.getElementById('dateDebut');
+                const dateFin = document.getElementById('dateFin');
+                
+                if (dateDebut.value && dateFin.value) {
+                    // Comparer les chaînes directement pour éviter les problèmes de fuseau horaire
+                    if (dateFin.value < dateDebut.value) {  // ← CHANGEMENT ICI : < au lieu de <=
+                        window.showErrorMessage('❌ La date de fin doit être égale ou postérieure à la date de début');
+                        return;
+                    }
+                }                
+                            const formData = new FormData(this);
                 const affiche = {
                     libelle: formData.get('libelle'),
                     famille: formData.get('famille'),
@@ -2147,14 +2505,122 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             padding: 0 10px;
         }
 
-        .agenda-header h3 {
+        .week-info {
+            text-align: center;
+        }
+
+        .week-info h3 {
             margin: 0;
             font-size: 18px;
             color: #333;
+        }
+
+        .week-info p {
+            margin: 2px 0 0 0;
+            font-size: 12px;
+            color: #666;
+            font-weight: 400;
+        }
+
+        .planning-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .planning-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: relative;
+            border-left: 4px solid transparent;
+        }
+
+        .planning-item.status-a-creer {
+            border-left-color: #dc3545;
+            background: linear-gradient(135deg, #fff5f5 0%, #fef2f2 100%);
+        }
+
+        .planning-item.status-programmee {
+            border-left-color: #fd7e14;
+            background: linear-gradient(135deg, #fff8f1 0%, #fef3e2 100%);
+        }
+
+        .planning-item.status-en-diffusion {
+            border-left-color: #28a745;
+            background: linear-gradient(135deg, #f0fff4 0%, #dcfce7 100%);
+        }
+
+        .planning-item-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 18px;
+            color: white;
+        }
+
+        .planning-item-info {
+            flex: 1;
+        }
+
+        .planning-item-info h4 {
+            font-size: 14px;
+            margin-bottom: 3px;
+            color: #333;
+        }
+
+        .planning-item-info p {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .planning-item-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .planning-item-actions-buttons {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .planning-status-badge {
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 500;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .planning-status-badge.status-a-creer {
+            background: #dc3545;
+            color: white;
+        }
+
+        .planning-status-badge.status-programmee {
+            background: #fd7e14;
+            color: white;
+        }
+
+        .planning-status-badge.status-en-diffusion {
+            background: #28a745;
+            color: white;
         }
 
         .nav-btn {
@@ -2483,28 +2949,16 @@
         <div id="planning" class="tab-content">
             <div class="agenda-header">
                 <button class="nav-btn" onclick="changeWeek(-1)">‹</button>
-                <h3 id="currentWeek">8 - 14 Juillet 2025</h3>
+                <div class="week-info">
+                    <h3 id="currentWeek">8 - 14 Juillet 2025</h3>
+                    <p id="weekNumber">Semaine 28</p>
+                </div>
                 <button class="nav-btn" onclick="changeWeek(1)">›</button>
             </div>
             
-            <div class="alerts-section">
-                <div class="alert-item">
-                    <span class="alert-dot">🔴</span>
-                    <span class="alert-text">Planning disponible après création d'affiches</span>
-                </div>
-            </div>
-            
-            <div class="agenda-container">
-                <div class="agenda-day today">
-                    <div class="day-title">
-                        <span class="day-name">Aujourd'hui</span>
-                        <span class="today-indicator">Mercredi 10 Juillet</span>
-                    </div>
-                    <div class="day-events">
-                        <div class="empty-state" style="padding: 20px;">
-                            Aucun événement programmé
-                        </div>
-                    </div>
+            <div id="planningAffiches" class="planning-container">
+                <div class="empty-state">
+                    Aucune affiche à planifier pour le moment
                 </div>
             </div>
         </div>

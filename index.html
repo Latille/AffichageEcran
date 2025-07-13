@@ -866,7 +866,7 @@
             }
         }
 
-        /* Responsive */
+       /* Responsive */
         @media screen and (max-width: 420px) {
             .container {
                 max-width: 100%;
@@ -878,11 +878,13 @@
                 max-width: 350px;
             }
             
+            /* SOLUTION 1: Forcer l'affichage côte à côte sur mobile */
             .form-row {
-                grid-template-columns: 1fr;
-                gap: 10px;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 6px !important;
             }
         }
+
     </style>
 </head>
 <body>

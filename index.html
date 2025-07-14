@@ -1204,22 +1204,6 @@
                     Aucune affiche en diffusion pour le moment
                 </div>
             </div>
-
-            <div class="settings-card">
-                <h4>📈 Statistiques des notifications</h4>
-                <div class="setting-item">
-                    <div class="setting-info">
-                        <h5>Notifications envoyées aujourd'hui</h5>
-                        <p id="todayNotifications">0 notification(s)</p>
-                    </div>
-                </div>
-                <div class="setting-item">
-                    <div class="setting-info">
-                        <h5>Utilisateurs actifs</h5>
-                        <p id="activeUsers">0 utilisateur(s) connecté(s)</p>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- Planning -->
@@ -1397,6 +1381,22 @@
                     <button class="test-notification-btn" onclick="testNotification()">
                         🧪 Tester les notifications
                     </button>
+                </div>
+
+                <div class="settings-card">
+                    <h4>📈 Statistiques des notifications</h4>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h5>Notifications envoyées aujourd'hui</h5>
+                            <p id="todayNotifications">0 notification(s)</p>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h5>Utilisateurs actifs</h5>
+                            <p id="activeUsers">0 utilisateur(s) connecté(s)</p>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="settings-card">
@@ -2680,6 +2680,25 @@
         async function sendPushNotification(user, type, message) {
             console.log('📤 Envoi notification push pour:', user.firstName, user.lastName);
             
+            // Forcer une vérification de permission fraîche
+            const currentPermission = Notification.permission;
+            console.log('📋 Vérification permission avant envoi:', currentPermission);
+            
+            if (currentPermission !== 'granted') {
+                console.log('❌ Permission non accordée, tentative de demande...');
+                try {
+                    const newPermission = await Notification.requestPermission();
+                    console.log('📋 Nouvelle permission obtenue:', newPermission);
+                    if (newPermission !== 'granted') {
+                        console.log('❌ Permission définitivement refusée');
+                        return Promise.resolve();
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur demande permission:', error);
+                    return Promise.resolve();
+                }
+            }
+            
             const title = `📺 Gestion Affichage - ${getNotificationTypeLabel(type)}`;
             const success = await showNotificationSafe(title, message, false);
             
@@ -2858,27 +2877,47 @@
                     
                     // SEULEMENT pour les NOUVEAUX ajouts (pas les chargements initiaux)
                     if (changeType === 'added') {
-                        // Vérifier que c'est vraiment nouveau (créé dans les dernières 10 secondes)
+                        // Vérifier que c'est vraiment nouveau avec plusieurs méthodes
                         const now = new Date();
-                        const afficheDate = affiche.dateCreation?.toDate ? affiche.dateCreation.toDate() : new Date(affiche.dateCreation);
-                        const timeDiff = now - afficheDate;
+                        let afficheDate = null;
                         
-                        console.log('⏰ Différence de temps:', timeDiff, 'ms');
+                        // Méthode 1: Si serverTimestamp existe et est valide
+                        if (affiche.dateCreation) {
+                            if (affiche.dateCreation.toDate) {
+                                afficheDate = affiche.dateCreation.toDate();
+                            } else if (affiche.dateCreation.seconds) {
+                                afficheDate = new Date(affiche.dateCreation.seconds * 1000);
+                            } else {
+                                afficheDate = new Date(affiche.dateCreation);
+                            }
+                        }
                         
-                        // Si créé il y a moins de 10 secondes = vraiment nouveau
-                        if (timeDiff < 10000) {
-                            console.log('🆕 Nouvelle affiche détectée:', affiche.libelle);
+                        console.log('⏰ Date de création détectée:', afficheDate);
+                        console.log('⏰ Date actuelle:', now);
+                        
+                        // Si pas de date valide ou date bizarre (1970), considérer comme nouveau
+                        if (!afficheDate || afficheDate.getFullYear() < 2020) {
+                            console.log('🆕 Date invalide détectée, considéré comme nouveau:', affiche.libelle);
                             sendNotification('creation', 
                                 `Nouvelle affiche créée: ${affiche.libelle} (${affiche.prix}€/${affiche.unite})`
                             );
                         } else {
-                            console.log('📚 Affiche existante ignorée (création:', afficheDate, ')');
+                            const timeDiff = now - afficheDate;
+                            console.log('⏰ Différence de temps:', timeDiff, 'ms');
+                            
+                            // Si créé il y a moins de 30 secondes = vraiment nouveau (augmenté de 10s à 30s)
+                            if (timeDiff < 30000) {
+                                console.log('🆕 Nouvelle affiche détectée (timing):', affiche.libelle);
+                                sendNotification('creation', 
+                                    `Nouvelle affiche créée: ${affiche.libelle} (${affiche.prix}€/${affiche.unite})`
+                                );
+                            } else {
+                                console.log('📚 Affiche existante ignorée (création:', afficheDate, ')');
+                            }
                         }
                         
                     } else if (changeType === 'modified') {
                         // Pour les modifications, vérifier les changements de statut importants
-                        const oldData = change.oldIndex !== -1 ? change.doc.data() : null;
-                        
                         if (affiche.statut === 'en-diffusion') {
                             console.log('📺 Affiche mise en diffusion:', affiche.libelle);
                             sendNotification('diffusion', 
@@ -3276,17 +3315,19 @@
 
         async function saveAffiche(affiche) {
             try {
+                console.log('💾 Sauvegarde nouvelle affiche:', affiche.libelle);
                 const docRef = await addDoc(collection(db, 'affiches'), {
                     ...affiche,
                     dateCreation: serverTimestamp(),
                     utilisateurId: window.currentUser.uid,
                     createdBy: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`
                 });
-                console.log('Affiche sauvée avec ID:', docRef.id);
+                console.log('✅ Affiche sauvée avec ID:', docRef.id);
+                console.log('🔔 Attente du déclenchement des notifications automatiques...');
                 await loadAffiches();
                 return docRef.id;
             } catch (error) {
-                console.error('Erreur sauvegarde affiche:', error);
+                console.error('❌ Erreur sauvegarde affiche:', error);
                 throw error;
             }
         }

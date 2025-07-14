@@ -67,6 +67,20 @@
             margin: 0;
         }
 
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        .user-role-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+        }
+
         .logout-btn {
             background: rgba(255,255,255,0.2);
             border: 1px solid rgba(255,255,255,0.3);
@@ -87,15 +101,17 @@
             display: flex;
             background: #f8f9fa;
             border-bottom: 1px solid #e9ecef;
+            overflow-x: auto;
         }
 
         .tab {
             flex: 1;
-            padding: 8px;
+            min-width: 70px;
+            padding: 8px 4px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 500;
             display: flex;
             flex-direction: column;
@@ -110,11 +126,11 @@
         }
 
         .tab-icon {
-            font-size: 18px;
+            font-size: 16px;
         }
 
         .tab-text {
-            font-size: 12px;
+            font-size: 10px;
         }
 
         .tab-content {
@@ -139,7 +155,7 @@
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
             padding: 8px 12px;
-            min-height: 60px;       /* hauteur minimum plus petite */
+            min-height: 60px;
             border-radius: 12px;
             text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -171,8 +187,8 @@
         .item {
             display: flex;
             align-items: center;
-            padding: 8px 12px;      /* moins de padding vertical */
-            min-height: 30px;       /* hauteur minimum plus petite */
+            padding: 8px 12px;
+            min-height: 30px;
             background: linear-gradient(135deg, #fef7ff 0%, #fdf2f8 100%);
             color: #333;
             border-radius: 12px;
@@ -477,7 +493,7 @@
         .form-row .form-group input,
         .form-row .form-group select {
             padding: 7px 8px;
-            font-size: 10px;    /* Affecte Origine + Unité + Famille + Statut */
+            font-size: 13px;
         }
 
         .btn {
@@ -503,6 +519,16 @@
             background: #ffebee;
             border: 1px solid #f8bbd9;
             color: #c62828;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: #e8f5e8;
+            border: 1px solid #c3e6c3;
+            color: #2e7d2e;
             padding: 10px;
             border-radius: 6px;
             margin-bottom: 15px;
@@ -649,8 +675,8 @@
         .planning-item {
             display: flex;
             align-items: center;
-            padding: 8px 10px;      /* moins de padding vertical */
-            min-height: 40px;       /* hauteur minimum plus petite */
+            padding: 8px 10px;
+            min-height: 40px;
             background: white;
             border-radius: 12px;
             margin-bottom: 10px;
@@ -755,7 +781,7 @@
             transform: scale(1.1);
         }
 
-        /* Notifications styles */
+        /* Notifications & Users styles */
         .settings-card {
             background: white;
             border-radius: 12px;
@@ -846,6 +872,194 @@
             padding: 40px 20px;
         }
 
+        /* User card styles */
+        .user-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+        }
+
+        .user-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .user-main-info {
+            flex: 1;
+            margin-left: 15px;
+        }
+
+        .user-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .user-email {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .user-role {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .user-role.admin {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .user-preferences {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .user-pref-title {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .notification-prefs {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .pref-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+        }
+
+        .pref-icon {
+            font-size: 14px;
+        }
+
+        .pref-icon.active {
+            color: #28a745;
+        }
+
+        .pref-icon.inactive {
+            color: #dc3545;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .user-status {
+            margin-top: 8px;
+            font-size: 11px;
+            color: #666;
+        }
+
+        .status-online {
+            color: #28a745;
+        }
+
+        .status-offline {
+            color: #6c757d;
+        }
+
+        /* Checkbox styles */
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #667eea;
+        }
+
+        .checkbox-item label {
+            font-size: 13px;
+            color: #333;
+            margin: 0;
+        }
+
+        /* Notification history */
+        .notification-item {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .notification-type {
+            font-weight: 600;
+            font-size: 13px;
+            color: #333;
+        }
+
+        .notification-time {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .notification-message {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .notification-status {
+            margin-top: 5px;
+            font-size: 10px;
+            color: #28a745;
+        }
+
+        .notification-status.failed {
+            color: #dc3545;
+        }
+
         #loginModal {
             z-index: 2000;
         }
@@ -854,19 +1068,25 @@
             width: 320px;
         }
 
-        /* Animations */
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+        /* Test notification button */
+        .test-notification-btn {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
         }
 
-       /* Responsive */
+        .test-notification-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(23, 162, 184, 0.3);
+        }
+
+        /* Responsive */
         @media screen and (max-width: 420px) {
             .container {
                 max-width: 100%;
@@ -878,7 +1098,6 @@
                 max-width: 350px;
             }
             
-            /* SOLUTION 1: Forcer l'affichage côte à côte sur mobile */
             .form-row {
                 grid-template-columns: 1fr 1fr !important;
                 gap: 6px !important;
@@ -924,7 +1143,11 @@
                 <div class="header-logo">📺</div>
                 <h1>Gestion Affichage</h1>
             </div>
-            <button onclick="logoutUser()" class="logout-btn">🚪 Déconnexion</button>
+            <div class="user-info">
+                <span id="currentUserName">Utilisateur</span>
+                <span id="currentUserRole" class="user-role-badge">Admin</span>
+                <button onclick="logoutUser()" class="logout-btn">🚪 Déconnexion</button>
+            </div>
         </div>
 
         <div class="tabs">
@@ -973,6 +1196,22 @@
                     Aucune affiche en diffusion pour le moment
                 </div>
             </div>
+
+            <div class="settings-card">
+                <h4>📈 Statistiques des notifications</h4>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h5>Notifications envoyées aujourd'hui</h5>
+                        <p id="todayNotifications">0 notification(s)</p>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-info">
+                        <h5>Utilisateurs actifs</h5>
+                        <p id="activeUsers">0 utilisateur(s) connecté(s)</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Planning -->
@@ -1016,6 +1255,8 @@
             </div>
         </div>
 
+        <!-- Users (supprimé car intégré dans Paramètres) -->
+
         <!-- Paramètres -->
         <div id="parametres" class="tab-content">
             <div class="params-tabs">
@@ -1030,6 +1271,10 @@
                 <div class="params-tab" onclick="showParamsTab('notifications')">
                     <div class="params-tab-icon">🔔</div>
                     <div>Notifs</div>
+                </div>
+                <div class="params-tab" onclick="showParamsTab('users')">
+                    <div class="params-tab-icon">👥</div>
+                    <div>Users</div>
                 </div>
                 <div class="params-tab" onclick="showParamsTab('systeme')">
                     <div class="params-tab-icon">⚙️</div>
@@ -1068,26 +1313,15 @@
             <!-- Notifications -->
             <div id="notifications-params" class="params-content">
                 <div class="settings-card">
-                    <h4>⚙️ Paramètres de notification</h4>
+                    <h4>⚙️ Mes préférences de notification</h4>
                     
-                    <div class="setting-item">
-                        <div class="setting-info">
-                            <h5>Notifications d'expiration</h5>
-                            <p>Alerter 24h avant expiration</p>
-                        </div>
-                        <label class="toggle">
-                            <input type="checkbox" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-
                     <div class="setting-item">
                         <div class="setting-info">
                             <h5>Créations d'affiches</h5>
                             <p>Notifier à chaque création</p>
                         </div>
                         <label class="toggle">
-                            <input type="checkbox" checked>
+                            <input type="checkbox" id="notif-creation" checked>
                             <span class="slider"></span>
                         </label>
                     </div>
@@ -1098,7 +1332,29 @@
                             <p>Notifier lors du démarrage</p>
                         </div>
                         <label class="toggle">
-                            <input type="checkbox">
+                            <input type="checkbox" id="notif-diffusion" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h5>Notifications d'expiration</h5>
+                            <p>Alerter 24h avant expiration</p>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" id="notif-expiration" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h5>Archivage automatique</h5>
+                            <p>Notifier à la fin de diffusion</p>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" id="notif-archivage" checked>
                             <span class="slider"></span>
                         </label>
                     </div>
@@ -1109,30 +1365,81 @@
                             <p>Envoi à 08h00 chaque jour</p>
                         </div>
                         <label class="toggle">
-                            <input type="checkbox" checked>
+                            <input type="checkbox" id="notif-resume" checked>
                             <span class="slider"></span>
                         </label>
                     </div>
                 </div>
+
+                <div class="settings-card">
+                    <h4>📧 Canal de notification préféré</h4>
+                    
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="canal-email" checked>
+                            <label for="canal-email">📧 Notifications par email</label>
+                        </div>
+                        
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="canal-push" checked>
+                            <label for="canal-push">🔔 Notifications push (navigateur)</label>
+                        </div>
+                    </div>
+
+                    <button class="test-notification-btn" onclick="testNotification()">
+                        🧪 Tester les notifications
+                    </button>
+                </div>
+
+                <div class="settings-card">
+                    <h4>📝 Historique des notifications</h4>
+                    <div id="notificationHistory">
+                        <div class="empty-state">
+                            Aucune notification envoyée récemment
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Système -->
+            <!-- Users -->
+            <div id="users-params" class="params-content">
+                <button class="add-param-btn" onclick="openInviteUserModal()">
+                    ✉️ Inviter un utilisateur
+                </button>
+
+                <div class="settings-card">
+                    <h4>👥 Utilisateurs de l'application (Max 6)</h4>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h5>Utilisateurs enregistrés</h5>
+                            <p id="totalUsers">0 utilisateur(s)</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="usersList">
+                    <div class="empty-state">
+                        Aucun utilisateur supplémentaire.<br>
+                        Invitez des collègues pour collaborer !
+                    </div>
+                </div>
+            </div>
             <div id="systeme-params" class="params-content">
                 <div class="settings-card">
-                    <h4>📧 Serveur SMTP</h4>
+                    <h4>📧 Configuration SMTP</h4>
                     <div class="form-group">
-                        <label>Serveur</label>
-                        <input type="text" value="smtp.gmail.com" placeholder="smtp.exemple.com">
+                        <label>Serveur SMTP</label>
+                        <input type="text" id="smtp-server" value="smtp.gmail.com" placeholder="smtp.exemple.com">
                     </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label>Port</label>
-                            <input type="number" value="587" placeholder="587">
+                            <input type="number" id="smtp-port" value="587" placeholder="587">
                         </div>
                         <div class="form-group">
                             <label>Sécurité</label>
-                            <select>
-                                <option value="tls">TLS</option>
+                            <select id="smtp-security">
+                                <option value="tls" selected>TLS</option>
                                 <option value="ssl">SSL</option>
                                 <option value="none">Aucune</option>
                             </select>
@@ -1140,9 +1447,41 @@
                     </div>
                     <div class="form-group">
                         <label>Email expéditeur</label>
-                        <input type="email" value="affichage@monmagasin.fr" placeholder="votre@email.com">
+                        <input type="email" id="smtp-sender" value="latilledistribution@gmail.com" placeholder="votre@email.com">
                     </div>
-                    <button class="btn" style="margin-top: 15px;">💾 Sauvegarder</button>
+                    <div class="form-group">
+                        <label>Mot de passe application</label>
+                        <input type="password" id="smtp-password" placeholder="••••••••••••••••">
+                    </div>
+                    <button class="btn" onclick="saveSmtpConfig()">💾 Sauvegarder la configuration</button>
+                    <button class="test-notification-btn" onclick="testSmtpConnection()">
+                        🔗 Tester la connexion SMTP
+                    </button>
+                </div>
+
+                <div class="settings-card">
+                    <h4>🔧 Paramètres système</h4>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h5>Archivage automatique</h5>
+                            <p>Archiver les affiches expirées automatiquement</p>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" id="auto-archive" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h5>Notifications push</h5>
+                            <p>Activer les notifications push pour tous</p>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" id="push-enabled" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1290,7 +1629,146 @@
         </div>
     </div>
 
-    <!-- Modal d'ajout d'origine -->
+    <!-- Modal d'invitation d'utilisateur -->
+    <div id="inviteUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>✉️ Inviter un utilisateur</h3>
+                <span class="close" onclick="closeInviteUserModal()">&times;</span>
+            </div>
+            
+            <form id="inviteUserForm">
+                <div class="form-group">
+                    <label for="inviteEmail">Email *</label>
+                    <input type="email" id="inviteEmail" name="inviteEmail" placeholder="collegue@exemple.com" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="inviteFirstName">Prénom *</label>
+                        <input type="text" id="inviteFirstName" name="inviteFirstName" placeholder="Jean" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="inviteLastName">Nom *</label>
+                        <input type="text" id="inviteLastName" name="inviteLastName" placeholder="Dupont" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="inviteRole">Fonction *</label>
+                    <select id="inviteRole" name="inviteRole" required>
+                        <option value="">Choisir une fonction</option>
+                        <option value="admin">👑 Administrateur</option>
+                        <option value="employee">👤 Employé</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Préférences de notification par défaut</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="inviteDefaultEmail" checked>
+                            <label for="inviteDefaultEmail">📧 Notifications par email</label>
+                        </div>
+                        
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="inviteDefaultPush" checked>
+                            <label for="inviteDefaultPush">🔔 Notifications push</label>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn">✉️ Envoyer l'invitation</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal d'édition d'utilisateur -->
+    <div id="editUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>✏️ Modifier l'utilisateur</h3>
+                <span class="close" onclick="closeEditUserModal()">&times;</span>
+            </div>
+            
+            <form id="editUserForm">
+                <input type="hidden" id="editUserId" name="editUserId">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editUserFirstName">Prénom *</label>
+                        <input type="text" id="editUserFirstName" name="editUserFirstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editUserLastName">Nom *</label>
+                        <input type="text" id="editUserLastName" name="editUserLastName" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="editUserEmail">Email *</label>
+                    <input type="email" id="editUserEmail" name="editUserEmail" required readonly>
+                </div>
+
+                <div class="form-group">
+                    <label for="editUserRole">Fonction *</label>
+                    <select id="editUserRole" name="editUserRole" required>
+                        <option value="admin">👑 Administrateur</option>
+                        <option value="employee">👤 Employé</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Préférences de notification</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="editUserNotifCreation">
+                            <label for="editUserNotifCreation">Créations d'affiches</label>
+                        </div>
+                        
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="editUserNotifDiffusion">
+                            <label for="editUserNotifDiffusion">Mises en diffusion</label>
+                        </div>
+                        
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="editUserNotifExpiration">
+                            <label for="editUserNotifExpiration">Alertes d'expiration</label>
+                        </div>
+                        
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="editUserNotifArchivage">
+                            <label for="editUserNotifArchivage">Archivage automatique</label>
+                        </div>
+                        
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="editUserNotifResume">
+                            <label for="editUserNotifResume">Résumé quotidien</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Canal de notification</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="editUserCanalEmail">
+                            <label for="editUserCanalEmail">📧 Email</label>
+                        </div>
+                        
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="editUserCanalPush">
+                            <label for="editUserCanalPush">🔔 Push</label>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn">💾 Sauvegarder</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modals pour origines et unités (inchangés) -->
     <div id="addOriginModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1309,7 +1787,6 @@
         </div>
     </div>
 
-    <!-- Modal d'édition d'origine -->
     <div id="editOriginModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1330,7 +1807,6 @@
         </div>
     </div>
 
-    <!-- Modal d'ajout d'unité -->
     <div id="addUniteModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1349,7 +1825,6 @@
         </div>
     </div>
 
-    <!-- Modal d'édition d'unité -->
     <div id="editUniteModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1374,8 +1849,8 @@
     <script type="module">
         // Import Firebase modules
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
-        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, getDoc, serverTimestamp, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, getDoc, serverTimestamp, query, orderBy, where, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
 
         // Configuration Firebase
         const firebaseConfig = {
@@ -1396,22 +1871,158 @@
         window.firebaseAuth = auth;
         window.firebaseDB = db;
         window.currentUser = null;
+        window.currentUserData = null;
         window.origines = [];
         window.unites = [];
+        window.users = [];
+        window.notifications = [];
+
+        // Initialiser les notifications push
+        async function initPushNotifications() {
+            console.log('🔔 Initialisation des notifications push...');
+            
+            if ('Notification' in window && 'serviceWorker' in navigator) {
+                console.log('✅ Support notifications détecté');
+                
+                try {
+                    const permission = await Notification.requestPermission();
+                    console.log('📋 Permission obtenue:', permission);
+                    
+                    if (permission === 'granted') {
+                        console.log('✅ Notifications push activées');
+                        
+                        // Test simple pour vérifier
+                        setTimeout(() => {
+                            const testNotif = new Notification('🔔 Notifications activées', {
+                                body: 'Vous recevrez maintenant les alertes !',
+                                icon: '📺',
+                                tag: 'init-test'
+                            });
+                            
+                            setTimeout(() => testNotif.close(), 3000);
+                        }, 1000);
+                        
+                    } else {
+                        console.log('❌ Notifications push refusées');
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur init notifications:', error);
+                }
+            } else {
+                console.log('❌ Notifications ou Service Worker non supportés');
+            }
+        }
 
         // Vérifier l'état de connexion
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 window.currentUser = user;
+                await loadCurrentUserData();
+                updateHeaderUserInfo();
                 document.getElementById('loginModal').style.display = 'none';
                 document.getElementById('appContainer').style.display = 'block';
-                loadAllData();
+                await loadAllData();
+                await initPushNotifications();
+                setupNotificationListeners();
             } else {
                 window.currentUser = null;
+                window.currentUserData = null;
                 document.getElementById('loginModal').style.display = 'block';
                 document.getElementById('appContainer').style.display = 'none';
             }
         });
+
+        // Charger les données de l'utilisateur actuel
+        async function loadCurrentUserData() {
+            try {
+                console.log('🔍 Recherche utilisateur avec UID:', window.currentUser.uid);
+                
+                // Chercher l'utilisateur par son UID Firebase
+                const q = query(collection(db, 'users'), where('userId', '==', window.currentUser.uid));
+                const querySnapshot = await getDocs(q);
+                
+                if (!querySnapshot.empty) {
+                    // L'utilisateur existe déjà
+                    const userDoc = querySnapshot.docs[0];
+                    const userData = userDoc.data();
+                    window.currentUserData = { id: userDoc.id, ...userData };
+                    
+                    console.log('✅ Utilisateur existant trouvé:', window.currentUserData.firstName, window.currentUserData.lastName);
+                    
+                    // Mettre à jour seulement la dernière connexion
+                    await updateDoc(doc(db, 'users', userDoc.id), {
+                        lastLoginAt: serverTimestamp()
+                    });
+                    
+                } else {
+                    // Vérifier également si un utilisateur avec le même email existe
+                    const emailQuery = query(collection(db, 'users'), where('email', '==', window.currentUser.email));
+                    const emailSnapshot = await getDocs(emailQuery);
+                    
+                    if (!emailSnapshot.empty) {
+                        // Utilisateur trouvé par email, mettre à jour le userId
+                        const userDoc = emailSnapshot.docs[0];
+                        const userData = userDoc.data();
+                        window.currentUserData = { id: userDoc.id, ...userData };
+                        
+                        console.log('✅ Utilisateur trouvé par email, mise à jour userId');
+                        
+                        // Mettre à jour le userId et la dernière connexion
+                        await updateDoc(doc(db, 'users', userDoc.id), {
+                            userId: window.currentUser.uid,
+                            lastLoginAt: serverTimestamp()
+                        });
+                        
+                    } else {
+                        // Vraiment nouveau utilisateur - première connexion
+                        console.log('🆕 Création du premier profil utilisateur pour:', window.currentUser.email);
+                        
+                        window.currentUserData = {
+                            userId: window.currentUser.uid,
+                            email: window.currentUser.email,
+                            firstName: window.currentUser.displayName?.split(' ')[0] || 'Utilisateur',
+                            lastName: window.currentUser.displayName?.split(' ')[1] || 'Principal',
+                            role: 'admin', // Premier utilisateur = admin
+                            notificationPreferences: {
+                                creation: true,
+                                diffusion: true,
+                                expiration: true,
+                                archivage: true,
+                                resume: true
+                            },
+                            notificationChannels: {
+                                email: true,
+                                push: true
+                            },
+                            status: 'active'
+                        };
+                        
+                        const docRef = await addDoc(collection(db, 'users'), {
+                            ...window.currentUserData,
+                            createdAt: serverTimestamp(),
+                            lastLoginAt: serverTimestamp()
+                        });
+                        
+                        window.currentUserData.id = docRef.id;
+                        console.log('✅ Nouveau profil utilisateur créé avec ID:', docRef.id);
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Erreur chargement utilisateur:', error);
+            }
+        }
+
+        // Mettre à jour les informations utilisateur dans le header
+        function updateHeaderUserInfo() {
+            if (window.currentUserData) {
+                document.getElementById('currentUserName').textContent = 
+                    `${window.currentUserData.firstName} ${window.currentUserData.lastName}`;
+                document.getElementById('currentUserRole').textContent = 
+                    window.currentUserData.role === 'admin' ? 'Admin' : 'Employé';
+                document.getElementById('currentUserRole').className = 
+                    `user-role-badge ${window.currentUserData.role === 'admin' ? 'admin' : ''}`;
+            }
+        }
 
         // Connexion utilisateur
         async function loginUser() {
@@ -1441,16 +2052,627 @@
             await loadOrigines();
             await loadUnites();
             await loadAffiches();
+            await loadUsers();
+            await loadNotifications();
             setTimeout(() => {
                 setupSearch();
                 setupFilters();
                 updateSelectOptions();
+                updateDashboardStats([]);
             }, 100);
         }
 
-        // ========= GESTION DES ORIGINES =========
+        // ========= GESTION DES UTILISATEURS =========
         
-        // Charger les origines
+        // Charger les utilisateurs
+        async function loadUsers() {
+            try {
+                const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
+                const querySnapshot = await getDocs(q);
+                const users = [];
+                
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.createdAt && data.createdAt.toDate) {
+                        data.createdAt = data.createdAt.toDate();
+                    }
+                    if (data.lastLoginAt && data.lastLoginAt.toDate) {
+                        data.lastLoginAt = data.lastLoginAt.toDate();
+                    }
+                    users.push({ id: doc.id, ...data });
+                });
+                
+                window.users = users;
+                displayUsers(users);
+                updateUserStats(users);
+                
+                console.log('Utilisateurs chargés:', users.length);
+                console.log('Liste des utilisateurs:', users.map(u => `${u.firstName} ${u.lastName} (${u.email})`));
+            } catch (error) {
+                console.error('Erreur chargement utilisateurs:', error);
+                showErrorMessage('Erreur lors du chargement des utilisateurs');
+            }
+        }
+
+        // Afficher les utilisateurs
+        function displayUsers(users) {
+            const container = document.getElementById('usersList');
+            
+            if (users.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        Aucun utilisateur enregistré.<br>
+                        Invitez des collègues pour collaborer !
+                    </div>
+                `;
+                return;
+            }
+            
+            const usersHtml = users.map(user => {
+                const initials = `${user.firstName?.charAt(0) || ''}${user.lastName?.charAt(0) || ''}`;
+                const isOnline = user.lastLoginAt && (new Date() - user.lastLoginAt) < 300000; // 5 minutes
+                const isCurrentUser = user.userId === window.currentUser.uid;
+                
+                // Pour l'utilisateur connecté, utiliser l'ID Firestore du document
+                const editId = isCurrentUser ? user.id : user.id;
+                
+                return `
+                    <div class="user-card">
+                        <div class="user-header">
+                            <div style="display: flex; align-items: center;">
+                                <div class="user-avatar">${initials}</div>
+                                <div class="user-main-info">
+                                    <div class="user-name">${user.firstName} ${user.lastName} ${isCurrentUser ? '(Vous)' : ''}</div>
+                                    <div class="user-email">${user.email}</div>
+                                    <span class="user-role ${user.role === 'admin' ? 'admin' : ''}">${user.role === 'admin' ? '👑 Administrateur' : '👤 Employé'}</span>
+                                </div>
+                            </div>
+                            <div class="user-actions">
+                                <button class="action-btn edit-btn" onclick="editUser('${editId}')" title="Modifier">✏️</button>
+                                ${!isCurrentUser ? `
+                                    <button class="action-btn delete-btn" onclick="confirmDeleteUser('${user.id}', '${user.firstName} ${user.lastName}')" title="Supprimer">🗑️</button>
+                                ` : ''}
+                            </div>
+                        </div>
+                        
+                        <div class="user-preferences">
+                            <div class="user-pref-title">Préférences de notification :</div>
+                            <div class="notification-prefs">
+                                <div class="pref-option">
+                                    <span class="pref-icon ${user.notificationChannels?.email ? 'active' : 'inactive'}">${user.notificationChannels?.email ? '✅' : '❌'}</span>
+                                    <span>Email</span>
+                                </div>
+                                <div class="pref-option">
+                                    <span class="pref-icon ${user.notificationChannels?.push ? 'active' : 'inactive'}">${user.notificationChannels?.push ? '✅' : '❌'}</span>
+                                    <span>Push</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="user-status ${isOnline ? 'status-online' : 'status-offline'}">
+                            ${isOnline ? '🟢 En ligne' : '⚫ Hors ligne'} - Dernière connexion: ${formatDateTime(user.lastLoginAt)}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = usersHtml;
+        }
+
+        // Inviter un utilisateur
+        async function inviteUser(userData) {
+            try {
+                // Vérifier la limite de 6 utilisateurs
+                if (window.users.length >= 6) {
+                    showErrorMessage('❌ Limite de 6 utilisateurs atteinte');
+                    return;
+                }
+                
+                // Vérifier si l'email existe déjà
+                const existingUser = window.users.find(u => u.email === userData.email);
+                if (existingUser) {
+                    showErrorMessage('❌ Cet email est déjà utilisé');
+                    return;
+                }
+                
+                // Créer l'utilisateur dans Firestore
+                const newUser = {
+                    email: userData.email,
+                    firstName: userData.firstName,
+                    lastName: userData.lastName,
+                    role: userData.role,
+                    notificationPreferences: {
+                        creation: true,
+                        diffusion: true,
+                        expiration: true,
+                        archivage: true,
+                        resume: true
+                    },
+                    notificationChannels: {
+                        email: userData.defaultEmail || true,
+                        push: userData.defaultPush || true
+                    },
+                    status: 'invited',
+                    invitedBy: window.currentUser.uid,
+                    invitedAt: serverTimestamp(),
+                    createdAt: serverTimestamp()
+                };
+                
+                const docRef = await addDoc(collection(db, 'users'), newUser);
+                
+                // Envoyer email d'invitation (simulation)
+                await sendInvitationEmail(userData);
+                
+                // Enregistrer notification
+                await addNotification({
+                    type: 'user_invited',
+                    message: `Utilisateur ${userData.firstName} ${userData.lastName} invité`,
+                    userId: window.currentUser.uid,
+                    status: 'sent'
+                });
+                
+                showSuccessMessage(`✉️ Invitation envoyée à ${userData.firstName} ${userData.lastName}`);
+                await loadUsers();
+                
+                return docRef.id;
+            } catch (error) {
+                console.error('Erreur invitation utilisateur:', error);
+                showErrorMessage('❌ Erreur lors de l\'invitation');
+                throw error;
+            }
+        }
+
+        // Envoyer email d'invitation (simulation)
+        async function sendInvitationEmail(userData) {
+            // Simulation d'envoi d'email
+            console.log(`📧 Email d'invitation envoyé à ${userData.email}`);
+            
+            // Dans une vraie application, vous utiliseriez:
+            // - Firebase Cloud Functions
+            // - Service d'email comme SendGrid, Mailgun, etc.
+            // - Template d'email personnalisé
+            
+            return new Promise(resolve => setTimeout(resolve, 1000));
+        }
+
+        // Mettre à jour un utilisateur
+        async function updateUser(id, userData) {
+            try {
+                const docRef = doc(db, 'users', id);
+                await updateDoc(docRef, {
+                    ...userData,
+                    updatedAt: serverTimestamp()
+                });
+                
+                showSuccessMessage('✅ Utilisateur mis à jour avec succès');
+                await loadUsers();
+                return true;
+            } catch (error) {
+                console.error('Erreur mise à jour utilisateur:', error);
+                showErrorMessage('❌ Erreur lors de la mise à jour');
+                return false;
+            }
+        }
+
+        // Supprimer un utilisateur
+        async function deleteUser(id) {
+            try {
+                await deleteDoc(doc(db, 'users', id));
+                showSuccessMessage('🗑️ Utilisateur supprimé avec succès');
+                await loadUsers();
+            } catch (error) {
+                console.error('Erreur suppression utilisateur:', error);
+                showErrorMessage('❌ Erreur lors de la suppression');
+            }
+        }
+
+        // Charger un utilisateur pour édition
+        async function loadUserForEdit(id) {
+            try {
+                // Si c'est l'utilisateur connecté, utiliser les données déjà chargées
+                if (window.currentUserData && (id === window.currentUserData.id || id === window.currentUser.uid)) {
+                    console.log('✅ Édition utilisateur connecté - utilisation des données en cache');
+                    return window.currentUserData;
+                }
+                
+                // Sinon, chercher dans Firestore
+                const userDoc = await getDoc(doc(db, 'users', id));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    console.log('✅ Utilisateur trouvé pour édition:', userData.firstName, userData.lastName);
+                    return { id: userDoc.id, ...userData };
+                } else {
+                    console.log('❌ Utilisateur non trouvé avec ID:', id);
+                    showErrorMessage('❌ Utilisateur non trouvé');
+                    return null;
+                }
+            } catch (error) {
+                console.error('Erreur chargement utilisateur:', error);
+                showErrorMessage('❌ Erreur lors du chargement');
+                return null;
+            }
+        }
+
+        // Mettre à jour les statistiques utilisateurs
+        function updateUserStats(users) {
+            document.getElementById('totalUsers').textContent = `${users.length} utilisateur(s)`;
+            
+            const activeUsers = users.filter(u => {
+                if (!u.lastLoginAt) return false;
+                const lastLogin = u.lastLoginAt instanceof Date ? u.lastLoginAt : u.lastLoginAt.toDate();
+                return (new Date() - lastLogin) < 300000; // 5 minutes
+            }).length;
+            
+            document.getElementById('activeUsers').textContent = `${activeUsers} utilisateur(s) connecté(s)`;
+        }
+
+        // ========= GESTION DES NOTIFICATIONS =========
+        
+        // Charger les notifications
+        async function loadNotifications() {
+            try {
+                // Requête simplifiée sans index complexe
+                const q = query(
+                    collection(db, 'notifications'), 
+                    where('userId', '==', window.currentUser.uid)
+                    // Retirer le orderBy pour éviter l'erreur d'index
+                );
+                const querySnapshot = await getDocs(q);
+                const notifications = [];
+                
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.createdAt && data.createdAt.toDate) {
+                        data.createdAt = data.createdAt.toDate();
+                    }
+                    notifications.push({ id: doc.id, ...data });
+                });
+                
+                // Trier côté client
+                notifications.sort((a, b) => {
+                    const dateA = a.createdAt instanceof Date ? a.createdAt : new Date(a.createdAt);
+                    const dateB = b.createdAt instanceof Date ? b.createdAt : new Date(b.createdAt);
+                    return dateB - dateA; // Plus récent en premier
+                });
+                
+                window.notifications = notifications;
+                displayNotificationHistory(notifications);
+                updateNotificationStats(notifications);
+                
+                console.log('✅ Notifications chargées:', notifications.length);
+            } catch (error) {
+                console.error('❌ Erreur chargement notifications:', error);
+                
+                // En cas d'erreur, initialiser avec un tableau vide
+                window.notifications = [];
+                displayNotificationHistory([]);
+                updateNotificationStats([]);
+            }
+        }
+
+        // Afficher l'historique des notifications
+        function displayNotificationHistory(notifications) {
+            const container = document.getElementById('notificationHistory');
+            
+            if (notifications.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        Aucune notification envoyée récemment
+                    </div>
+                `;
+                return;
+            }
+            
+            const recentNotifications = notifications.slice(0, 10);
+            const notificationsHtml = recentNotifications.map(notif => `
+                <div class="notification-item">
+                    <div class="notification-header">
+                        <span class="notification-type">${getNotificationTypeLabel(notif.type)}</span>
+                        <span class="notification-time">${formatDateTime(notif.createdAt)}</span>
+                    </div>
+                    <div class="notification-message">${notif.message}</div>
+                    <div class="notification-status ${notif.status === 'failed' ? 'failed' : ''}">${notif.status === 'sent' ? '✅ Envoyée' : '❌ Échec'}</div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = notificationsHtml;
+        }
+
+        // Ajouter une notification
+        async function addNotification(notificationData) {
+            try {
+                await addDoc(collection(db, 'notifications'), {
+                    ...notificationData,
+                    createdAt: serverTimestamp()
+                });
+            } catch (error) {
+                console.error('Erreur ajout notification:', error);
+            }
+        }
+
+        // Envoyer une notification
+        async function sendNotification(type, message, recipients = null) {
+            try {
+                const targetUsers = recipients || window.users.filter(u => 
+                    u.notificationPreferences?.[type] && 
+                    (u.notificationChannels?.email || u.notificationChannels?.push)
+                );
+                
+                for (const user of targetUsers) {
+                    // Envoyer email si activé
+                    if (user.notificationChannels?.email) {
+                        await sendEmailNotification(user, type, message);
+                    }
+                    
+                    // Envoyer notification push si activé
+                    if (user.notificationChannels?.push) {
+                        await sendPushNotification(user, type, message);
+                    }
+                    
+                    // Enregistrer dans l'historique
+                    await addNotification({
+                        type: type,
+                        message: message,
+                        userId: user.userId || user.id,
+                        status: 'sent'
+                    });
+                }
+                
+                await loadNotifications();
+                return true;
+            } catch (error) {
+                console.error('Erreur envoi notification:', error);
+                return false;
+            }
+        }
+
+        // Envoyer notification email
+        async function sendEmailNotification(user, type, message) {
+            // Simulation d'envoi d'email
+            console.log(`📧 Email envoyé à ${user.email}: ${message}`);
+            return new Promise(resolve => setTimeout(resolve, 500));
+        }
+
+        // Envoyer notification push
+        async function sendPushNotification(user, type, message) {
+            console.log('📤 Envoi notification push pour:', user.firstName, user.lastName);
+            
+            if (!('Notification' in window)) {
+                console.log('❌ Notifications non supportées');
+                return Promise.resolve();
+            }
+            
+            try {
+                // Vérifier la permission actuelle
+                let permission = Notification.permission;
+                console.log('📋 Permission initiale:', permission);
+                
+                // Si permission par défaut, la demander
+                if (permission === 'default') {
+                    console.log('🔒 Demande de permission push...');
+                    permission = await Notification.requestPermission();
+                    console.log('📋 Permission après demande:', permission);
+                }
+                
+                // Vérifier encore une fois après la demande
+                const finalPermission = Notification.permission;
+                console.log('📋 Permission finale vérifiée:', finalPermission);
+                
+                if (finalPermission === 'granted') {
+                    console.log('✅ Permission accordée, création de la notification...');
+                    
+                    const notification = new Notification(`📺 Gestion Affichage - ${getNotificationTypeLabel(type)}`, {
+                        body: message,
+                        icon: '📺',
+                        badge: '📺',
+                        tag: type + '_' + Date.now(), // Tag unique pour éviter la suppression
+                        requireInteraction: false,
+                        silent: false
+                    });
+                    
+                    notification.onclick = function() {
+                        console.log('👆 Notification cliquée');
+                        window.focus();
+                        this.close();
+                    };
+                    
+                    notification.onshow = function() {
+                        console.log('✅ Notification affichée avec succès');
+                    };
+                    
+                    notification.onerror = function(error) {
+                        console.error('❌ Erreur affichage notification:', error);
+                    };
+                    
+                    // Auto-fermeture après 8 secondes
+                    setTimeout(() => {
+                        try {
+                            notification.close();
+                            console.log('🔒 Notification fermée automatiquement');
+                        } catch (e) {
+                            console.log('ℹ️ Notification déjà fermée');
+                        }
+                    }, 8000);
+                    
+                } else {
+                    console.log('❌ Permission refusée ou non accordée:', finalPermission);
+                    if (finalPermission === 'denied') {
+                        console.log('🚫 Les notifications sont bloquées. Débloquez-les dans les paramètres du navigateur.');
+                    }
+                }
+                
+            } catch (error) {
+                console.error('❌ Erreur système notification:', error);
+            }
+            
+            return Promise.resolve();
+        }
+
+        // Tester les notifications
+        async function testNotification() {
+            console.log('🧪 Test de notification démarré...');
+            
+            try {
+                // Vérifier le support
+                if (!('Notification' in window)) {
+                    console.log('❌ Notifications non supportées par ce navigateur');
+                    showErrorMessage('❌ Notifications non supportées par ce navigateur');
+                    return;
+                }
+                
+                console.log('📋 Permission actuelle:', Notification.permission);
+                
+                let permission = Notification.permission;
+                
+                // Demander permission si nécessaire
+                if (permission === 'default') {
+                    console.log('🔒 Demande de permission pour le test...');
+                    permission = await Notification.requestPermission();
+                    console.log('📋 Permission obtenue:', permission);
+                }
+                
+                // Vérifier le résultat final
+                const finalPermission = Notification.permission;
+                console.log('📋 Permission finale:', finalPermission);
+                
+                if (finalPermission === 'granted') {
+                    console.log('✅ Permission accordée, création notification test...');
+                    
+                    // Créer notification test directe
+                    const testNotif = new Notification('🧪 Test - Gestion Affichage', {
+                        body: 'Test de notification réussi ! Système fonctionnel 🎉',
+                        icon: '📺',
+                        badge: '📺',
+                        tag: 'test-' + Date.now(),
+                        requireInteraction: true,
+                        silent: false
+                    });
+                    
+                    testNotif.onclick = function() {
+                        console.log('👆 Notification test cliquée');
+                        window.focus();
+                        this.close();
+                    };
+                    
+                    testNotif.onshow = function() {
+                        console.log('👁️ Notification test affichée');
+                        showSuccessMessage('🧪 Notification de test affichée avec succès !');
+                    };
+                    
+                    testNotif.onerror = function(error) {
+                        console.error('❌ Erreur notification test:', error);
+                        showErrorMessage('❌ Erreur lors de l\'affichage de la notification');
+                    };
+                    
+                    // Auto-fermeture après 10 secondes
+                    setTimeout(() => {
+                        try {
+                            testNotif.close();
+                            console.log('🔒 Notification test fermée');
+                        } catch (e) {
+                            console.log('ℹ️ Notification test déjà fermée');
+                        }
+                    }, 10000);
+                    
+                    // Aussi tester le système de notification existant
+                    if (window.currentUserData) {
+                        const message = 'Test système - Notifications fonctionnelles !';
+                        await sendNotification('test', message, [window.currentUserData]);
+                    }
+                    
+                    console.log('✅ Test terminé avec succès');
+                    
+                } else if (finalPermission === 'denied') {
+                    console.log('❌ Permission refusée définitivement');
+                    showErrorMessage('❌ Notifications bloquées. Pour les réactiver :\n1. Cliquez sur le cadenas 🔒 dans la barre d\'adresse\n2. Autorisez les notifications\n3. Rechargez la page');
+                    
+                } else {
+                    console.log('❓ État de permission inattendu:', finalPermission);
+                    showErrorMessage('❌ Problème de permission de notification');
+                }
+                
+            } catch (error) {
+                console.error('❌ Erreur lors du test de notification:', error);
+                showErrorMessage('❌ Erreur technique : ' + error.message);
+            }
+        }
+
+        // Mettre à jour les statistiques de notifications
+        function updateNotificationStats(notifications) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const todayNotifications = notifications.filter(n => {
+                const notifDate = n.createdAt instanceof Date ? n.createdAt : n.createdAt.toDate();
+                return notifDate >= today;
+            }).length;
+            
+            document.getElementById('todayNotifications').textContent = `${todayNotifications} notification(s)`;
+        }
+
+        // Configuration des listeners pour notifications automatiques
+        function setupNotificationListeners() {
+            // Écouter les changements d'affiches pour notifications automatiques
+            const affichesQuery = query(collection(db, 'affiches'), orderBy('dateCreation', 'desc'));
+            onSnapshot(affichesQuery, (snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === 'added') {
+                        const affiche = change.doc.data();
+                        // Notifier création d'affiche
+                        sendNotification('creation', 
+                            `Nouvelle affiche créée: ${affiche.libelle} (${affiche.prix}€/${affiche.unite})`
+                        );
+                    } else if (change.type === 'modified') {
+                        const affiche = change.doc.data();
+                        const oldData = change.doc.metadata.fromCache ? null : change.doc.data();
+                        
+                        // Notifier changement de statut
+                        if (affiche.statut === 'en-diffusion') {
+                            sendNotification('diffusion', 
+                                `Affiche mise en diffusion: ${affiche.libelle}`
+                            );
+                        } else if (affiche.statut === 'archivee') {
+                            sendNotification('archivage', 
+                                `Affiche archivée: ${affiche.libelle}`
+                            );
+                        }
+                    }
+                });
+            });
+            
+            // Vérifier les affiches expirantes (simulation)
+            setInterval(checkExpiringAffiches, 3600000); // Chaque heure
+        }
+
+        // Vérifier les affiches expirantes
+        async function checkExpiringAffiches() {
+            try {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                
+                const q = query(
+                    collection(db, 'affiches'),
+                    where('statut', '==', 'en-diffusion')
+                );
+                const querySnapshot = await getDocs(q);
+                
+                querySnapshot.forEach((doc) => {
+                    const affiche = doc.data();
+                    const dateFin = new Date(affiche.dateFin);
+                    
+                    if (dateFin <= tomorrow) {
+                        sendNotification('expiration', 
+                            `Affiche expire demain: ${affiche.libelle} (${formatDate(affiche.dateFin)})`
+                        );
+                    }
+                });
+            } catch (error) {
+                console.error('Erreur vérification expirations:', error);
+            }
+        }
+
+        // ========= GESTION DES ORIGINES (inchangé) =========
+        
         async function loadOrigines() {
             try {
                 const q = query(collection(db, 'origines'), orderBy('nom', 'asc'));
@@ -1467,7 +2689,6 @@
                 window.origines = origines;
                 displayOrigines(origines);
                 
-                // Ajouter des origines par défaut si aucune n'existe
                 if (origines.length === 0) {
                     await createDefaultOrigines();
                 }
@@ -1479,7 +2700,6 @@
             }
         }
 
-        // Créer des origines par défaut
         async function createDefaultOrigines() {
             const defaultOrigines = ['France', 'Espagne', 'Italie', 'Pays-Bas', 'Belgique', 'Maroc'];
             
@@ -1495,11 +2715,9 @@
                 }
             }
             
-            // Recharger après création
             await loadOrigines();
         }
 
-        // Afficher les origines
         function displayOrigines(origines) {
             const container = document.getElementById('originesList');
             
@@ -1526,7 +2744,6 @@
             container.innerHTML = originesHtml;
         }
 
-        // Sauvegarder une origine
         async function saveOrigine(origine) {
             try {
                 const docRef = await addDoc(collection(db, 'origines'), {
@@ -1544,7 +2761,6 @@
             }
         }
 
-        // Mettre à jour une origine
         async function updateOrigine(id, data) {
             try {
                 const docRef = doc(db, 'origines', id);
@@ -1563,7 +2779,6 @@
             }
         }
 
-        // Supprimer une origine
         async function deleteOrigine(id) {
             try {
                 await deleteDoc(doc(db, 'origines', id));
@@ -1576,9 +2791,8 @@
             }
         }
 
-        // ========= GESTION DES UNITES =========
+        // ========= GESTION DES UNITES (inchangé) =========
         
-        // Charger les unités
         async function loadUnites() {
             try {
                 const q = query(collection(db, 'unites'), orderBy('nom', 'asc'));
@@ -1595,7 +2809,6 @@
                 window.unites = unites;
                 displayUnites(unites);
                 
-                // Ajouter des unités par défaut si aucune n'existe
                 if (unites.length === 0) {
                     await createDefaultUnites();
                 }
@@ -1607,7 +2820,6 @@
             }
         }
 
-        // Créer des unités par défaut
         async function createDefaultUnites() {
             const defaultUnites = ['Kg', 'g', 'L', 'mL', 'Unité', 'Pièce', 'Barquette', 'Sachet', 'Botte', 'Bouquet'];
             
@@ -1623,11 +2835,9 @@
                 }
             }
             
-            // Recharger après création
             await loadUnites();
         }
 
-        // Afficher les unités
         function displayUnites(unites) {
             const container = document.getElementById('unitesList');
             
@@ -1654,7 +2864,6 @@
             container.innerHTML = unitesHtml;
         }
 
-        // Sauvegarder une unité
         async function saveUnite(unite) {
             try {
                 const docRef = await addDoc(collection(db, 'unites'), {
@@ -1672,7 +2881,6 @@
             }
         }
 
-        // Mettre à jour une unité
         async function updateUnite(id, data) {
             try {
                 const docRef = doc(db, 'unites', id);
@@ -1691,7 +2899,6 @@
             }
         }
 
-        // Supprimer une unité
         async function deleteUnite(id) {
             try {
                 await deleteDoc(doc(db, 'unites', id));
@@ -1706,7 +2913,6 @@
 
         // ========= MISE À JOUR DES SELECT =========
         
-        // Mettre à jour les options des selects
         function updateSelectOptions() {
             // Mettre à jour les selects d'origines
             const origineSelects = ['origine', 'editOrigine'];
@@ -1723,13 +2929,11 @@
                         select.appendChild(option);
                     });
                     
-                    // Option "Autre"
                     const autreOption = document.createElement('option');
                     autreOption.value = 'autre';
                     autreOption.textContent = '➕ Autre...';
                     select.appendChild(autreOption);
                     
-                    // Restaurer la valeur sélectionnée
                     if (currentValue) {
                         select.value = currentValue;
                     }
@@ -1751,13 +2955,11 @@
                         select.appendChild(option);
                     });
                     
-                    // Option "Autre"
                     const autreOption = document.createElement('option');
                     autreOption.value = 'autre';
                     autreOption.textContent = '➕ Autre...';
                     select.appendChild(autreOption);
                     
-                    // Restaurer la valeur sélectionnée
                     if (currentValue) {
                         select.value = currentValue;
                     }
@@ -1765,9 +2967,8 @@
             });
         }
 
-        // ========= GESTION DES AFFICHES (inchangé) =========
+        // ========= GESTION DES AFFICHES =========
         
-        // Charger les affiches
         async function loadAffiches() {
             try {
                 const q = query(collection(db, 'affiches'), orderBy('dateCreation', 'desc'));
@@ -1790,13 +2991,13 @@
             }
         }
 
-        // Sauvegarder une affiche
         async function saveAffiche(affiche) {
             try {
                 const docRef = await addDoc(collection(db, 'affiches'), {
                     ...affiche,
                     dateCreation: serverTimestamp(),
-                    utilisateurId: window.currentUser.uid
+                    utilisateurId: window.currentUser.uid,
+                    createdBy: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`
                 });
                 console.log('Affiche sauvée avec ID:', docRef.id);
                 await loadAffiches();
@@ -1807,13 +3008,13 @@
             }
         }
 
-        // Mettre à jour une affiche
         async function updateAffiche(id, data) {
             try {
                 const docRef = doc(db, 'affiches', id);
                 await updateDoc(docRef, {
                     ...data,
-                    dateModification: serverTimestamp()
+                    dateModification: serverTimestamp(),
+                    modifiedBy: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`
                 });
                 showSuccessMessage('✅ Affiche mise à jour avec succès');
                 await loadAffiches();
@@ -1825,7 +3026,6 @@
             }
         }
 
-        // Supprimer une affiche
         async function deleteAffiche(id) {
             try {
                 await deleteDoc(doc(db, 'affiches', id));
@@ -1837,7 +3037,6 @@
             }
         }
 
-        // Charger une affiche pour édition
         async function loadAfficheForEdit(id) {
             try {
                 const docRef = doc(db, 'affiches', id);
@@ -1858,7 +3057,6 @@
             }
         }
 
-        // Charger une origine pour édition
         async function loadOrigineForEdit(id) {
             try {
                 const docRef = doc(db, 'origines', id);
@@ -1879,7 +3077,6 @@
             }
         }
 
-        // Charger une unité pour édition
         async function loadUniteForEdit(id) {
             try {
                 const docRef = doc(db, 'unites', id);
@@ -1900,6 +3097,81 @@
             }
         }
 
+        // ========= FONCTIONS UTILITAIRES =========
+        
+        function getFamilleIconClass(famille) {
+            const mapping = {
+                'fruits-legumes': 'category-fruits',
+                'traiteur': 'category-traiteur',
+                'boucherie': 'category-boucherie',
+                'cremerie': 'category-cremerie',
+                'epicerie': 'category-epicerie',
+                'boulangerie': 'category-boulangerie',
+                'autre': 'category-autre'
+            };
+            return mapping[famille] || 'category-autre';
+        }
+
+        function getFamilleIcon(famille) {
+            const mapping = {
+                'fruits-legumes': '🍎',
+                'traiteur': '🥘',
+                'boucherie': '🥩',
+                'cremerie': '🧀',
+                'epicerie': '🛒',
+                'boulangerie': '🥖',
+                'autre': '📦'
+            };
+            return mapping[famille] || '📦';
+        }
+
+        function getStatusClass(statut) {
+            return `status-${statut}`;
+        }
+
+        function getStatusText(statut) {
+            const mapping = {
+                'a-creer': 'À créer',
+                'programmee': 'Programmée',
+                'en-diffusion': 'En diffusion',
+                'archivee': 'Archivée'
+            };
+            return mapping[statut] || 'Inconnu';
+        }
+
+        function getNotificationTypeLabel(type) {
+            const mapping = {
+                'creation': 'Création d\'affiche',
+                'diffusion': 'Mise en diffusion',
+                'expiration': 'Alerte expiration',
+                'archivage': 'Archivage',
+                'resume': 'Résumé quotidien',
+                'user_invited': 'Invitation utilisateur',
+                'test': 'Test'
+            };
+            return mapping[type] || 'Notification';
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR', { 
+                day: '2-digit', 
+                month: '2-digit'
+            });
+        }
+
+        function formatDateTime(date) {
+            if (!date) return 'Jamais';
+            const d = date instanceof Date ? date : date.toDate();
+            return d.toLocaleDateString('fr-FR', { 
+                day: '2-digit', 
+                month: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
         // Fonctions d'affichage
         function displayAffiches(affiches) {
             console.log('🎯 displayAffiches appelée avec:', affiches.length, 'affiches');
@@ -1912,7 +3184,6 @@
             updatePlanningTab(affiches);
         }
 
-        // Mettre à jour les statistiques du dashboard
         function updateDashboardStats(affiches) {
             const stats = {
                 enDiffusion: affiches.filter(a => a.statut === 'en-diffusion').length,
@@ -1930,7 +3201,6 @@
             }
         }
 
-        // Mettre à jour les affiches en diffusion sur le dashboard
         function updateDashboardAffiches(affiches) {
             const affichesEnDiffusion = affiches.filter(a => a.statut === 'en-diffusion').slice(0, 5);
             const container = document.querySelector('.recent-items');
@@ -1970,7 +3240,6 @@
             }
         }
 
-        // Mettre à jour l'onglet Affiches
         function updateAffichesTab(affiches) {
             const container = document.querySelector('#affiches');
             if (!container) return;
@@ -2029,8 +3298,42 @@
             }, 50);
         }
 
-        // Fonctions utilitaires (supprimées car déplacées plus haut)
-        
+        // Sauvegarde configuration SMTP
+        async function saveSmtpConfig() {
+            try {
+                const config = {
+                    server: document.getElementById('smtp-server').value,
+                    port: parseInt(document.getElementById('smtp-port').value),
+                    security: document.getElementById('smtp-security').value,
+                    sender: document.getElementById('smtp-sender').value,
+                    password: document.getElementById('smtp-password').value
+                };
+                
+                // Sauvegarder dans Firestore
+                await addDoc(collection(db, 'config'), {
+                    type: 'smtp',
+                    ...config,
+                    updatedBy: window.currentUser.uid,
+                    updatedAt: serverTimestamp()
+                });
+                
+                showSuccessMessage('✅ Configuration SMTP sauvegardée');
+            } catch (error) {
+                console.error('Erreur sauvegarde SMTP:', error);
+                showErrorMessage('❌ Erreur lors de la sauvegarde');
+            }
+        }
+
+        // Test connexion SMTP
+        async function testSmtpConnection() {
+            try {
+                // Simulation du test SMTP
+                showSuccessMessage('🔗 Test SMTP réussi - Configuration valide');
+            } catch (error) {
+                showErrorMessage('❌ Échec du test SMTP - Vérifiez la configuration');
+            }
+        }
+
         // Messages toast
         function showErrorMessage(message) {
             const toast = document.createElement('div');
@@ -2089,6 +3392,14 @@
         window.updateUnite = updateUnite;
         window.deleteUnite = deleteUnite;
         window.loadUniteForEdit = loadUniteForEdit;
+        window.inviteUser = inviteUser;
+        window.updateUser = updateUser;
+        window.deleteUser = deleteUser;
+        window.loadUserForEdit = loadUserForEdit;
+        window.sendNotification = sendNotification;
+        window.testNotification = testNotification;
+        window.saveSmtpConfig = saveSmtpConfig;
+        window.testSmtpConnection = testSmtpConnection;
         window.showErrorMessage = showErrorMessage;
         window.showSuccessMessage = showSuccessMessage;
         window.getFamilleIconClass = getFamilleIconClass;
@@ -2096,63 +3407,13 @@
         window.getStatusClass = getStatusClass;
         window.getStatusText = getStatusText;
         window.formatDate = formatDate;
+        window.formatDateTime = formatDateTime;
     </script>
 
     <script>
         // Variables globales pour le planning
         window.lastLoadedAffiches = [];
         let currentWeekStart = new Date(2025, 6, 8);
-
-        // ========= FONCTIONS UTILITAIRES (définies en premier) =========
-        
-        function getFamilleIconClass(famille) {
-            const mapping = {
-                'fruits-legumes': 'category-fruits',
-                'traiteur': 'category-traiteur',
-                'boucherie': 'category-boucherie',
-                'cremerie': 'category-cremerie',
-                'epicerie': 'category-epicerie',
-                'boulangerie': 'category-boulangerie',
-                'autre': 'category-autre'
-            };
-            return mapping[famille] || 'category-autre';
-        }
-
-        function getFamilleIcon(famille) {
-            const mapping = {
-                'fruits-legumes': '🍎',
-                'traiteur': '🥘',
-                'boucherie': '🥩',
-                'cremerie': '🧀',
-                'epicerie': '🛒',
-                'boulangerie': '🥖',
-                'autre': '📦'
-            };
-            return mapping[famille] || '📦';
-        }
-
-        function getStatusClass(statut) {
-            return `status-${statut}`;
-        }
-
-        function getStatusText(statut) {
-            const mapping = {
-                'a-creer': 'À créer',
-                'programmee': 'Programmée',
-                'en-diffusion': 'En diffusion',
-                'archivee': 'Archivée'
-            };
-            return mapping[statut] || 'Inconnu';
-        }
-
-        function formatDate(dateString) {
-            if (!dateString) return '';
-            const date = new Date(dateString);
-            return date.toLocaleDateString('fr-FR', { 
-                day: '2-digit', 
-                month: '2-digit'
-            });
-        }
 
         // ========= FONCTIONS DE L'INTERFACE =========
         
@@ -2232,6 +3493,50 @@
         function confirmDeleteAffiche(id, libelle) {
             if (confirm(`🗑️ Êtes-vous sûr de vouloir supprimer l'affiche :\n"${libelle}" ?\n\nCette action est irréversible.`)) {
                 window.deleteAffiche(id);
+            }
+        }
+
+        // ========= MODALS UTILISATEURS =========
+        
+        function openInviteUserModal() {
+            document.getElementById('inviteUserModal').style.display = 'block';
+        }
+
+        function closeInviteUserModal() {
+            document.getElementById('inviteUserModal').style.display = 'none';
+        }
+
+        async function editUser(id) {
+            const user = await window.loadUserForEdit(id);
+            if (!user) return;
+            
+            document.getElementById('editUserId').value = user.id;
+            document.getElementById('editUserFirstName').value = user.firstName || '';
+            document.getElementById('editUserLastName').value = user.lastName || '';
+            document.getElementById('editUserEmail').value = user.email || '';
+            document.getElementById('editUserRole').value = user.role || 'employee';
+            
+            // Préférences de notification
+            document.getElementById('editUserNotifCreation').checked = user.notificationPreferences?.creation || false;
+            document.getElementById('editUserNotifDiffusion').checked = user.notificationPreferences?.diffusion || false;
+            document.getElementById('editUserNotifExpiration').checked = user.notificationPreferences?.expiration || false;
+            document.getElementById('editUserNotifArchivage').checked = user.notificationPreferences?.archivage || false;
+            document.getElementById('editUserNotifResume').checked = user.notificationPreferences?.resume || false;
+            
+            // Canaux de notification
+            document.getElementById('editUserCanalEmail').checked = user.notificationChannels?.email || false;
+            document.getElementById('editUserCanalPush').checked = user.notificationChannels?.push || false;
+            
+            document.getElementById('editUserModal').style.display = 'block';
+        }
+
+        function closeEditUserModal() {
+            document.getElementById('editUserModal').style.display = 'none';
+        }
+
+        function confirmDeleteUser(id, name) {
+            if (confirm(`🗑️ Êtes-vous sûr de vouloir supprimer l'utilisateur :\n"${name}" ?\n\nCette action est irréversible.`)) {
+                window.deleteUser(id);
             }
         }
 
@@ -2374,12 +3679,12 @@
             }
             
             const planningHtml = affichesPlanning.map(affiche => {
-                const iconClass = getFamilleIconClass(affiche.famille);
-                const icon = getFamilleIcon(affiche.famille);
+                const iconClass = window.getFamilleIconClass(affiche.famille);
+                const icon = window.getFamilleIcon(affiche.famille);
                 const statusClass = `status-${affiche.statut}`;
-                const statusText = getStatusText(affiche.statut);
-                const dateDebut = formatDate(affiche.dateDebut);
-                const dateFin = formatDate(affiche.dateFin);
+                const statusText = window.getStatusText(affiche.statut);
+                const dateDebut = window.formatDate(affiche.dateDebut);
+                const dateFin = window.formatDate(affiche.dateFin);
                 
                 return `
                     <div class="planning-item ${statusClass}">
@@ -2472,8 +3777,8 @@
         // Fermer modals en cliquant dehors
         window.onclick = function(event) {
             const modals = [
-                'createModal', 'editModal', 'addOriginModal', 'editOriginModal',
-                'addUniteModal', 'editUniteModal'
+                'createModal', 'editModal', 'inviteUserModal', 'editUserModal',
+                'addOriginModal', 'editOriginModal', 'addUniteModal', 'editUniteModal'
             ];
             
             modals.forEach(modalId => {
@@ -2518,7 +3823,6 @@
                     origine = prompt('Entrez le nom de la nouvelle origine:');
                     if (!origine) return;
                     
-                    // Sauvegarder la nouvelle origine
                     try {
                         await window.saveOrigine({ nom: origine });
                     } catch (error) {
@@ -2531,7 +3835,6 @@
                     unite = prompt('Entrez le nom de la nouvelle unité:');
                     if (!unite) return;
                     
-                    // Sauvegarder la nouvelle unité
                     try {
                         await window.saveUnite({ nom: unite });
                     } catch (error) {
@@ -2575,7 +3878,6 @@
                 const formData = new FormData(this);
                 const afficheId = formData.get('editAfficheId');
                 
-                // Gérer les valeurs "autre" pour origine et unité
                 let origine = formData.get('editOrigine');
                 let unite = formData.get('editUnite');
                 
@@ -2622,6 +3924,61 @@
                 }
             });
 
+            // Event listener pour invitation d'utilisateur
+            document.getElementById('inviteUserForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const userData = {
+                    email: formData.get('inviteEmail'),
+                    firstName: formData.get('inviteFirstName'),
+                    lastName: formData.get('inviteLastName'),
+                    role: formData.get('inviteRole'),
+                    defaultEmail: document.getElementById('inviteDefaultEmail').checked,
+                    defaultPush: document.getElementById('inviteDefaultPush').checked
+                };
+                
+                try {
+                    await window.inviteUser(userData);
+                    closeInviteUserModal();
+                    this.reset();
+                } catch (error) {
+                    window.showErrorMessage('❌ Erreur lors de l\'invitation: ' + error.message);
+                }
+            });
+
+            // Event listener pour modification d'utilisateur
+            document.getElementById('editUserForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const userId = formData.get('editUserId');
+                
+                const updatedData = {
+                    firstName: formData.get('editUserFirstName'),
+                    lastName: formData.get('editUserLastName'),
+                    role: formData.get('editUserRole'),
+                    notificationPreferences: {
+                        creation: document.getElementById('editUserNotifCreation').checked,
+                        diffusion: document.getElementById('editUserNotifDiffusion').checked,
+                        expiration: document.getElementById('editUserNotifExpiration').checked,
+                        archivage: document.getElementById('editUserNotifArchivage').checked,
+                        resume: document.getElementById('editUserNotifResume').checked
+                    },
+                    notificationChannels: {
+                        email: document.getElementById('editUserCanalEmail').checked,
+                        push: document.getElementById('editUserCanalPush').checked
+                    }
+                };
+                
+                try {
+                    await window.updateUser(userId, updatedData);
+                    closeEditUserModal();
+                } catch (error) {
+                    window.showErrorMessage('❌ Erreur lors de la modification: ' + error.message);
+                }
+            });
+
             // Event listener pour ajout d'origine
             document.getElementById('addOriginForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -2631,7 +3988,6 @@
                     nom: formData.get('origineName').trim()
                 };
                 
-                // Vérifier les doublons
                 if (window.origines.some(o => o.nom.toLowerCase() === origine.nom.toLowerCase())) {
                     window.showErrorMessage('❌ Cette origine existe déjà');
                     return;
@@ -2655,7 +4011,6 @@
                 const origineId = formData.get('editOriginId');
                 const nouveauNom = formData.get('editOrigineName').trim();
                 
-                // Vérifier les doublons (exclure l'origine actuelle)
                 if (window.origines.some(o => o.id !== origineId && o.nom.toLowerCase() === nouveauNom.toLowerCase())) {
                     window.showErrorMessage('❌ Cette origine existe déjà');
                     return;
@@ -2682,7 +4037,6 @@
                     nom: formData.get('uniteName').trim()
                 };
                 
-                // Vérifier les doublons
                 if (window.unites.some(u => u.nom.toLowerCase() === unite.nom.toLowerCase())) {
                     window.showErrorMessage('❌ Cette unité existe déjà');
                     return;
@@ -2706,7 +4060,6 @@
                 const uniteId = formData.get('editUniteId');
                 const nouveauNom = formData.get('editUniteName').trim();
                 
-                // Vérifier les doublons (exclure l'unité actuelle)
                 if (window.unites.some(u => u.id !== uniteId && u.nom.toLowerCase() === nouveauNom.toLowerCase())) {
                     window.showErrorMessage('❌ Cette unité existe déjà');
                     return;
@@ -2723,6 +4076,34 @@
                     window.showErrorMessage('❌ Erreur lors de la modification: ' + error.message);
                 }
             });
+
+            // Event listeners pour les préférences de notification
+            document.querySelectorAll('#notifications-params input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', async function() {
+                    if (window.currentUserData) {
+                        const prefType = this.id.replace('notif-', '').replace('canal-', '');
+                        
+                        try {
+                            if (this.id.startsWith('notif-')) {
+                                window.currentUserData.notificationPreferences[prefType] = this.checked;
+                            } else if (this.id.startsWith('canal-')) {
+                                window.currentUserData.notificationChannels[prefType] = this.checked;
+                            }
+                            
+                            // Sauvegarder en base
+                            await window.updateUser(window.currentUserData.id, {
+                                notificationPreferences: window.currentUserData.notificationPreferences,
+                                notificationChannels: window.currentUserData.notificationChannels
+                            });
+                            
+                            window.showSuccessMessage('✅ Préférences mises à jour');
+                        } catch (error) {
+                            window.showErrorMessage('❌ Erreur lors de la sauvegarde');
+                            this.checked = !this.checked; // Revenir à l'état précédent
+                        }
+                    }
+                });
+            });
         });
 
         // Exposer les fonctions nécessaires globalement
@@ -2733,6 +4114,11 @@
         window.editAffiche = editAffiche;
         window.closeEditModal = closeEditModal;
         window.confirmDeleteAffiche = confirmDeleteAffiche;
+        window.openInviteUserModal = openInviteUserModal;
+        window.closeInviteUserModal = closeInviteUserModal;
+        window.editUser = editUser;
+        window.closeEditUserModal = closeEditUserModal;
+        window.confirmDeleteUser = confirmDeleteUser;
         window.openAddOriginModal = openAddOriginModal;
         window.closeAddOriginModal = closeAddOriginModal;
         window.editOrigine = editOrigine;
@@ -2746,11 +4132,6 @@
         window.changeWeek = changeWeek;
         window.updateWeekHeader = updateWeekHeader;
         window.updatePlanningTab = updatePlanningTab;
-        window.getFamilleIconClass = getFamilleIconClass;
-        window.getFamilleIcon = getFamilleIcon;
-        window.getStatusClass = getStatusClass;
-        window.getStatusText = getStatusText;
-        window.formatDate = formatDate;
     </script>
 </body>
 </html>

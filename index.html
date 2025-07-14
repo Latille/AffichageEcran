@@ -2017,7 +2017,7 @@
         // Fonction universelle pour afficher les notifications
         async function showNotificationSafe(title, body, isDiscrete = false) {
             console.log('📤 Tentative affichage notification:', title);
-            console.log('📱 User Agent:', navigator.userAgent);
+            console.log('📱 User Agent:', navigator.userAgent.substring(0, 100));
             console.log('🌐 Is Mobile:', /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
             
             if (!('Notification' in window)) {
@@ -2041,15 +2041,20 @@
                 
                 if (!window.swRegistration) {
                     console.log('❌ Service Worker requis pour mobile mais non disponible');
-                    return false;
+                    // Essayer de réinitialiser le Service Worker
+                    await initMobileServiceWorker();
+                    if (!window.swRegistration) {
+                        console.log('❌ Impossible d\'initialiser le Service Worker mobile');
+                        return false;
+                    }
                 }
                 
                 try {
                     console.log('📱 Envoi notification via Service Worker...');
                     await window.swRegistration.showNotification(title, {
                         body: body,
-                        icon: '/favicon.ico',
-                        badge: '/favicon.ico',
+                        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📺</text></svg>',
+                        badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📺</text></svg>',
                         tag: `mobile-notif-${Date.now()}`,
                         requireInteraction: !isDiscrete,
                         silent: isDiscrete,
@@ -2061,8 +2066,7 @@
                         actions: !isDiscrete ? [
                             {
                                 action: 'view',
-                                title: 'Voir',
-                                icon: '/favicon.ico'
+                                title: 'Voir'
                             }
                         ] : []
                     });
@@ -2071,7 +2075,20 @@
                 } catch (mobileError) {
                     console.error('❌ Erreur Service Worker mobile:', mobileError);
                     console.log('🔧 Détails erreur mobile:', mobileError.message);
-                    return false;
+                    
+                    // Fallback vers notification classique même sur mobile
+                    console.log('🔄 Tentative fallback notification classique sur mobile...');
+                    try {
+                        const notification = new Notification(title, {
+                            body: body,
+                            tag: `mobile-fallback-${Date.now()}`
+                        });
+                        console.log('✅ Notification fallback mobile réussie');
+                        return true;
+                    } catch (fallbackError) {
+                        console.error('❌ Fallback mobile aussi échoué:', fallbackError.message);
+                        return false;
+                    }
                 }
             }
             
@@ -2122,6 +2139,68 @@
                     console.log('🔧 Détails erreur desktop:', desktopError.message);
                     return false;
                 }
+            }
+        }
+
+        // Fonction pour initialiser le Service Worker mobile
+        async function initMobileServiceWorker() {
+            if (!('serviceWorker' in navigator)) {
+                console.log('❌ Service Worker non supporté');
+                return false;
+            }
+            
+            try {
+                console.log('📱 Tentative réinitialisation Service Worker mobile...');
+                
+                const registration = await navigator.serviceWorker.register(
+                    'data:application/javascript;base64,' + btoa(`
+                        console.log('📱 Service Worker mobile redémarré');
+                        
+                        self.addEventListener('push', function(event) {
+                            console.log('📱 Push reçu dans SW mobile');
+                            const options = {
+                                body: event.data ? event.data.text() : 'Nouvelle notification',
+                                icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📺</text></svg>',
+                                badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📺</text></svg>',
+                                tag: 'gestion-affichage-mobile',
+                                requireInteraction: true,
+                                vibrate: [200, 100, 200]
+                            };
+                            
+                            event.waitUntil(
+                                self.registration.showNotification('Gestion Affichage', options)
+                            );
+                        });
+                        
+                        self.addEventListener('notificationclick', function(event) {
+                            console.log('📱 Notification mobile cliquée');
+                            event.notification.close();
+                            
+                            event.waitUntil(
+                                clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
+                                    if (clientList.length > 0) {
+                                        return clientList[0].focus();
+                                    }
+                                    return clients.openWindow('/');
+                                })
+                            );
+                        });
+                        
+                        self.addEventListener('activate', function(event) {
+                            console.log('📱 Service Worker mobile activé');
+                            event.waitUntil(self.clients.claim());
+                        });
+                    `)
+                );
+                
+                await registration.update();
+                window.swRegistration = registration;
+                console.log('✅ Service Worker mobile réinitialisé');
+                return true;
+                
+            } catch (error) {
+                console.error('❌ Erreur réinitialisation SW mobile:', error);
+                return false;
             }
         }
 
@@ -2636,20 +2715,57 @@
         // Envoyer une notification
         async function sendNotification(type, message, recipients = null) {
             try {
+                console.log('📤 sendNotification appelée:', type, message);
+                
+                // Éviter les doublons - vérifier si déjà envoyée récemment
+                const notificationKey = `${type}-${message.substring(0, 50)}`;
+                const now = Date.now();
+                
+                if (!window.recentNotifications) {
+                    window.recentNotifications = new Map();
+                }
+                
+                if (window.recentNotifications.has(notificationKey)) {
+                    const lastSent = window.recentNotifications.get(notificationKey);
+                    if (now - lastSent < 5000) { // 5 secondes
+                        console.log('🚫 Notification dupliquée ignorée:', message);
+                        return true;
+                    }
+                }
+                
+                window.recentNotifications.set(notificationKey, now);
+                
+                // Nettoyer les anciennes entrées (garde seulement les 10 dernières)
+                if (window.recentNotifications.size > 10) {
+                    const entries = Array.from(window.recentNotifications.entries());
+                    entries.sort((a, b) => b[1] - a[1]); // Trier par timestamp décroissant
+                    window.recentNotifications.clear();
+                    entries.slice(0, 10).forEach(([key, time]) => {
+                        window.recentNotifications.set(key, time);
+                    });
+                }
+                
                 const targetUsers = recipients || window.users.filter(u => 
                     u.notificationPreferences?.[type] && 
                     (u.notificationChannels?.email || u.notificationChannels?.push)
                 );
                 
+                console.log('👥 Utilisateurs ciblés:', targetUsers.length);
+                
                 for (const user of targetUsers) {
+                    console.log('👤 Traitement utilisateur:', user.firstName, user.lastName);
+                    
                     // Envoyer email si activé
                     if (user.notificationChannels?.email) {
                         await sendEmailNotification(user, type, message);
                     }
                     
-                    // Envoyer notification push si activé
-                    if (user.notificationChannels?.push) {
+                    // Envoyer notification push si activé ET si c'est l'utilisateur connecté
+                    if (user.notificationChannels?.push && user.userId === window.currentUser.uid) {
+                        console.log('🔔 Envoi push pour utilisateur connecté');
                         await sendPushNotification(user, type, message);
+                    } else if (user.notificationChannels?.push) {
+                        console.log('📱 Push ignoré pour utilisateur non connecté:', user.firstName);
                     }
                     
                     // Enregistrer dans l'historique
@@ -2664,7 +2780,7 @@
                 await loadNotifications();
                 return true;
             } catch (error) {
-                console.error('Erreur envoi notification:', error);
+                console.error('❌ Erreur envoi notification:', error);
                 return false;
             }
         }

@@ -2128,6 +2128,7 @@
                 await loadAllData();
                 await initPushNotifications();
                 setupNotificationListeners();
+                startExpirationCheck();
             } else {
                 window.currentUser = null;
                 window.currentUserData = null;
@@ -2778,26 +2779,75 @@
 
         // Configuration des listeners pour notifications automatiques
         function setupNotificationListeners() {
-            // Écouter les changements d'affiches pour notifications automatiques
+            console.log('🔧 Configuration des listeners de notifications...');
+            
+            // Écouter SEULEMENT les NOUVEAUX ajouts d'affiches
             const affichesQuery = query(collection(db, 'affiches'), orderBy('dateCreation', 'desc'));
+            
+            // Variable pour éviter les notifications au premier chargement
+            let isFirstLoad = true;
+            let initialLoadComplete = false;
+            
             onSnapshot(affichesQuery, (snapshot) => {
+                console.log('📊 Snapshot affiches reçu, taille:', snapshot.size);
+                
+                // Au premier chargement, juste marquer comme initialisé
+                if (isFirstLoad) {
+                    console.log('🏁 Premier chargement - pas de notifications envoyées');
+                    isFirstLoad = false;
+                    
+                    // Marquer comme complété après un délai
+                    setTimeout(() => {
+                        initialLoadComplete = true;
+                        console.log('✅ Initialisation terminée - notifications automatiques activées');
+                    }, 3000);
+                    
+                    return;
+                }
+                
+                // Si l'initialisation n'est pas terminée, ignorer
+                if (!initialLoadComplete) {
+                    console.log('⏳ Initialisation en cours - notifications ignorées');
+                    return;
+                }
+                
+                // Traiter seulement les vrais changements
                 snapshot.docChanges().forEach((change) => {
-                    if (change.type === 'added') {
-                        const affiche = change.doc.data();
-                        // Notifier création d'affiche
-                        sendNotification('creation', 
-                            `Nouvelle affiche créée: ${affiche.libelle} (${affiche.prix}€/${affiche.unite})`
-                        );
-                    } else if (change.type === 'modified') {
-                        const affiche = change.doc.data();
-                        const oldData = change.doc.metadata.fromCache ? null : change.doc.data();
+                    const affiche = change.doc.data();
+                    const changeType = change.type;
+                    
+                    console.log('🔄 Changement détecté:', changeType, 'pour affiche:', affiche.libelle);
+                    
+                    // SEULEMENT pour les NOUVEAUX ajouts (pas les chargements initiaux)
+                    if (changeType === 'added') {
+                        // Vérifier que c'est vraiment nouveau (créé dans les dernières 10 secondes)
+                        const now = new Date();
+                        const afficheDate = affiche.dateCreation?.toDate ? affiche.dateCreation.toDate() : new Date(affiche.dateCreation);
+                        const timeDiff = now - afficheDate;
                         
-                        // Notifier changement de statut
+                        console.log('⏰ Différence de temps:', timeDiff, 'ms');
+                        
+                        // Si créé il y a moins de 10 secondes = vraiment nouveau
+                        if (timeDiff < 10000) {
+                            console.log('🆕 Nouvelle affiche détectée:', affiche.libelle);
+                            sendNotification('creation', 
+                                `Nouvelle affiche créée: ${affiche.libelle} (${affiche.prix}€/${affiche.unite})`
+                            );
+                        } else {
+                            console.log('📚 Affiche existante ignorée (création:', afficheDate, ')');
+                        }
+                        
+                    } else if (changeType === 'modified') {
+                        // Pour les modifications, vérifier les changements de statut importants
+                        const oldData = change.oldIndex !== -1 ? change.doc.data() : null;
+                        
                         if (affiche.statut === 'en-diffusion') {
+                            console.log('📺 Affiche mise en diffusion:', affiche.libelle);
                             sendNotification('diffusion', 
                                 `Affiche mise en diffusion: ${affiche.libelle}`
                             );
                         } else if (affiche.statut === 'archivee') {
+                            console.log('📦 Affiche archivée:', affiche.libelle);
                             sendNotification('archivage', 
                                 `Affiche archivée: ${affiche.libelle}`
                             );
@@ -2805,16 +2855,16 @@
                     }
                 });
             });
-            
-            // Vérifier les affiches expirantes (simulation)
-            setInterval(checkExpiringAffiches, 3600000); // Chaque heure
         }
 
         // Vérifier les affiches expirantes
         async function checkExpiringAffiches() {
             try {
+                console.log('⏰ Vérification des affiches expirantes...');
+                
                 const tomorrow = new Date();
                 tomorrow.setDate(tomorrow.getDate() + 1);
+                tomorrow.setHours(0, 0, 0, 0);
                 
                 const q = query(
                     collection(db, 'affiches'),
@@ -2822,19 +2872,39 @@
                 );
                 const querySnapshot = await getDocs(q);
                 
+                let expiringCount = 0;
+                
                 querySnapshot.forEach((doc) => {
                     const affiche = doc.data();
                     const dateFin = new Date(affiche.dateFin);
+                    dateFin.setHours(0, 0, 0, 0);
                     
-                    if (dateFin <= tomorrow) {
+                    // Si expire demain
+                    if (dateFin.getTime() === tomorrow.getTime()) {
+                        console.log('⚠️ Affiche expire demain:', affiche.libelle);
                         sendNotification('expiration', 
                             `Affiche expire demain: ${affiche.libelle} (${formatDate(affiche.dateFin)})`
                         );
+                        expiringCount++;
                     }
                 });
+                
+                console.log('📊 Affiches expirant demain:', expiringCount);
+                
             } catch (error) {
-                console.error('Erreur vérification expirations:', error);
+                console.error('❌ Erreur vérification expirations:', error);
             }
+        }
+
+        // Démarrer la vérification des expirations (1 fois par heure)
+        function startExpirationCheck() {
+            console.log('⏰ Démarrage du système de vérification des expirations');
+            
+            // Première vérification après 1 minute
+            setTimeout(checkExpiringAffiches, 60000);
+            
+            // Puis toutes les heures
+            setInterval(checkExpiringAffiches, 3600000);
         }
 
         // ========= GESTION DES ORIGINES (inchangé) =========

@@ -1884,127 +1884,236 @@
         async function initPushNotifications() {
             console.log('🔔 Initialisation des notifications push...');
             
-            if ('Notification' in window && 'serviceWorker' in navigator) {
+            if ('Notification' in window) {
                 console.log('✅ Support notifications détecté');
                 
                 try {
-                    // Enregistrer le service worker
-                    const registration = await navigator.serviceWorker.register(
-                        'data:application/javascript;base64,' + btoa(`
-                            self.addEventListener('push', function(event) {
-                                console.log('Push reçu:', event);
-                                const options = {
-                                    body: event.data ? event.data.text() : 'Nouvelle notification',
-                                    icon: '📺',
-                                    badge: '📺'
-                                };
-                                event.waitUntil(
-                                    self.registration.showNotification('Gestion Affichage', options)
-                                );
-                            });
-                            
-                            self.addEventListener('notificationclick', function(event) {
-                                console.log('Notification cliquée');
-                                event.notification.close();
-                                event.waitUntil(
-                                    clients.openWindow('/')
-                                );
-                            });
-                        `)
-                    );
+                    // Demander permission d'abord
+                    let permission = Notification.permission;
+                    console.log('📋 Permission initiale:', permission);
                     
-                    window.swRegistration = registration;
-                    console.log('✅ Service Worker enregistré');
-                    
-                    const permission = await Notification.requestPermission();
-                    console.log('📋 Permission obtenue:', permission);
+                    if (permission === 'default') {
+                        permission = await Notification.requestPermission();
+                        console.log('📋 Permission après demande:', permission);
+                    }
                     
                     if (permission === 'granted') {
                         console.log('✅ Notifications push activées');
                         
-                        // Test automatique discret
-                        setTimeout(async () => {
-                            await showNotificationSafe('🔔 Notifications activées', 'Vous recevrez maintenant les alertes !', true);
-                        }, 2000);
+                        const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                        console.log('📱 Appareil mobile détecté:', isMobile);
+                        
+                        // Pour mobile : Service Worker obligatoire
+                        if (isMobile && 'serviceWorker' in navigator) {
+                            try {
+                                console.log('📱 Configuration Service Worker pour mobile...');
+                                
+                                // Service Worker spécialement conçu pour mobile
+                                const registration = await navigator.serviceWorker.register(
+                                    'data:application/javascript;base64,' + btoa(`
+                                        console.log('📱 Service Worker mobile démarré');
+                                        
+                                        self.addEventListener('push', function(event) {
+                                            console.log('📱 Push reçu dans SW mobile');
+                                            const options = {
+                                                body: event.data ? event.data.text() : 'Nouvelle notification',
+                                                icon: '/android-chrome-192x192.png',
+                                                badge: '/android-chrome-192x192.png',
+                                                tag: 'gestion-affichage-mobile',
+                                                requireInteraction: true,
+                                                vibrate: [200, 100, 200],
+                                                data: { timestamp: Date.now() }
+                                            };
+                                            
+                                            event.waitUntil(
+                                                self.registration.showNotification('Gestion Affichage', options)
+                                            );
+                                        });
+                                        
+                                        self.addEventListener('notificationclick', function(event) {
+                                            console.log('📱 Notification mobile cliquée');
+                                            event.notification.close();
+                                            
+                                            event.waitUntil(
+                                                clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
+                                                    if (clientList.length > 0) {
+                                                        return clientList[0].focus();
+                                                    }
+                                                    return clients.openWindow('/');
+                                                })
+                                            );
+                                        });
+                                        
+                                        self.addEventListener('activate', function(event) {
+                                            console.log('📱 Service Worker mobile activé');
+                                            event.waitUntil(self.clients.claim());
+                                        });
+                                    `)
+                                );
+                                
+                                // Attendre que le SW soit vraiment prêt
+                                await registration.update();
+                                
+                                if (registration.active) {
+                                    window.swRegistration = registration;
+                                    console.log('✅ Service Worker mobile prêt et actif');
+                                    
+                                    // Test mobile après délai
+                                    setTimeout(async () => {
+                                        console.log('📱 Test automatique mobile...');
+                                        const success = await showNotificationSafe('📱 Mobile Ready', 'Notifications activées sur mobile !', true);
+                                        if (success) {
+                                            console.log('✅ Test mobile automatique réussi');
+                                        } else {
+                                            console.log('❌ Test mobile automatique échoué');
+                                        }
+                                    }, 4000);
+                                    
+                                } else {
+                                    console.log('⚠️ Service Worker mobile en attente d\'activation');
+                                    window.swRegistration = registration;
+                                }
+                                
+                            } catch (swError) {
+                                console.log('⚠️ Service Worker mobile échoué:', swError.message);
+                                window.swRegistration = null;
+                            }
+                        }
+                        
+                        // Pour desktop : Pas de SW nécessaire
+                        else if (!isMobile) {
+                            console.log('🖥️ Configuration desktop (sans Service Worker)');
+                            window.swRegistration = null;
+                            
+                            // Test desktop après délai
+                            setTimeout(async () => {
+                                console.log('🖥️ Test automatique desktop...');
+                                const success = await showNotificationSafe('🖥️ Desktop Ready', 'Notifications activées sur desktop !', true);
+                                if (success) {
+                                    console.log('✅ Test desktop automatique réussi');
+                                }
+                            }, 2000);
+                        }
                         
                     } else {
-                        console.log('❌ Notifications push refusées');
+                        console.log('❌ Notifications push refusées:', permission);
                     }
                 } catch (error) {
                     console.error('❌ Erreur init notifications:', error);
                 }
             } else {
-                console.log('❌ Notifications ou Service Worker non supportés');
+                console.log('❌ Notifications non supportées par ce navigateur');
             }
         }
 
         // Fonction universelle pour afficher les notifications
         async function showNotificationSafe(title, body, isDiscrete = false) {
-            console.log('📤 Affichage notification:', title);
+            console.log('📤 Tentative affichage notification:', title);
+            console.log('📱 User Agent:', navigator.userAgent);
+            console.log('🌐 Is Mobile:', /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
             
             if (!('Notification' in window)) {
-                console.log('❌ Notifications non supportées');
+                console.log('❌ API Notification non supportée');
                 return false;
             }
             
-            if (Notification.permission !== 'granted') {
-                console.log('❌ Permission non accordée:', Notification.permission);
+            const permission = Notification.permission;
+            console.log('📋 Permission actuelle:', permission);
+            
+            if (permission !== 'granted') {
+                console.log('❌ Permission non accordée:', permission);
                 return false;
             }
             
-            try {
-                // Essayer d'abord avec Service Worker (pour mobile)
-                if (window.swRegistration) {
-                    console.log('📱 Utilisation Service Worker pour notification');
+            const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            // MOBILE : Service Worker obligatoire
+            if (isMobile) {
+                console.log('📱 Appareil mobile détecté - Mode Service Worker');
+                
+                if (!window.swRegistration) {
+                    console.log('❌ Service Worker requis pour mobile mais non disponible');
+                    return false;
+                }
+                
+                try {
+                    console.log('📱 Envoi notification via Service Worker...');
                     await window.swRegistration.showNotification(title, {
                         body: body,
-                        icon: '📺',
-                        badge: '📺',
-                        tag: 'app-' + Date.now(),
+                        icon: '/favicon.ico',
+                        badge: '/favicon.ico',
+                        tag: `mobile-notif-${Date.now()}`,
+                        requireInteraction: !isDiscrete,
+                        silent: isDiscrete,
+                        vibrate: isDiscrete ? [] : [200, 100, 200],
+                        data: { 
+                            timestamp: Date.now(),
+                            source: 'mobile' 
+                        },
+                        actions: !isDiscrete ? [
+                            {
+                                action: 'view',
+                                title: 'Voir',
+                                icon: '/favicon.ico'
+                            }
+                        ] : []
+                    });
+                    console.log('✅ Service Worker notification envoyée (mobile)');
+                    return true;
+                } catch (mobileError) {
+                    console.error('❌ Erreur Service Worker mobile:', mobileError);
+                    console.log('🔧 Détails erreur mobile:', mobileError.message);
+                    return false;
+                }
+            }
+            
+            // DESKTOP : API Notification directe
+            else {
+                console.log('🖥️ Appareil desktop détecté - Mode API directe');
+                
+                try {
+                    console.log('🖥️ Création notification desktop...');
+                    const notification = new Notification(title, {
+                        body: body,
+                        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📺</text></svg>',
+                        tag: `desktop-notif-${Date.now()}`,
                         requireInteraction: !isDiscrete,
                         silent: isDiscrete
                     });
-                    console.log('✅ Notification SW affichée');
+                    
+                    notification.onclick = function() {
+                        console.log('👆 Notification desktop cliquée');
+                        window.focus();
+                        this.close();
+                    };
+                    
+                    notification.onshow = function() {
+                        console.log('✅ Notification desktop affichée');
+                    };
+                    
+                    notification.onerror = function(error) {
+                        console.error('❌ Erreur notification desktop:', error);
+                    };
+                    
+                    if (!isDiscrete) {
+                        setTimeout(() => {
+                            try {
+                                notification.close();
+                                console.log('🔒 Notification desktop fermée automatiquement');
+                            } catch (e) {
+                                console.log('ℹ️ Notification desktop déjà fermée');
+                            }
+                        }, 8000);
+                    }
+                    
+                    console.log('✅ Notification desktop créée');
                     return true;
+                    
+                } catch (desktopError) {
+                    console.error('❌ Erreur API Notification desktop:', desktopError);
+                    console.log('🔧 Détails erreur desktop:', desktopError.message);
+                    return false;
                 }
-            } catch (swError) {
-                console.log('⚠️ Erreur SW, essai fallback:', swError.message);
-            }
-            
-            try {
-                // Fallback avec Notification API classique (pour desktop)
-                console.log('🖥️ Utilisation Notification API classique');
-                const notification = new Notification(title, {
-                    body: body,
-                    icon: '📺',
-                    badge: '📺',
-                    tag: 'app-' + Date.now(),
-                    requireInteraction: !isDiscrete,
-                    silent: isDiscrete
-                });
-                
-                notification.onclick = function() {
-                    console.log('👆 Notification cliquée');
-                    window.focus();
-                    this.close();
-                };
-                
-                if (!isDiscrete) {
-                    setTimeout(() => {
-                        try {
-                            notification.close();
-                        } catch (e) {
-                            console.log('ℹ️ Notification déjà fermée');
-                        }
-                    }, 8000);
-                }
-                
-                console.log('✅ Notification classique affichée');
-                return true;
-                
-            } catch (classicError) {
-                console.error('❌ Erreur notification classique:', classicError.message);
-                return false;
             }
         }
 
@@ -2549,59 +2658,108 @@
             console.log('🧪 Test de notification démarré...');
             
             try {
-                // Vérifier le support
+                // Vérifier le support de base
                 if (!('Notification' in window)) {
-                    console.log('❌ Notifications non supportées par ce navigateur');
-                    showErrorMessage('❌ Notifications non supportées par ce navigateur');
+                    console.log('❌ API Notification non supportée');
+                    showErrorMessage('❌ Ce navigateur ne supporte pas les notifications');
                     return;
                 }
                 
                 // Vérifier/demander permission
                 let permission = Notification.permission;
-                console.log('📋 Permission actuelle:', permission);
+                console.log('📋 Permission initiale:', permission);
                 
                 if (permission === 'default') {
                     console.log('🔒 Demande de permission...');
                     permission = await Notification.requestPermission();
-                    console.log('📋 Permission après demande:', permission);
+                    console.log('📋 Permission obtenue:', permission);
+                }
+                
+                if (permission === 'denied') {
+                    console.log('❌ Permission refusée définitivement');
+                    showErrorMessage('❌ Notifications bloquées. Pour les réactiver :\n1. Cliquez sur l\'icône 🔒 ou ⚙️ dans la barre d\'adresse\n2. Autorisez les notifications\n3. Rechargez la page');
+                    return;
                 }
                 
                 if (permission === 'granted') {
-                    console.log('✅ Permission accordée, test de notification...');
+                    console.log('✅ Permission accordée, test des méthodes...');
+                    
+                    // Test direct simple d'abord
+                    console.log('🎯 Test 1: Notification directe simple...');
+                    try {
+                        const simpleNotif = new Notification('🧪 Test Simple', {
+                            body: 'Si vous voyez ceci, les notifications marchent !',
+                            tag: 'test-simple-' + Date.now()
+                        });
+                        
+                        simpleNotif.onshow = function() {
+                            console.log('✅ Test simple réussi !');
+                        };
+                        
+                        simpleNotif.onerror = function(error) {
+                            console.log('❌ Test simple échoué:', error);
+                        };
+                        
+                        setTimeout(() => {
+                            try { simpleNotif.close(); } catch(e) {}
+                        }, 3000);
+                        
+                        showSuccessMessage('🧪 Test 1: Notification simple envoyée !');
+                        
+                    } catch (directError) {
+                        console.log('❌ Test direct échoué:', directError.message);
+                    }
+                    
+                    // Test avec Service Worker si disponible
+                    if (window.swRegistration && 'showNotification' in window.swRegistration) {
+                        console.log('🎯 Test 2: Service Worker...');
+                        try {
+                            await window.swRegistration.showNotification('🧪 Test Service Worker', {
+                                body: 'Test avec Service Worker pour mobile',
+                                tag: 'test-sw-' + Date.now(),
+                                icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📺</text></svg>'
+                            });
+                            console.log('✅ Test Service Worker réussi !');
+                            showSuccessMessage('🧪 Test 2: Service Worker réussi !');
+                        } catch (swTestError) {
+                            console.log('❌ Test Service Worker échoué:', swTestError.message);
+                            showErrorMessage('❌ Test Service Worker échoué: ' + swTestError.message);
+                        }
+                    }
                     
                     // Test avec la fonction universelle
-                    const success = await showNotificationSafe(
-                        '🧪 Test - Gestion Affichage', 
-                        'Test de notification réussi ! Système fonctionnel 🎉',
+                    console.log('🎯 Test 3: Fonction universelle...');
+                    const universalSuccess = await showNotificationSafe(
+                        '🧪 Test Final - Gestion Affichage', 
+                        'Si vous voyez ceci, tout fonctionne parfaitement ! 🎉',
                         false
                     );
                     
-                    if (success) {
-                        showSuccessMessage('🧪 Notification de test affichée avec succès !');
-                        console.log('✅ Test terminé avec succès');
+                    if (universalSuccess) {
+                        showSuccessMessage('🎉 Tests terminés avec succès ! Les notifications fonctionnent.');
+                        console.log('✅ Tous les tests réussis');
                         
-                        // Aussi tester le système de notification existant
+                        // Test du système de notification existant
                         if (window.currentUserData) {
-                            const message = 'Test système - Notifications fonctionnelles !';
-                            await sendNotification('test', message, [window.currentUserData]);
+                            console.log('🎯 Test du système complet...');
+                            setTimeout(async () => {
+                                await sendNotification('test', 'Test système complet - Notifications opérationnelles !', [window.currentUserData]);
+                            }, 2000);
                         }
+                        
                     } else {
-                        showErrorMessage('❌ Échec de l\'affichage de la notification');
-                        console.log('❌ Test échoué');
+                        showErrorMessage('❌ Tous les tests ont échoué');
+                        console.log('❌ Échec complet des tests');
                     }
-                    
-                } else if (permission === 'denied') {
-                    console.log('❌ Permission refusée définitivement');
-                    showErrorMessage('❌ Notifications bloquées. Pour les réactiver :\n1. Cliquez sur le cadenas 🔒 dans la barre d\'adresse\n2. Autorisez les notifications\n3. Rechargez la page');
                     
                 } else {
                     console.log('❓ État de permission inattendu:', permission);
-                    showErrorMessage('❌ Problème de permission de notification');
+                    showErrorMessage('❌ État de permission non géré: ' + permission);
                 }
                 
             } catch (error) {
-                console.error('❌ Erreur lors du test de notification:', error);
-                showErrorMessage('❌ Erreur technique : ' + error.message);
+                console.error('❌ Erreur critique lors du test:', error);
+                showErrorMessage('❌ Erreur critique: ' + error.message);
             }
         }
 

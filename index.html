@@ -1877,6 +1877,9 @@
         window.users = [];
         window.notifications = [];
 
+        // Variables globales pour les notifications
+        window.swRegistration = null;
+
         // Initialiser les notifications push
         async function initPushNotifications() {
             console.log('🔔 Initialisation des notifications push...');
@@ -1885,22 +1888,44 @@
                 console.log('✅ Support notifications détecté');
                 
                 try {
+                    // Enregistrer le service worker
+                    const registration = await navigator.serviceWorker.register(
+                        'data:application/javascript;base64,' + btoa(`
+                            self.addEventListener('push', function(event) {
+                                console.log('Push reçu:', event);
+                                const options = {
+                                    body: event.data ? event.data.text() : 'Nouvelle notification',
+                                    icon: '📺',
+                                    badge: '📺'
+                                };
+                                event.waitUntil(
+                                    self.registration.showNotification('Gestion Affichage', options)
+                                );
+                            });
+                            
+                            self.addEventListener('notificationclick', function(event) {
+                                console.log('Notification cliquée');
+                                event.notification.close();
+                                event.waitUntil(
+                                    clients.openWindow('/')
+                                );
+                            });
+                        `)
+                    );
+                    
+                    window.swRegistration = registration;
+                    console.log('✅ Service Worker enregistré');
+                    
                     const permission = await Notification.requestPermission();
                     console.log('📋 Permission obtenue:', permission);
                     
                     if (permission === 'granted') {
                         console.log('✅ Notifications push activées');
                         
-                        // Test simple pour vérifier
-                        setTimeout(() => {
-                            const testNotif = new Notification('🔔 Notifications activées', {
-                                body: 'Vous recevrez maintenant les alertes !',
-                                icon: '📺',
-                                tag: 'init-test'
-                            });
-                            
-                            setTimeout(() => testNotif.close(), 3000);
-                        }, 1000);
+                        // Test automatique discret
+                        setTimeout(async () => {
+                            await showNotificationSafe('🔔 Notifications activées', 'Vous recevrez maintenant les alertes !', true);
+                        }, 2000);
                         
                     } else {
                         console.log('❌ Notifications push refusées');
@@ -1910,6 +1935,76 @@
                 }
             } else {
                 console.log('❌ Notifications ou Service Worker non supportés');
+            }
+        }
+
+        // Fonction universelle pour afficher les notifications
+        async function showNotificationSafe(title, body, isDiscrete = false) {
+            console.log('📤 Affichage notification:', title);
+            
+            if (!('Notification' in window)) {
+                console.log('❌ Notifications non supportées');
+                return false;
+            }
+            
+            if (Notification.permission !== 'granted') {
+                console.log('❌ Permission non accordée:', Notification.permission);
+                return false;
+            }
+            
+            try {
+                // Essayer d'abord avec Service Worker (pour mobile)
+                if (window.swRegistration) {
+                    console.log('📱 Utilisation Service Worker pour notification');
+                    await window.swRegistration.showNotification(title, {
+                        body: body,
+                        icon: '📺',
+                        badge: '📺',
+                        tag: 'app-' + Date.now(),
+                        requireInteraction: !isDiscrete,
+                        silent: isDiscrete
+                    });
+                    console.log('✅ Notification SW affichée');
+                    return true;
+                }
+            } catch (swError) {
+                console.log('⚠️ Erreur SW, essai fallback:', swError.message);
+            }
+            
+            try {
+                // Fallback avec Notification API classique (pour desktop)
+                console.log('🖥️ Utilisation Notification API classique');
+                const notification = new Notification(title, {
+                    body: body,
+                    icon: '📺',
+                    badge: '📺',
+                    tag: 'app-' + Date.now(),
+                    requireInteraction: !isDiscrete,
+                    silent: isDiscrete
+                });
+                
+                notification.onclick = function() {
+                    console.log('👆 Notification cliquée');
+                    window.focus();
+                    this.close();
+                };
+                
+                if (!isDiscrete) {
+                    setTimeout(() => {
+                        try {
+                            notification.close();
+                        } catch (e) {
+                            console.log('ℹ️ Notification déjà fermée');
+                        }
+                    }, 8000);
+                }
+                
+                console.log('✅ Notification classique affichée');
+                return true;
+                
+            } catch (classicError) {
+                console.error('❌ Erreur notification classique:', classicError.message);
+                return false;
             }
         }
 
@@ -2437,72 +2532,13 @@
         async function sendPushNotification(user, type, message) {
             console.log('📤 Envoi notification push pour:', user.firstName, user.lastName);
             
-            if (!('Notification' in window)) {
-                console.log('❌ Notifications non supportées');
-                return Promise.resolve();
-            }
+            const title = `📺 Gestion Affichage - ${getNotificationTypeLabel(type)}`;
+            const success = await showNotificationSafe(title, message, false);
             
-            try {
-                // Vérifier la permission actuelle
-                let permission = Notification.permission;
-                console.log('📋 Permission initiale:', permission);
-                
-                // Si permission par défaut, la demander
-                if (permission === 'default') {
-                    console.log('🔒 Demande de permission push...');
-                    permission = await Notification.requestPermission();
-                    console.log('📋 Permission après demande:', permission);
-                }
-                
-                // Vérifier encore une fois après la demande
-                const finalPermission = Notification.permission;
-                console.log('📋 Permission finale vérifiée:', finalPermission);
-                
-                if (finalPermission === 'granted') {
-                    console.log('✅ Permission accordée, création de la notification...');
-                    
-                    const notification = new Notification(`📺 Gestion Affichage - ${getNotificationTypeLabel(type)}`, {
-                        body: message,
-                        icon: '📺',
-                        badge: '📺',
-                        tag: type + '_' + Date.now(), // Tag unique pour éviter la suppression
-                        requireInteraction: false,
-                        silent: false
-                    });
-                    
-                    notification.onclick = function() {
-                        console.log('👆 Notification cliquée');
-                        window.focus();
-                        this.close();
-                    };
-                    
-                    notification.onshow = function() {
-                        console.log('✅ Notification affichée avec succès');
-                    };
-                    
-                    notification.onerror = function(error) {
-                        console.error('❌ Erreur affichage notification:', error);
-                    };
-                    
-                    // Auto-fermeture après 8 secondes
-                    setTimeout(() => {
-                        try {
-                            notification.close();
-                            console.log('🔒 Notification fermée automatiquement');
-                        } catch (e) {
-                            console.log('ℹ️ Notification déjà fermée');
-                        }
-                    }, 8000);
-                    
-                } else {
-                    console.log('❌ Permission refusée ou non accordée:', finalPermission);
-                    if (finalPermission === 'denied') {
-                        console.log('🚫 Les notifications sont bloquées. Débloquez-les dans les paramètres du navigateur.');
-                    }
-                }
-                
-            } catch (error) {
-                console.error('❌ Erreur système notification:', error);
+            if (success) {
+                console.log('✅ Notification envoyée avec succès');
+            } else {
+                console.log('❌ Échec envoi notification');
             }
             
             return Promise.resolve();
@@ -2520,74 +2556,46 @@
                     return;
                 }
                 
-                console.log('📋 Permission actuelle:', Notification.permission);
-                
+                // Vérifier/demander permission
                 let permission = Notification.permission;
+                console.log('📋 Permission actuelle:', permission);
                 
-                // Demander permission si nécessaire
                 if (permission === 'default') {
-                    console.log('🔒 Demande de permission pour le test...');
+                    console.log('🔒 Demande de permission...');
                     permission = await Notification.requestPermission();
-                    console.log('📋 Permission obtenue:', permission);
+                    console.log('📋 Permission après demande:', permission);
                 }
                 
-                // Vérifier le résultat final
-                const finalPermission = Notification.permission;
-                console.log('📋 Permission finale:', finalPermission);
-                
-                if (finalPermission === 'granted') {
-                    console.log('✅ Permission accordée, création notification test...');
+                if (permission === 'granted') {
+                    console.log('✅ Permission accordée, test de notification...');
                     
-                    // Créer notification test directe
-                    const testNotif = new Notification('🧪 Test - Gestion Affichage', {
-                        body: 'Test de notification réussi ! Système fonctionnel 🎉',
-                        icon: '📺',
-                        badge: '📺',
-                        tag: 'test-' + Date.now(),
-                        requireInteraction: true,
-                        silent: false
-                    });
+                    // Test avec la fonction universelle
+                    const success = await showNotificationSafe(
+                        '🧪 Test - Gestion Affichage', 
+                        'Test de notification réussi ! Système fonctionnel 🎉',
+                        false
+                    );
                     
-                    testNotif.onclick = function() {
-                        console.log('👆 Notification test cliquée');
-                        window.focus();
-                        this.close();
-                    };
-                    
-                    testNotif.onshow = function() {
-                        console.log('👁️ Notification test affichée');
+                    if (success) {
                         showSuccessMessage('🧪 Notification de test affichée avec succès !');
-                    };
-                    
-                    testNotif.onerror = function(error) {
-                        console.error('❌ Erreur notification test:', error);
-                        showErrorMessage('❌ Erreur lors de l\'affichage de la notification');
-                    };
-                    
-                    // Auto-fermeture après 10 secondes
-                    setTimeout(() => {
-                        try {
-                            testNotif.close();
-                            console.log('🔒 Notification test fermée');
-                        } catch (e) {
-                            console.log('ℹ️ Notification test déjà fermée');
+                        console.log('✅ Test terminé avec succès');
+                        
+                        // Aussi tester le système de notification existant
+                        if (window.currentUserData) {
+                            const message = 'Test système - Notifications fonctionnelles !';
+                            await sendNotification('test', message, [window.currentUserData]);
                         }
-                    }, 10000);
-                    
-                    // Aussi tester le système de notification existant
-                    if (window.currentUserData) {
-                        const message = 'Test système - Notifications fonctionnelles !';
-                        await sendNotification('test', message, [window.currentUserData]);
+                    } else {
+                        showErrorMessage('❌ Échec de l\'affichage de la notification');
+                        console.log('❌ Test échoué');
                     }
                     
-                    console.log('✅ Test terminé avec succès');
-                    
-                } else if (finalPermission === 'denied') {
+                } else if (permission === 'denied') {
                     console.log('❌ Permission refusée définitivement');
                     showErrorMessage('❌ Notifications bloquées. Pour les réactiver :\n1. Cliquez sur le cadenas 🔒 dans la barre d\'adresse\n2. Autorisez les notifications\n3. Rechargez la page');
                     
                 } else {
-                    console.log('❓ État de permission inattendu:', finalPermission);
+                    console.log('❓ État de permission inattendu:', permission);
                     showErrorMessage('❌ Problème de permission de notification');
                 }
                 

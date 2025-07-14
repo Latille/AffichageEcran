@@ -74,11 +74,20 @@
             font-size: 12px;
         }
 
-        .user-role-badge {
+        .user-initials {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
             background: rgba(255,255,255,0.2);
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 10px;
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .logout-btn {
@@ -1144,8 +1153,7 @@
                 <h1>Gestion Affichage</h1>
             </div>
             <div class="user-info">
-                <span id="currentUserName">Utilisateur</span>
-                <span id="currentUserRole" class="user-role-badge">Admin</span>
+                <div id="currentUserInitials" class="user-initials">UP</div>
                 <button onclick="logoutUser()" class="logout-btn">🚪 Déconnexion</button>
             </div>
         </div>
@@ -2220,12 +2228,12 @@
         // Mettre à jour les informations utilisateur dans le header
         function updateHeaderUserInfo() {
             if (window.currentUserData) {
-                document.getElementById('currentUserName').textContent = 
-                    `${window.currentUserData.firstName} ${window.currentUserData.lastName}`;
-                document.getElementById('currentUserRole').textContent = 
-                    window.currentUserData.role === 'admin' ? 'Admin' : 'Employé';
-                document.getElementById('currentUserRole').className = 
-                    `user-role-badge ${window.currentUserData.role === 'admin' ? 'admin' : ''}`;
+                const initials = `${window.currentUserData.firstName?.charAt(0) || ''}${window.currentUserData.lastName?.charAt(0) || ''}`;
+                const initialsElement = document.getElementById('currentUserInitials');
+                if (initialsElement) {
+                    initialsElement.textContent = initials;
+                }
+                console.log('🎭 Initiales mises à jour:', initials);
             }
         }
 
@@ -2254,17 +2262,29 @@
 
         // Charger toutes les données
         async function loadAllData() {
+            console.log('🔄 Chargement de toutes les données...');
             await loadOrigines();
             await loadUnites();
             await loadAffiches();
             await loadUsers();
             await loadNotifications();
+            
+            // Forcer la mise à jour des statistiques après un court délai
             setTimeout(() => {
+                console.log('🔄 Mise à jour forcée des composants UI...');
                 setupSearch();
                 setupFilters();
                 updateSelectOptions();
-                updateDashboardStats([]);
-            }, 100);
+                
+                // Re-calculer les stats avec les données chargées
+                if (window.lastLoadedAffiches && window.lastLoadedAffiches.length > 0) {
+                    console.log('📊 Recalcul forcé des statistiques dashboard');
+                    updateDashboardStats(window.lastLoadedAffiches);
+                } else {
+                    console.log('📊 Initialisation des statistiques à zéro');
+                    updateDashboardStats([]);
+                }
+            }, 500);
         }
 
         // ========= GESTION DES UTILISATEURS =========
@@ -2318,8 +2338,10 @@
                 const isOnline = user.lastLoginAt && (new Date() - user.lastLoginAt) < 300000; // 5 minutes
                 const isCurrentUser = user.userId === window.currentUser.uid;
                 
-                // Pour l'utilisateur connecté, utiliser l'ID Firestore du document
-                const editId = isCurrentUser ? user.id : user.id;
+                // Pour l'utilisateur connecté, toujours utiliser l'ID du document Firestore
+                const editId = user.id; // Toujours l'ID Firestore
+                
+                console.log('👤 Utilisateur:', user.firstName, user.lastName, 'ID Firestore:', user.id, 'UID Firebase:', user.userId, 'Est connecté:', isCurrentUser);
                 
                 return `
                     <div class="user-card">
@@ -2443,18 +2465,30 @@
         // Mettre à jour un utilisateur
         async function updateUser(id, userData) {
             try {
+                console.log('🔄 Mise à jour utilisateur ID:', id);
+                console.log('📝 Données à mettre à jour:', userData);
+                
                 const docRef = doc(db, 'users', id);
                 await updateDoc(docRef, {
                     ...userData,
                     updatedAt: serverTimestamp()
                 });
                 
+                // Si c'est l'utilisateur connecté, mettre à jour aussi les données locales
+                if (window.currentUserData && window.currentUserData.id === id) {
+                    console.log('👤 Mise à jour des données utilisateur connecté');
+                    window.currentUserData = { ...window.currentUserData, ...userData };
+                    updateHeaderUserInfo();
+                }
+                
                 showSuccessMessage('✅ Utilisateur mis à jour avec succès');
                 await loadUsers();
                 return true;
             } catch (error) {
-                console.error('Erreur mise à jour utilisateur:', error);
-                showErrorMessage('❌ Erreur lors de la mise à jour');
+                console.error('❌ Erreur mise à jour utilisateur:', error);
+                console.error('🔍 ID utilisé:', id);
+                console.error('🔍 Données envoyées:', userData);
+                showErrorMessage('❌ Erreur lors de la mise à jour: ' + error.message);
                 return false;
             }
         }
@@ -2474,17 +2508,21 @@
         // Charger un utilisateur pour édition
         async function loadUserForEdit(id) {
             try {
-                // Si c'est l'utilisateur connecté, utiliser les données déjà chargées
-                if (window.currentUserData && (id === window.currentUserData.id || id === window.currentUser.uid)) {
-                    console.log('✅ Édition utilisateur connecté - utilisation des données en cache');
-                    return window.currentUserData;
+                console.log('🔍 Chargement utilisateur pour édition, ID:', id);
+                
+                // Chercher d'abord dans les données déjà chargées
+                const userInList = window.users.find(u => u.id === id);
+                if (userInList) {
+                    console.log('✅ Utilisateur trouvé dans la liste:', userInList.firstName, userInList.lastName);
+                    return userInList;
                 }
                 
-                // Sinon, chercher dans Firestore
+                // Si pas trouvé, chercher dans Firestore
+                console.log('🔍 Recherche dans Firestore...');
                 const userDoc = await getDoc(doc(db, 'users', id));
                 if (userDoc.exists()) {
                     const userData = userDoc.data();
-                    console.log('✅ Utilisateur trouvé pour édition:', userData.firstName, userData.lastName);
+                    console.log('✅ Utilisateur trouvé dans Firestore:', userData.firstName, userData.lastName);
                     return { id: userDoc.id, ...userData };
                 } else {
                     console.log('❌ Utilisateur non trouvé avec ID:', id);
@@ -2492,8 +2530,8 @@
                     return null;
                 }
             } catch (error) {
-                console.error('Erreur chargement utilisateur:', error);
-                showErrorMessage('❌ Erreur lors du chargement');
+                console.error('❌ Erreur chargement utilisateur:', error);
+                showErrorMessage('❌ Erreur lors du chargement: ' + error.message);
                 return null;
             }
         }
@@ -3207,6 +3245,7 @@
         
         async function loadAffiches() {
             try {
+                console.log('📋 Chargement des affiches...');
                 const q = query(collection(db, 'affiches'), orderBy('dateCreation', 'desc'));
                 const querySnapshot = await getDocs(q);
                 const affiches = [];
@@ -3219,11 +3258,19 @@
                     affiches.push({ id: doc.id, ...data });
                 });
                 
+                console.log('📋 Affiches récupérées depuis Firebase:', affiches.length);
+                console.log('📋 Détail des affiches:', affiches.map(a => `${a.libelle} (${a.statut})`));
+                
+                // Mettre à jour immédiatement
                 displayAffiches(affiches);
-                console.log('Affiches chargées:', affiches.length);
+                
+                console.log('✅ Affiches chargées et affichées:', affiches.length);
             } catch (error) {
-                console.error('Erreur chargement affiches:', error);
+                console.error('❌ Erreur chargement affiches:', error);
                 showErrorMessage('Erreur lors du chargement des affiches');
+                
+                // En cas d'erreur, afficher avec un tableau vide
+                displayAffiches([]);
             }
         }
 
@@ -3421,6 +3468,8 @@
         }
 
         function updateDashboardStats(affiches) {
+            console.log('📊 Mise à jour des statistiques dashboard avec:', affiches.length, 'affiches');
+            
             const stats = {
                 enDiffusion: affiches.filter(a => a.statut === 'en-diffusion').length,
                 aCreer: affiches.filter(a => a.statut === 'a-creer').length,
@@ -3428,12 +3477,56 @@
                 archivees: affiches.filter(a => a.statut === 'archivee').length
             };
             
-            const statCards = document.querySelectorAll('.stat-card h3');
+            console.log('📈 Statistiques calculées:', stats);
+            
+            // Mettre à jour les cartes de statistiques
+            const statCards = document.querySelectorAll('.stat-card');
+            console.log('🎴 Cartes trouvées:', statCards.length);
+            
             if (statCards.length >= 4) {
-                statCards[0].textContent = stats.enDiffusion;
-                statCards[1].textContent = stats.aCreer;
-                statCards[2].textContent = stats.programmees;
-                statCards[3].textContent = stats.archivees;
+                // En diffusion
+                const enDiffusionCard = statCards[0];
+                if (enDiffusionCard) {
+                    const h3 = enDiffusionCard.querySelector('h3');
+                    if (h3) {
+                        h3.textContent = stats.enDiffusion;
+                        console.log('📺 En diffusion mis à jour:', stats.enDiffusion);
+                    }
+                }
+                
+                // À créer
+                const aCreerCard = statCards[1];
+                if (aCreerCard) {
+                    const h3 = aCreerCard.querySelector('h3');
+                    if (h3) {
+                        h3.textContent = stats.aCreer;
+                        console.log('🆕 À créer mis à jour:', stats.aCreer);
+                    }
+                }
+                
+                // Programmées
+                const programmeesCard = statCards[2];
+                if (programmeesCard) {
+                    const h3 = programmeesCard.querySelector('h3');
+                    if (h3) {
+                        h3.textContent = stats.programmees;
+                        console.log('📅 Programmées mis à jour:', stats.programmees);
+                    }
+                }
+                
+                // Archivées
+                const archiveesCard = statCards[3];
+                if (archiveesCard) {
+                    const h3 = archiveesCard.querySelector('h3');
+                    if (h3) {
+                        h3.textContent = stats.archivees;
+                        console.log('📦 Archivées mis à jour:', stats.archivees);
+                    }
+                }
+                
+                console.log('✅ Toutes les statistiques dashboard mises à jour');
+            } else {
+                console.error('❌ Pas assez de cartes de statistiques trouvées');
             }
         }
 

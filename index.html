@@ -155,19 +155,83 @@
 
         .dashboard-stats {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: 1fr 80px 1fr;
+            grid-template-rows: 1fr 1fr;
             gap: 15px;
             margin-bottom: 20px;
+            height: 140px;
         }
 
         .stat-card {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: white;
             padding: 8px 12px;
-            min-height: 60px;
             border-radius: 12px;
             text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+
+        /* Carte centrale verticale */
+        .stat-card.notification-card {
+            grid-row: 1 / -1;
+            grid-column: 2;
+            writing-mode: vertical-lr;
+            text-orientation: mixed;
+            padding: 20px 8px;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            min-height: 140px;
+        }
+
+        .stat-card.notification-pending {
+            background: linear-gradient(135deg, #ff4757 0%, #ff3838 100%);
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        .stat-card.notification-hidden {
+            background: linear-gradient(135deg, #f8f9fa 0%, #f8f9fa 100%);
+            color: #f8f9fa;
+            cursor: default;
+        }
+
+        .stat-card.notification-hidden:hover {
+            transform: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .notification-card h3 {
+            font-size: 18px;
+            margin: 0;
+            transform: rotate(90deg);
+            white-space: nowrap;
+        }
+
+        .notification-card p {
+            font-size: 10px;
+            margin: 8px 0 0 0;
+            transform: rotate(90deg);
+            white-space: nowrap;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
         }
 
         .stat-card h3 {
@@ -178,6 +242,14 @@
         .stat-card p {
             font-size: 12px;
             opacity: 0.9;
+        }
+
+        .stat-card.notification-pending p {
+            opacity: 1;
+        }
+
+        .stat-card.notification-hidden p {
+            opacity: 0;
         }
 
         .recent-items {
@@ -649,6 +721,13 @@
             padding: 30px 20px;
         }
 
+        .empty-state {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 40px 20px;
+        }
+
         /* Planning styles */
         .agenda-header {
             display: flex;
@@ -872,13 +951,6 @@
 
         input:checked + .slider:before {
             transform: translateX(20px);
-        }
-
-        .empty-state {
-            text-align: center;
-            color: #666;
-            font-style: italic;
-            padding: 40px 20px;
         }
 
         /* User card styles */
@@ -1113,6 +1185,36 @@
             }
         }
 
+        /* Supprimer les anciens styles dashboard */
+
+        /* Styles pour les groupes de notifications */
+        .notification-group-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .notification-group-item h6 {
+            margin: 0 0 5px 0;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .notification-group-item p {
+            margin: 0;
+            font-size: 11px;
+            color: #666;
+        }
+
+        .notification-group-item .time {
+            font-size: 10px;
+            color: #999;
+            float: right;
+        }
+
     </style>
 </head>
 <body>
@@ -1179,21 +1281,35 @@
 
         <!-- Dashboard -->
         <div id="dashboard" class="tab-content active">
+            <!-- Nouveau layout avec carte centrale verticale -->
             <div class="dashboard-stats">
+                <!-- Ligne du haut gauche -->
                 <div class="stat-card">
-                    <h3>0</h3>
+                    <h3 id="statEnDiffusion">0</h3>
                     <p>En diffusion</p>
                 </div>
+                
+                <!-- Carte centrale verticale -->
+                <div id="notificationCard" class="stat-card notification-card notification-hidden" onclick="sendPendingNotifications()">
+                    <h3 id="notificationCount">0</h3>
+                    <p>À notifier</p>
+                </div>
+                
+                <!-- Ligne du haut droite -->
                 <div class="stat-card">
-                    <h3>0</h3>
+                    <h3 id="statACreer">0</h3>
                     <p>À créer</p>
                 </div>
+                
+                <!-- Ligne du bas gauche -->
                 <div class="stat-card">
-                    <h3>0</h3>
+                    <h3 id="statProgrammees">0</h3>
                     <p>Programmées</p>
                 </div>
+                
+                <!-- Ligne du bas droite -->
                 <div class="stat-card">
-                    <h3>0</h3>
+                    <h3 id="statArchivees">0</h3>
                     <p>Archivées</p>
                 </div>
             </div>
@@ -1203,6 +1319,12 @@
                 <div class="empty-state">
                     Aucune affiche en diffusion pour le moment
                 </div>
+            </div>
+
+            <!-- Affiches en attente de notification -->
+            <div id="pendingNotificationsSection" class="recent-items" style="display:none;">
+                <h3>📧 Affiches à notifier</h3>
+                <div id="pendingNotificationsList"></div>
             </div>
         </div>
 
@@ -1246,8 +1368,6 @@
                 Cliquez sur le bouton + pour créer votre première affiche !
             </div>
         </div>
-
-        <!-- Users (supprimé car intégré dans Paramètres) -->
 
         <!-- Paramètres -->
         <div id="parametres" class="tab-content">
@@ -1432,39 +1552,47 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Système -->
             <div id="systeme-params" class="params-content">
                 <div class="settings-card">
-                    <h4>📧 Configuration SMTP</h4>
+                    <h4>📧 Configuration EmailJS</h4>
                     <div class="form-group">
-                        <label>Serveur SMTP</label>
-                        <input type="text" id="smtp-server" value="smtp.gmail.com" placeholder="smtp.exemple.com">
+                        <label>Service ID</label>
+                        <input type="text" id="emailjs-service" value="service_ec05ih4" readonly>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Port</label>
-                            <input type="number" id="smtp-port" value="587" placeholder="587">
+                            <label>Template Création</label>
+                            <input type="text" id="emailjs-template-creation" value="template_nrfn4mh" readonly>
                         </div>
                         <div class="form-group">
-                            <label>Sécurité</label>
-                            <select id="smtp-security">
-                                <option value="tls" selected>TLS</option>
-                                <option value="ssl">SSL</option>
-                                <option value="none">Aucune</option>
-                            </select>
+                            <label>Template Résumé</label>
+                            <input type="text" id="emailjs-template-resume" value="template_j3uluqp" readonly>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Email expéditeur</label>
-                        <input type="email" id="smtp-sender" value="latilledistribution@gmail.com" placeholder="votre@email.com">
+                        <label>Public Key *</label>
+                        <input type="text" id="emailjs-public-key" placeholder="pk_xxxxxxxx, user_xxxxxxxx ou format alphanumérique">
+                        <small style="color: #666; font-size: 11px; margin-top: 4px; display: block;">
+                            📍 Trouvez votre clé sur: <a href="https://dashboard.emailjs.com/admin/account" target="_blank">dashboard.emailjs.com/admin/account</a><br>
+                            Formats acceptés: pk_xxxxx (nouveau), user_xxxxx (ancien), ou format personnalisé comme "7_WIO6MUc0Lhwi335"
+                        </small>
                     </div>
-                    <div class="form-group">
-                        <label>Mot de passe application</label>
-                        <input type="password" id="smtp-password" placeholder="••••••••••••••••">
-                    </div>
-                    <button class="btn" onclick="saveSmtpConfig()">💾 Sauvegarder la configuration</button>
-                    <button class="test-notification-btn" onclick="testSmtpConnection()">
-                        🔗 Tester la connexion SMTP
+                    <button class="btn" onclick="saveEmailJSConfig()">💾 Sauvegarder la configuration</button>
+                    <button class="test-notification-btn" onclick="testEmailJS()">
+                        🔗 Tester EmailJS
                     </button>
+                    
+                    <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 6px; border-left: 4px solid #17a2b8;">
+                        <strong>💡 Aide Configuration:</strong><br>
+                        <small style="color: #666;">
+                            1. Créez un compte sur <a href="https://www.emailjs.com" target="_blank">emailjs.com</a><br>
+                            2. Ajoutez un service email (Gmail recommandé)<br>
+                            3. Créez les templates avec les IDs ci-dessus<br>
+                            4. Copiez votre Public Key depuis Account → General
+                        </small>
+                    </div>
                 </div>
 
                 <div class="settings-card">
@@ -1487,6 +1615,17 @@
                         </div>
                         <label class="toggle">
                             <input type="checkbox" id="push-enabled" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h5>Groupement notifications</h5>
+                            <p>Grouper les créations d'affiches</p>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" id="group-notifications" checked>
                             <span class="slider"></span>
                         </label>
                     </div>
@@ -1776,7 +1915,7 @@
         </div>
     </div>
 
-    <!-- Modals pour origines et unités (inchangés) -->
+    <!-- Modals pour origines et unités -->
     <div id="addOriginModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1853,11 +1992,14 @@
         </div>
     </div>
 
+    <!-- EmailJS SDK - Version 4 (dernière) -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    
     <!-- Firebase -->
     <script type="module">
         // Import Firebase modules
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
         import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, getDoc, serverTimestamp, query, orderBy, where, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
 
         // Configuration Firebase
@@ -1884,323 +2026,40 @@
         window.unites = [];
         window.users = [];
         window.notifications = [];
+        window.pendingNotifications = [];
+        window.emailJSConfig = {
+            serviceId: 'service_ec05ih4',
+            templateCreation: 'template_nrfn4mh',
+            templateResume: 'template_j3uluqp',
+            publicKey: ''
+        };
 
-        // Variables globales pour les notifications
-        window.swRegistration = null;
-
-        // Initialiser les notifications push
-        async function initPushNotifications() {
-            console.log('🔔 Initialisation des notifications push...');
-            
-            if ('Notification' in window) {
-                console.log('✅ Support notifications détecté');
-                
+        // Initialiser EmailJS avec la nouvelle API
+        function initEmailJS() {
+            if (window.emailJSConfig.publicKey) {
                 try {
-                    // Demander permission d'abord
-                    let permission = Notification.permission;
-                    console.log('📋 Permission initiale:', permission);
+                    const cleanKey = window.emailJSConfig.publicKey.trim();
                     
-                    if (permission === 'default') {
-                        permission = await Notification.requestPermission();
-                        console.log('📋 Permission après demande:', permission);
-                    }
-                    
-                    if (permission === 'granted') {
-                        console.log('✅ Notifications push activées');
+                    if (cleanKey.startsWith('pk_') || 
+                        cleanKey.startsWith('user_') || 
+                        /^[A-Za-z0-9_]+$/.test(cleanKey) && cleanKey.length >= 10) {
                         
-                        const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                        console.log('📱 Appareil mobile détecté:', isMobile);
+                        // Nouvelle API EmailJS v4
+                        emailjs.init({
+                            publicKey: cleanKey,
+                        });
                         
-                        // Pour mobile : Service Worker obligatoire
-                        if (isMobile && 'serviceWorker' in navigator) {
-                            try {
-                                console.log('📱 Configuration Service Worker pour mobile...');
-                                
-                                // Service Worker spécialement conçu pour mobile
-                                const registration = await navigator.serviceWorker.register(
-                                    'data:application/javascript;base64,' + btoa(`
-                                        console.log('📱 Service Worker mobile démarré');
-                                        
-                                        self.addEventListener('push', function(event) {
-                                            console.log('📱 Push reçu dans SW mobile');
-                                            const options = {
-                                                body: event.data ? event.data.text() : 'Nouvelle notification',
-                                                icon: '/android-chrome-192x192.png',
-                                                badge: '/android-chrome-192x192.png',
-                                                tag: 'gestion-affichage-mobile',
-                                                requireInteraction: true,
-                                                vibrate: [200, 100, 200],
-                                                data: { timestamp: Date.now() }
-                                            };
-                                            
-                                            event.waitUntil(
-                                                self.registration.showNotification('Gestion Affichage', options)
-                                            );
-                                        });
-                                        
-                                        self.addEventListener('notificationclick', function(event) {
-                                            console.log('📱 Notification mobile cliquée');
-                                            event.notification.close();
-                                            
-                                            event.waitUntil(
-                                                clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
-                                                    if (clientList.length > 0) {
-                                                        return clientList[0].focus();
-                                                    }
-                                                    return clients.openWindow('/');
-                                                })
-                                            );
-                                        });
-                                        
-                                        self.addEventListener('activate', function(event) {
-                                            console.log('📱 Service Worker mobile activé');
-                                            event.waitUntil(self.clients.claim());
-                                        });
-                                    `)
-                                );
-                                
-                                // Attendre que le SW soit vraiment prêt
-                                await registration.update();
-                                
-                                if (registration.active) {
-                                    window.swRegistration = registration;
-                                    console.log('✅ Service Worker mobile prêt et actif');
-                                    
-                                    // Test mobile après délai
-                                    setTimeout(async () => {
-                                        console.log('📱 Test automatique mobile...');
-                                        const success = await showNotificationSafe('📱 Mobile Ready', 'Notifications activées sur mobile !', true);
-                                        if (success) {
-                                            console.log('✅ Test mobile automatique réussi');
-                                        } else {
-                                            console.log('❌ Test mobile automatique échoué');
-                                        }
-                                    }, 4000);
-                                    
-                                } else {
-                                    console.log('⚠️ Service Worker mobile en attente d\'activation');
-                                    window.swRegistration = registration;
-                                }
-                                
-                            } catch (swError) {
-                                console.log('⚠️ Service Worker mobile échoué:', swError.message);
-                                window.swRegistration = null;
-                            }
-                        }
-                        
-                        // Pour desktop : Pas de SW nécessaire
-                        else if (!isMobile) {
-                            console.log('🖥️ Configuration desktop (sans Service Worker)');
-                            window.swRegistration = null;
-                            
-                            // Test desktop après délai
-                            setTimeout(async () => {
-                                console.log('🖥️ Test automatique desktop...');
-                                const success = await showNotificationSafe('🖥️ Desktop Ready', 'Notifications activées sur desktop !', true);
-                                if (success) {
-                                    console.log('✅ Test desktop automatique réussi');
-                                }
-                            }, 2000);
-                        }
-                        
+                        console.log('✅ EmailJS v4 initialisé avec la clé:', cleanKey.substring(0, 8) + '...');
                     } else {
-                        console.log('❌ Notifications push refusées:', permission);
+                        console.log('❌ Format de clé invalide:', cleanKey);
+                        showErrorMessage('❌ Format de clé EmailJS invalide');
                     }
                 } catch (error) {
-                    console.error('❌ Erreur init notifications:', error);
+                    console.error('❌ Erreur initialisation EmailJS:', error);
+                    showErrorMessage('❌ Erreur initialisation EmailJS: ' + error.message);
                 }
             } else {
-                console.log('❌ Notifications non supportées par ce navigateur');
-            }
-        }
-
-        // Fonction universelle pour afficher les notifications
-        async function showNotificationSafe(title, body, isDiscrete = false) {
-            console.log('📤 Tentative affichage notification:', title);
-            console.log('📱 User Agent:', navigator.userAgent.substring(0, 100));
-            console.log('🌐 Is Mobile:', /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
-            
-            if (!('Notification' in window)) {
-                console.log('❌ API Notification non supportée');
-                return false;
-            }
-            
-            const permission = Notification.permission;
-            console.log('📋 Permission actuelle:', permission);
-            
-            if (permission !== 'granted') {
-                console.log('❌ Permission non accordée:', permission);
-                return false;
-            }
-            
-            const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            
-            // MOBILE : Service Worker obligatoire
-            if (isMobile) {
-                console.log('📱 Appareil mobile détecté - Mode Service Worker');
-                
-                if (!window.swRegistration) {
-                    console.log('❌ Service Worker requis pour mobile mais non disponible');
-                    // Essayer de réinitialiser le Service Worker
-                    await initMobileServiceWorker();
-                    if (!window.swRegistration) {
-                        console.log('❌ Impossible d\'initialiser le Service Worker mobile');
-                        return false;
-                    }
-                }
-                
-                try {
-                    console.log('📱 Envoi notification via Service Worker...');
-                    await window.swRegistration.showNotification(title, {
-                        body: body,
-                        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📺</text></svg>',
-                        badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📺</text></svg>',
-                        tag: `mobile-notif-${Date.now()}`,
-                        requireInteraction: !isDiscrete,
-                        silent: isDiscrete,
-                        vibrate: isDiscrete ? [] : [200, 100, 200],
-                        data: { 
-                            timestamp: Date.now(),
-                            source: 'mobile' 
-                        },
-                        actions: !isDiscrete ? [
-                            {
-                                action: 'view',
-                                title: 'Voir'
-                            }
-                        ] : []
-                    });
-                    console.log('✅ Service Worker notification envoyée (mobile)');
-                    return true;
-                } catch (mobileError) {
-                    console.error('❌ Erreur Service Worker mobile:', mobileError);
-                    console.log('🔧 Détails erreur mobile:', mobileError.message);
-                    
-                    // Fallback vers notification classique même sur mobile
-                    console.log('🔄 Tentative fallback notification classique sur mobile...');
-                    try {
-                        const notification = new Notification(title, {
-                            body: body,
-                            tag: `mobile-fallback-${Date.now()}`
-                        });
-                        console.log('✅ Notification fallback mobile réussie');
-                        return true;
-                    } catch (fallbackError) {
-                        console.error('❌ Fallback mobile aussi échoué:', fallbackError.message);
-                        return false;
-                    }
-                }
-            }
-            
-            // DESKTOP : API Notification directe
-            else {
-                console.log('🖥️ Appareil desktop détecté - Mode API directe');
-                
-                try {
-                    console.log('🖥️ Création notification desktop...');
-                    const notification = new Notification(title, {
-                        body: body,
-                        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📺</text></svg>',
-                        tag: `desktop-notif-${Date.now()}`,
-                        requireInteraction: !isDiscrete,
-                        silent: isDiscrete
-                    });
-                    
-                    notification.onclick = function() {
-                        console.log('👆 Notification desktop cliquée');
-                        window.focus();
-                        this.close();
-                    };
-                    
-                    notification.onshow = function() {
-                        console.log('✅ Notification desktop affichée');
-                    };
-                    
-                    notification.onerror = function(error) {
-                        console.error('❌ Erreur notification desktop:', error);
-                    };
-                    
-                    if (!isDiscrete) {
-                        setTimeout(() => {
-                            try {
-                                notification.close();
-                                console.log('🔒 Notification desktop fermée automatiquement');
-                            } catch (e) {
-                                console.log('ℹ️ Notification desktop déjà fermée');
-                            }
-                        }, 8000);
-                    }
-                    
-                    console.log('✅ Notification desktop créée');
-                    return true;
-                    
-                } catch (desktopError) {
-                    console.error('❌ Erreur API Notification desktop:', desktopError);
-                    console.log('🔧 Détails erreur desktop:', desktopError.message);
-                    return false;
-                }
-            }
-        }
-
-        // Fonction pour initialiser le Service Worker mobile
-        async function initMobileServiceWorker() {
-            if (!('serviceWorker' in navigator)) {
-                console.log('❌ Service Worker non supporté');
-                return false;
-            }
-            
-            try {
-                console.log('📱 Tentative réinitialisation Service Worker mobile...');
-                
-                const registration = await navigator.serviceWorker.register(
-                    'data:application/javascript;base64,' + btoa(`
-                        console.log('📱 Service Worker mobile redémarré');
-                        
-                        self.addEventListener('push', function(event) {
-                            console.log('📱 Push reçu dans SW mobile');
-                            const options = {
-                                body: event.data ? event.data.text() : 'Nouvelle notification',
-                                icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📺</text></svg>',
-                                badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📺</text></svg>',
-                                tag: 'gestion-affichage-mobile',
-                                requireInteraction: true,
-                                vibrate: [200, 100, 200]
-                            };
-                            
-                            event.waitUntil(
-                                self.registration.showNotification('Gestion Affichage', options)
-                            );
-                        });
-                        
-                        self.addEventListener('notificationclick', function(event) {
-                            console.log('📱 Notification mobile cliquée');
-                            event.notification.close();
-                            
-                            event.waitUntil(
-                                clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
-                                    if (clientList.length > 0) {
-                                        return clientList[0].focus();
-                                    }
-                                    return clients.openWindow('/');
-                                })
-                            );
-                        });
-                        
-                        self.addEventListener('activate', function(event) {
-                            console.log('📱 Service Worker mobile activé');
-                            event.waitUntil(self.clients.claim());
-                        });
-                    `)
-                );
-                
-                await registration.update();
-                window.swRegistration = registration;
-                console.log('✅ Service Worker mobile réinitialisé');
-                return true;
-                
-            } catch (error) {
-                console.error('❌ Erreur réinitialisation SW mobile:', error);
-                return false;
+                console.log('⚠️ EmailJS - Clé publique manquante');
             }
         }
 
@@ -2213,9 +2072,10 @@
                 document.getElementById('loginModal').style.display = 'none';
                 document.getElementById('appContainer').style.display = 'block';
                 await loadAllData();
-                await initPushNotifications();
+                initEmailJS();
                 setupNotificationListeners();
                 startExpirationCheck();
+                startDailyResumeScheduler();
             } else {
                 window.currentUser = null;
                 window.currentUserData = null;
@@ -2229,44 +2089,33 @@
             try {
                 console.log('🔍 Recherche utilisateur avec UID:', window.currentUser.uid);
                 
-                // Chercher l'utilisateur par son UID Firebase
                 const q = query(collection(db, 'users'), where('userId', '==', window.currentUser.uid));
                 const querySnapshot = await getDocs(q);
                 
                 if (!querySnapshot.empty) {
-                    // L'utilisateur existe déjà
                     const userDoc = querySnapshot.docs[0];
                     const userData = userDoc.data();
                     window.currentUserData = { id: userDoc.id, ...userData };
                     
-                    console.log('✅ Utilisateur existant trouvé:', window.currentUserData.firstName, window.currentUserData.lastName);
-                    
-                    // Mettre à jour seulement la dernière connexion
                     await updateDoc(doc(db, 'users', userDoc.id), {
                         lastLoginAt: serverTimestamp()
                     });
                     
                 } else {
-                    // Vérifier également si un utilisateur avec le même email existe
                     const emailQuery = query(collection(db, 'users'), where('email', '==', window.currentUser.email));
                     const emailSnapshot = await getDocs(emailQuery);
                     
                     if (!emailSnapshot.empty) {
-                        // Utilisateur trouvé par email, mettre à jour le userId
                         const userDoc = emailSnapshot.docs[0];
                         const userData = userDoc.data();
                         window.currentUserData = { id: userDoc.id, ...userData };
                         
-                        console.log('✅ Utilisateur trouvé par email, mise à jour userId');
-                        
-                        // Mettre à jour le userId et la dernière connexion
                         await updateDoc(doc(db, 'users', userDoc.id), {
                             userId: window.currentUser.uid,
                             lastLoginAt: serverTimestamp()
                         });
                         
                     } else {
-                        // Vraiment nouveau utilisateur - première connexion
                         console.log('🆕 Création du premier profil utilisateur pour:', window.currentUser.email);
                         
                         window.currentUserData = {
@@ -2274,7 +2123,7 @@
                             email: window.currentUser.email,
                             firstName: window.currentUser.displayName?.split(' ')[0] || 'Utilisateur',
                             lastName: window.currentUser.displayName?.split(' ')[1] || 'Principal',
-                            role: 'admin', // Premier utilisateur = admin
+                            role: 'admin',
                             notificationPreferences: {
                                 creation: true,
                                 diffusion: true,
@@ -2296,7 +2145,6 @@
                         });
                         
                         window.currentUserData.id = docRef.id;
-                        console.log('✅ Nouveau profil utilisateur créé avec ID:', docRef.id);
                     }
                 }
             } catch (error) {
@@ -2312,7 +2160,6 @@
                 if (initialsElement) {
                     initialsElement.textContent = initials;
                 }
-                console.log('🎭 Initiales mises à jour:', initials);
             }
         }
 
@@ -2347,760 +2194,418 @@
             await loadAffiches();
             await loadUsers();
             await loadNotifications();
+            await loadEmailJSConfig();
             
-            // Forcer la mise à jour des statistiques après un court délai
             setTimeout(() => {
-                console.log('🔄 Mise à jour forcée des composants UI...');
                 setupSearch();
                 setupFilters();
                 updateSelectOptions();
                 
-                // Re-calculer les stats avec les données chargées
                 if (window.lastLoadedAffiches && window.lastLoadedAffiches.length > 0) {
-                    console.log('📊 Recalcul forcé des statistiques dashboard');
                     updateDashboardStats(window.lastLoadedAffiches);
                 } else {
-                    console.log('📊 Initialisation des statistiques à zéro');
                     updateDashboardStats([]);
                 }
             }, 500);
         }
 
-        // ========= GESTION DES UTILISATEURS =========
-        
-        // Charger les utilisateurs
-        async function loadUsers() {
+        // Charger la configuration EmailJS
+        async function loadEmailJSConfig() {
             try {
-                const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
+                const q = query(collection(db, 'config'), where('type', '==', 'emailjs'));
                 const querySnapshot = await getDocs(q);
-                const users = [];
                 
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    if (data.createdAt && data.createdAt.toDate) {
-                        data.createdAt = data.createdAt.toDate();
-                    }
-                    if (data.lastLoginAt && data.lastLoginAt.toDate) {
-                        data.lastLoginAt = data.lastLoginAt.toDate();
-                    }
-                    users.push({ id: doc.id, ...data });
-                });
-                
-                window.users = users;
-                displayUsers(users);
-                updateUserStats(users);
-                
-                console.log('Utilisateurs chargés:', users.length);
-                console.log('Liste des utilisateurs:', users.map(u => `${u.firstName} ${u.lastName} (${u.email})`));
+                if (!querySnapshot.empty) {
+                    const configDoc = querySnapshot.docs[0];
+                    const configData = configDoc.data();
+                    window.emailJSConfig = { ...window.emailJSConfig, ...configData };
+                    
+                    // Mettre à jour les champs du formulaire
+                    document.getElementById('emailjs-service').value = window.emailJSConfig.serviceId || 'service_ec05ih4';
+                    document.getElementById('emailjs-template-creation').value = window.emailJSConfig.templateCreation || 'template_nrfn4mh';
+                    document.getElementById('emailjs-template-resume').value = window.emailJSConfig.templateResume || 'template_j3uluqp';
+                    document.getElementById('emailjs-public-key').value = window.emailJSConfig.publicKey || '';
+                    
+                    initEmailJS();
+                }
             } catch (error) {
-                console.error('Erreur chargement utilisateurs:', error);
-                showErrorMessage('Erreur lors du chargement des utilisateurs');
+                console.error('❌ Erreur chargement config EmailJS:', error);
             }
         }
 
-        // Afficher les utilisateurs
-        function displayUsers(users) {
-            const container = document.getElementById('usersList');
-            
-            if (users.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        Aucun utilisateur enregistré.<br>
-                        Invitez des collègues pour collaborer !
-                    </div>
-                `;
-                return;
-            }
-            
-            const usersHtml = users.map(user => {
-                const initials = `${user.firstName?.charAt(0) || ''}${user.lastName?.charAt(0) || ''}`;
-                const isOnline = user.lastLoginAt && (new Date() - user.lastLoginAt) < 300000; // 5 minutes
-                const isCurrentUser = user.userId === window.currentUser.uid;
-                
-                // Pour l'utilisateur connecté, toujours utiliser l'ID du document Firestore
-                const editId = user.id; // Toujours l'ID Firestore
-                
-                console.log('👤 Utilisateur:', user.firstName, user.lastName, 'ID Firestore:', user.id, 'UID Firebase:', user.userId, 'Est connecté:', isCurrentUser);
-                
-                return `
-                    <div class="user-card">
-                        <div class="user-header">
-                            <div style="display: flex; align-items: center;">
-                                <div class="user-avatar">${initials}</div>
-                                <div class="user-main-info">
-                                    <div class="user-name">${user.firstName} ${user.lastName} ${isCurrentUser ? '(Vous)' : ''}</div>
-                                    <div class="user-email">${user.email}</div>
-                                    <span class="user-role ${user.role === 'admin' ? 'admin' : ''}">${user.role === 'admin' ? '👑 Administrateur' : '👤 Employé'}</span>
-                                </div>
-                            </div>
-                            <div class="user-actions">
-                                <button class="action-btn edit-btn" onclick="editUser('${editId}')" title="Modifier">✏️</button>
-                                ${!isCurrentUser ? `
-                                    <button class="action-btn delete-btn" onclick="confirmDeleteUser('${user.id}', '${user.firstName} ${user.lastName}')" title="Supprimer">🗑️</button>
-                                ` : ''}
-                            </div>
-                        </div>
-                        
-                        <div class="user-preferences">
-                            <div class="user-pref-title">Préférences de notification :</div>
-                            <div class="notification-prefs">
-                                <div class="pref-option">
-                                    <span class="pref-icon ${user.notificationChannels?.email ? 'active' : 'inactive'}">${user.notificationChannels?.email ? '✅' : '❌'}</span>
-                                    <span>Email</span>
-                                </div>
-                                <div class="pref-option">
-                                    <span class="pref-icon ${user.notificationChannels?.push ? 'active' : 'inactive'}">${user.notificationChannels?.push ? '✅' : '❌'}</span>
-                                    <span>Push</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="user-status ${isOnline ? 'status-online' : 'status-offline'}">
-                            ${isOnline ? '🟢 En ligne' : '⚫ Hors ligne'} - Dernière connexion: ${formatDateTime(user.lastLoginAt)}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
-            container.innerHTML = usersHtml;
-        }
-
-        // Inviter un utilisateur
-        async function inviteUser(userData) {
+        // Sauvegarder la configuration EmailJS
+        async function saveEmailJSConfig() {
             try {
-                // Vérifier la limite de 6 utilisateurs
-                if (window.users.length >= 6) {
-                    showErrorMessage('❌ Limite de 6 utilisateurs atteinte');
-                    return;
-                }
-                
-                // Vérifier si l'email existe déjà
-                const existingUser = window.users.find(u => u.email === userData.email);
-                if (existingUser) {
-                    showErrorMessage('❌ Cet email est déjà utilisé');
-                    return;
-                }
-                
-                // Créer l'utilisateur dans Firestore
-                const newUser = {
-                    email: userData.email,
-                    firstName: userData.firstName,
-                    lastName: userData.lastName,
-                    role: userData.role,
-                    notificationPreferences: {
-                        creation: true,
-                        diffusion: true,
-                        expiration: true,
-                        archivage: true,
-                        resume: true
-                    },
-                    notificationChannels: {
-                        email: userData.defaultEmail || true,
-                        push: userData.defaultPush || true
-                    },
-                    status: 'invited',
-                    invitedBy: window.currentUser.uid,
-                    invitedAt: serverTimestamp(),
-                    createdAt: serverTimestamp()
+                const config = {
+                    type: 'emailjs',
+                    serviceId: document.getElementById('emailjs-service').value,
+                    templateCreation: document.getElementById('emailjs-template-creation').value,
+                    templateResume: document.getElementById('emailjs-template-resume').value,
+                    publicKey: document.getElementById('emailjs-public-key').value
                 };
                 
-                const docRef = await addDoc(collection(db, 'users'), newUser);
+                window.emailJSConfig = { ...window.emailJSConfig, ...config };
                 
-                // Envoyer email d'invitation (simulation)
-                await sendInvitationEmail(userData);
-                
-                // Enregistrer notification
-                await addNotification({
-                    type: 'user_invited',
-                    message: `Utilisateur ${userData.firstName} ${userData.lastName} invité`,
-                    userId: window.currentUser.uid,
-                    status: 'sent'
-                });
-                
-                showSuccessMessage(`✉️ Invitation envoyée à ${userData.firstName} ${userData.lastName}`);
-                await loadUsers();
-                
-                return docRef.id;
-            } catch (error) {
-                console.error('Erreur invitation utilisateur:', error);
-                showErrorMessage('❌ Erreur lors de l\'invitation');
-                throw error;
-            }
-        }
-
-        // Envoyer email d'invitation (simulation)
-        async function sendInvitationEmail(userData) {
-            // Simulation d'envoi d'email
-            console.log(`📧 Email d'invitation envoyé à ${userData.email}`);
-            
-            // Dans une vraie application, vous utiliseriez:
-            // - Firebase Cloud Functions
-            // - Service d'email comme SendGrid, Mailgun, etc.
-            // - Template d'email personnalisé
-            
-            return new Promise(resolve => setTimeout(resolve, 1000));
-        }
-
-        // Mettre à jour un utilisateur
-        async function updateUser(id, userData) {
-            try {
-                console.log('🔄 Mise à jour utilisateur ID:', id);
-                console.log('📝 Données à mettre à jour:', userData);
-                
-                const docRef = doc(db, 'users', id);
-                await updateDoc(docRef, {
-                    ...userData,
+                await addDoc(collection(db, 'config'), {
+                    ...config,
+                    updatedBy: window.currentUser.uid,
                     updatedAt: serverTimestamp()
                 });
                 
-                // Si c'est l'utilisateur connecté, mettre à jour aussi les données locales
-                if (window.currentUserData && window.currentUserData.id === id) {
-                    console.log('👤 Mise à jour des données utilisateur connecté');
-                    window.currentUserData = { ...window.currentUserData, ...userData };
-                    updateHeaderUserInfo();
-                }
-                
-                showSuccessMessage('✅ Utilisateur mis à jour avec succès');
-                await loadUsers();
-                return true;
+                initEmailJS();
+                showSuccessMessage('✅ Configuration EmailJS sauvegardée');
             } catch (error) {
-                console.error('❌ Erreur mise à jour utilisateur:', error);
-                console.error('🔍 ID utilisé:', id);
-                console.error('🔍 Données envoyées:', userData);
-                showErrorMessage('❌ Erreur lors de la mise à jour: ' + error.message);
-                return false;
+                console.error('❌ Erreur sauvegarde EmailJS:', error);
+                showErrorMessage('❌ Erreur lors de la sauvegarde');
             }
         }
 
-        // Supprimer un utilisateur
-        async function deleteUser(id) {
-            try {
-                await deleteDoc(doc(db, 'users', id));
-                showSuccessMessage('🗑️ Utilisateur supprimé avec succès');
-                await loadUsers();
-            } catch (error) {
-                console.error('Erreur suppression utilisateur:', error);
-                showErrorMessage('❌ Erreur lors de la suppression');
-            }
-        }
-
-        // Charger un utilisateur pour édition
-        async function loadUserForEdit(id) {
-            try {
-                console.log('🔍 Chargement utilisateur pour édition, ID:', id);
-                
-                // Chercher d'abord dans les données déjà chargées
-                const userInList = window.users.find(u => u.id === id);
-                if (userInList) {
-                    console.log('✅ Utilisateur trouvé dans la liste:', userInList.firstName, userInList.lastName);
-                    return userInList;
-                }
-                
-                // Si pas trouvé, chercher dans Firestore
-                console.log('🔍 Recherche dans Firestore...');
-                const userDoc = await getDoc(doc(db, 'users', id));
-                if (userDoc.exists()) {
-                    const userData = userDoc.data();
-                    console.log('✅ Utilisateur trouvé dans Firestore:', userData.firstName, userData.lastName);
-                    return { id: userDoc.id, ...userData };
-                } else {
-                    console.log('❌ Utilisateur non trouvé avec ID:', id);
-                    showErrorMessage('❌ Utilisateur non trouvé');
-                    return null;
-                }
-            } catch (error) {
-                console.error('❌ Erreur chargement utilisateur:', error);
-                showErrorMessage('❌ Erreur lors du chargement: ' + error.message);
-                return null;
-            }
-        }
-
-        // Mettre à jour les statistiques utilisateurs
-        function updateUserStats(users) {
-            document.getElementById('totalUsers').textContent = `${users.length} utilisateur(s)`;
+        // Tester EmailJS avec la nouvelle API
+        async function testEmailJS() {
+            const publicKey = document.getElementById('emailjs-public-key').value.trim();
             
-            const activeUsers = users.filter(u => {
-                if (!u.lastLoginAt) return false;
-                const lastLogin = u.lastLoginAt instanceof Date ? u.lastLoginAt : u.lastLoginAt.toDate();
-                return (new Date() - lastLogin) < 300000; // 5 minutes
-            }).length;
-            
-            document.getElementById('activeUsers').textContent = `${activeUsers} utilisateur(s) connecté(s)`;
-        }
-
-        // ========= GESTION DES NOTIFICATIONS =========
-        
-        // Charger les notifications
-        async function loadNotifications() {
-            try {
-                // Requête simplifiée sans index complexe
-                const q = query(
-                    collection(db, 'notifications'), 
-                    where('userId', '==', window.currentUser.uid)
-                    // Retirer le orderBy pour éviter l'erreur d'index
-                );
-                const querySnapshot = await getDocs(q);
-                const notifications = [];
-                
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    if (data.createdAt && data.createdAt.toDate) {
-                        data.createdAt = data.createdAt.toDate();
-                    }
-                    notifications.push({ id: doc.id, ...data });
-                });
-                
-                // Trier côté client
-                notifications.sort((a, b) => {
-                    const dateA = a.createdAt instanceof Date ? a.createdAt : new Date(a.createdAt);
-                    const dateB = b.createdAt instanceof Date ? b.createdAt : new Date(b.createdAt);
-                    return dateB - dateA; // Plus récent en premier
-                });
-                
-                window.notifications = notifications;
-                displayNotificationHistory(notifications);
-                updateNotificationStats(notifications);
-                
-                console.log('✅ Notifications chargées:', notifications.length);
-            } catch (error) {
-                console.error('❌ Erreur chargement notifications:', error);
-                
-                // En cas d'erreur, initialiser avec un tableau vide
-                window.notifications = [];
-                displayNotificationHistory([]);
-                updateNotificationStats([]);
-            }
-        }
-
-        // Afficher l'historique des notifications
-        function displayNotificationHistory(notifications) {
-            const container = document.getElementById('notificationHistory');
-            
-            if (notifications.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        Aucune notification envoyée récemment
-                    </div>
-                `;
+            if (!publicKey) {
+                showErrorMessage('❌ Veuillez d\'abord entrer votre clé publique EmailJS');
                 return;
             }
-            
-            const recentNotifications = notifications.slice(0, 10);
-            const notificationsHtml = recentNotifications.map(notif => `
-                <div class="notification-item">
-                    <div class="notification-header">
-                        <span class="notification-type">${getNotificationTypeLabel(notif.type)}</span>
-                        <span class="notification-time">${formatDateTime(notif.createdAt)}</span>
-                    </div>
-                    <div class="notification-message">${notif.message}</div>
-                    <div class="notification-status ${notif.status === 'failed' ? 'failed' : ''}">${notif.status === 'sent' ? '✅ Envoyée' : '❌ Échec'}</div>
-                </div>
-            `).join('');
-            
-            container.innerHTML = notificationsHtml;
-        }
 
-        // Ajouter une notification
-        async function addNotification(notificationData) {
+            const isValidFormat = publicKey.startsWith('pk_') || 
+                                 publicKey.startsWith('user_') || 
+                                 /^[A-Za-z0-9_]+$/.test(publicKey);
+            
+            if (!isValidFormat || publicKey.length < 10) {
+                showErrorMessage(`❌ Format de clé invalide: "${publicKey}"`);
+                return;
+            }
+
+            if (publicKey.includes('service_') || publicKey.includes('template_')) {
+                showErrorMessage('❌ Vous avez entré un Service ID ou Template ID au lieu de la Public Key.');
+                return;
+            }
+
             try {
-                await addDoc(collection(db, 'notifications'), {
-                    ...notificationData,
-                    createdAt: serverTimestamp()
+                console.log('🔧 Test avec clé:', publicKey);
+                
+                // Réinitialiser EmailJS avec la nouvelle API v4
+                emailjs.init({
+                    publicKey: publicKey,
                 });
+                
+                const templateParams = {
+                    to_email: window.currentUser.email,
+                    to_name: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`,
+                    subject: 'Test EmailJS - Gestion Affichage',
+                    message: 'Ceci est un message de test pour vérifier la configuration EmailJS.',
+                    affiches_list: 'Test d\'affiche - Pommes Golden - 2.50€/Kg',
+                    user_name: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`,
+                    date: new Date().toLocaleDateString('fr-FR')
+                };
+
+                console.log('📧 Test EmailJS v4 avec les paramètres:', {
+                    serviceId: window.emailJSConfig.serviceId,
+                    templateId: window.emailJSConfig.templateCreation,
+                    publicKey: publicKey,
+                    toEmail: window.currentUser.email
+                });
+
+                // Nouvelle syntaxe EmailJS v4
+                await emailjs.send(
+                    window.emailJSConfig.serviceId,
+                    window.emailJSConfig.templateCreation,
+                    templateParams
+                );
+
+                showSuccessMessage('✅ Test EmailJS réussi - Email envoyé !');
+                await saveEmailJSConfig();
+                
             } catch (error) {
-                console.error('Erreur ajout notification:', error);
+                console.error('❌ Erreur test EmailJS complète:', error);
+                
+                let errorMessage = 'Erreur inconnue';
+                if (error.status === 400) {
+                    errorMessage = `Erreur 400: Configuration invalide.\n\n💡 Vérifications:\n• Clé: "${publicKey}"\n• Service: "${window.emailJSConfig.serviceId}"\n• Template: "${window.emailJSConfig.templateCreation}"`;
+                } else if (error.status === 401) {
+                    errorMessage = `Erreur 401: Clé publique "${publicKey}" non autorisée.`;
+                } else if (error.status === 404) {
+                    errorMessage = `Erreur 404: Service ou Template introuvable.`;
+                } else if (error.status === 418) {
+                    errorMessage = `Erreur 418: Version SDK non supportée (corrigée avec v4).`;
+                } else if (error.text) {
+                    errorMessage = `Erreur: ${error.text}`;
+                } else {
+                    errorMessage = `Erreur: ${error.message || 'Inconnue'}\n\nCode: ${error.status || 'N/A'}`;
+                }
+                
+                showErrorMessage(`❌ Test EmailJS échoué:\n\n${errorMessage}`);
             }
         }
 
-        // Envoyer une notification
-        async function sendNotification(type, message, recipients = null) {
+        // ========= GESTION DES NOTIFICATIONS GROUPÉES =========
+
+        // Ajouter une affiche aux notifications en attente
+        function addToPendingNotifications(affiche) {
+            if (!window.pendingNotifications) {
+                window.pendingNotifications = [];
+            }
+            
+            window.pendingNotifications.push({
+                id: affiche.id,
+                libelle: affiche.libelle,
+                prix: affiche.prix,
+                unite: affiche.unite,
+                origine: affiche.origine,
+                dateCreation: new Date(),
+                createdBy: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`
+            });
+            
+            console.log('📧 Affiche ajoutée aux notifications en attente:', affiche.libelle);
+            console.log('📧 Total en attente:', window.pendingNotifications.length);
+            
+            updateNotificationCard();
+            updatePendingNotificationsDisplay();
+        }
+
+        // Mettre à jour la carte de notification
+        function updateNotificationCard() {
+            const notificationCard = document.getElementById('notificationCard');
+            const notificationCount = document.getElementById('notificationCount');
+            const pendingCount = window.pendingNotifications.length;
+            
+            if (pendingCount > 0) {
+                notificationCard.className = 'stat-card notification-pending';
+                notificationCount.textContent = pendingCount;
+                console.log('🔔 Carte notification activée:', pendingCount, 'affiches en attente');
+            } else {
+                notificationCard.className = 'stat-card notification-hidden';
+                notificationCount.textContent = '0';
+                console.log('👻 Carte notification masquée');
+            }
+        }
+
+        // Mettre à jour l'affichage des notifications en attente
+        function updatePendingNotificationsDisplay() {
+            const section = document.getElementById('pendingNotificationsSection');
+            const list = document.getElementById('pendingNotificationsList');
+            
+            if (window.pendingNotifications.length > 0) {
+                section.style.display = 'block';
+                
+                const itemsHtml = window.pendingNotifications.map(notif => `
+                    <div class="notification-group-item">
+                        <h6>${notif.libelle}</h6>
+                        <p>${notif.prix}€/${notif.unite} • ${notif.origine}</p>
+                        <span class="time">${notif.dateCreation.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                `).join('');
+                
+                list.innerHTML = itemsHtml;
+            } else {
+                section.style.display = 'none';
+            }
+        }
+
+        // Envoyer les notifications en attente avec la nouvelle API
+        async function sendPendingNotifications() {
+            if (window.pendingNotifications.length === 0) {
+                console.log('📧 Aucune notification en attente');
+                return;
+            }
+
+            if (!window.emailJSConfig.publicKey) {
+                showErrorMessage('❌ EmailJS non configuré. Configurez-le dans Paramètres > Système');
+                return;
+            }
+
             try {
-                console.log('📤 sendNotification appelée:', type, message);
+                console.log('📧 Envoi des notifications groupées...');
                 
-                // Éviter les doublons - vérifier si déjà envoyée récemment
-                const notificationKey = `${type}-${message.substring(0, 50)}`;
-                const now = Date.now();
+                // Réinitialiser EmailJS avec la nouvelle API v4
+                emailjs.init({
+                    publicKey: window.emailJSConfig.publicKey.trim(),
+                });
                 
-                if (!window.recentNotifications) {
-                    window.recentNotifications = new Map();
-                }
-                
-                if (window.recentNotifications.has(notificationKey)) {
-                    const lastSent = window.recentNotifications.get(notificationKey);
-                    if (now - lastSent < 5000) { // 5 secondes
-                        console.log('🚫 Notification dupliquée ignorée:', message);
-                        return true;
-                    }
-                }
-                
-                window.recentNotifications.set(notificationKey, now);
-                
-                // Nettoyer les anciennes entrées (garde seulement les 10 dernières)
-                if (window.recentNotifications.size > 10) {
-                    const entries = Array.from(window.recentNotifications.entries());
-                    entries.sort((a, b) => b[1] - a[1]); // Trier par timestamp décroissant
-                    window.recentNotifications.clear();
-                    entries.slice(0, 10).forEach(([key, time]) => {
-                        window.recentNotifications.set(key, time);
-                    });
-                }
-                
-                const targetUsers = recipients || window.users.filter(u => 
-                    u.notificationPreferences?.[type] && 
-                    (u.notificationChannels?.email || u.notificationChannels?.push)
+                const affichesText = window.pendingNotifications.map(notif => 
+                    `• ${notif.libelle} - ${notif.prix}€/${notif.unite} (${notif.origine})`
+                ).join('\n');
+
+                const templateParams = {
+                    to_email: window.currentUser.email,
+                    to_name: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`,
+                    subject: `Nouvelles affiches créées (${window.pendingNotifications.length})`,
+                    message: `${window.pendingNotifications.length} nouvelle(s) affiche(s) créée(s) :`,
+                    affiches_list: affichesText,
+                    user_name: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`,
+                    date: new Date().toLocaleDateString('fr-FR')
+                };
+
+                console.log('📧 Envoi avec EmailJS v4:', {
+                    serviceId: window.emailJSConfig.serviceId,
+                    templateId: window.emailJSConfig.templateCreation,
+                    count: window.pendingNotifications.length
+                });
+
+                await emailjs.send(
+                    window.emailJSConfig.serviceId,
+                    window.emailJSConfig.templateCreation,
+                    templateParams
                 );
-                
-                console.log('👥 Utilisateurs ciblés:', targetUsers.length);
-                
-                for (const user of targetUsers) {
-                    console.log('👤 Traitement utilisateur:', user.firstName, user.lastName);
-                    
-                    // Envoyer email si activé
-                    if (user.notificationChannels?.email) {
-                        await sendEmailNotification(user, type, message);
+
+                // Enregistrer dans l'historique
+                await addNotification({
+                    type: 'creation_grouped',
+                    message: `Notification groupée envoyée : ${window.pendingNotifications.length} affiche(s)`,
+                    userId: window.currentUser.uid,
+                    status: 'sent',
+                    details: {
+                        count: window.pendingNotifications.length,
+                        affiches: window.pendingNotifications.map(n => n.libelle)
                     }
-                    
-                    // Envoyer notification push si activé ET si c'est l'utilisateur connecté
-                    if (user.notificationChannels?.push && user.userId === window.currentUser.uid) {
-                        console.log('🔔 Envoi push pour utilisateur connecté');
-                        await sendPushNotification(user, type, message);
-                    } else if (user.notificationChannels?.push) {
-                        console.log('📱 Push ignoré pour utilisateur non connecté:', user.firstName);
-                    }
-                    
-                    // Enregistrer dans l'historique
-                    await addNotification({
-                        type: type,
-                        message: message,
-                        userId: user.userId || user.id,
-                        status: 'sent'
-                    });
-                }
+                });
+
+                showSuccessMessage(`✅ Notification envoyée pour ${window.pendingNotifications.length} affiche(s)`);
+                
+                // Vider les notifications en attente
+                window.pendingNotifications = [];
+                updateNotificationCard();
+                updatePendingNotificationsDisplay();
                 
                 await loadNotifications();
-                return true;
+                
             } catch (error) {
-                console.error('❌ Erreur envoi notification:', error);
-                return false;
-            }
-        }
-
-        // Envoyer notification email
-        async function sendEmailNotification(user, type, message) {
-            // Simulation d'envoi d'email
-            console.log(`📧 Email envoyé à ${user.email}: ${message}`);
-            return new Promise(resolve => setTimeout(resolve, 500));
-        }
-
-        // Envoyer notification push
-        async function sendPushNotification(user, type, message) {
-            console.log('📤 Envoi notification push pour:', user.firstName, user.lastName);
-            
-            // Forcer une vérification de permission fraîche
-            const currentPermission = Notification.permission;
-            console.log('📋 Vérification permission avant envoi:', currentPermission);
-            
-            if (currentPermission !== 'granted') {
-                console.log('❌ Permission non accordée, tentative de demande...');
-                try {
-                    const newPermission = await Notification.requestPermission();
-                    console.log('📋 Nouvelle permission obtenue:', newPermission);
-                    if (newPermission !== 'granted') {
-                        console.log('❌ Permission définitivement refusée');
-                        return Promise.resolve();
-                    }
-                } catch (error) {
-                    console.error('❌ Erreur demande permission:', error);
-                    return Promise.resolve();
-                }
-            }
-            
-            const title = `📺 Gestion Affichage - ${getNotificationTypeLabel(type)}`;
-            const success = await showNotificationSafe(title, message, false);
-            
-            if (success) {
-                console.log('✅ Notification envoyée avec succès');
-            } else {
-                console.log('❌ Échec envoi notification');
-            }
-            
-            return Promise.resolve();
-        }
-
-        // Tester les notifications
-        async function testNotification() {
-            console.log('🧪 Test de notification démarré...');
-            
-            try {
-                // Vérifier le support de base
-                if (!('Notification' in window)) {
-                    console.log('❌ API Notification non supportée');
-                    showErrorMessage('❌ Ce navigateur ne supporte pas les notifications');
-                    return;
-                }
+                console.error('❌ Erreur envoi notifications groupées:', error);
                 
-                // Vérifier/demander permission
-                let permission = Notification.permission;
-                console.log('📋 Permission initiale:', permission);
-                
-                if (permission === 'default') {
-                    console.log('🔒 Demande de permission...');
-                    permission = await Notification.requestPermission();
-                    console.log('📋 Permission obtenue:', permission);
-                }
-                
-                if (permission === 'denied') {
-                    console.log('❌ Permission refusée définitivement');
-                    showErrorMessage('❌ Notifications bloquées. Pour les réactiver :\n1. Cliquez sur l\'icône 🔒 ou ⚙️ dans la barre d\'adresse\n2. Autorisez les notifications\n3. Rechargez la page');
-                    return;
-                }
-                
-                if (permission === 'granted') {
-                    console.log('✅ Permission accordée, test des méthodes...');
-                    
-                    // Test direct simple d'abord
-                    console.log('🎯 Test 1: Notification directe simple...');
-                    try {
-                        const simpleNotif = new Notification('🧪 Test Simple', {
-                            body: 'Si vous voyez ceci, les notifications marchent !',
-                            tag: 'test-simple-' + Date.now()
-                        });
-                        
-                        simpleNotif.onshow = function() {
-                            console.log('✅ Test simple réussi !');
-                        };
-                        
-                        simpleNotif.onerror = function(error) {
-                            console.log('❌ Test simple échoué:', error);
-                        };
-                        
-                        setTimeout(() => {
-                            try { simpleNotif.close(); } catch(e) {}
-                        }, 3000);
-                        
-                        showSuccessMessage('🧪 Test 1: Notification simple envoyée !');
-                        
-                    } catch (directError) {
-                        console.log('❌ Test direct échoué:', directError.message);
-                    }
-                    
-                    // Test avec Service Worker si disponible
-                    if (window.swRegistration && 'showNotification' in window.swRegistration) {
-                        console.log('🎯 Test 2: Service Worker...');
-                        try {
-                            await window.swRegistration.showNotification('🧪 Test Service Worker', {
-                                body: 'Test avec Service Worker pour mobile',
-                                tag: 'test-sw-' + Date.now(),
-                                icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📺</text></svg>'
-                            });
-                            console.log('✅ Test Service Worker réussi !');
-                            showSuccessMessage('🧪 Test 2: Service Worker réussi !');
-                        } catch (swTestError) {
-                            console.log('❌ Test Service Worker échoué:', swTestError.message);
-                            showErrorMessage('❌ Test Service Worker échoué: ' + swTestError.message);
-                        }
-                    }
-                    
-                    // Test avec la fonction universelle
-                    console.log('🎯 Test 3: Fonction universelle...');
-                    const universalSuccess = await showNotificationSafe(
-                        '🧪 Test Final - Gestion Affichage', 
-                        'Si vous voyez ceci, tout fonctionne parfaitement ! 🎉',
-                        false
-                    );
-                    
-                    if (universalSuccess) {
-                        showSuccessMessage('🎉 Tests terminés avec succès ! Les notifications fonctionnent.');
-                        console.log('✅ Tous les tests réussis');
-                        
-                        // Test du système de notification existant
-                        if (window.currentUserData) {
-                            console.log('🎯 Test du système complet...');
-                            setTimeout(async () => {
-                                await sendNotification('test', 'Test système complet - Notifications opérationnelles !', [window.currentUserData]);
-                            }, 2000);
-                        }
-                        
-                    } else {
-                        showErrorMessage('❌ Tous les tests ont échoué');
-                        console.log('❌ Échec complet des tests');
-                    }
-                    
+                let errorMessage = 'Erreur inconnue';
+                if (error.status === 418) {
+                    errorMessage = 'Version SDK obsolète (corrigée avec v4)';
+                } else if (error.status === 400) {
+                    errorMessage = 'Configuration EmailJS invalide';
+                } else if (error.status === 401) {
+                    errorMessage = 'Clé publique non autorisée';
+                } else if (error.status === 404) {
+                    errorMessage = 'Service ou Template introuvable';
+                } else if (error.text) {
+                    errorMessage = error.text;
                 } else {
-                    console.log('❓ État de permission inattendu:', permission);
-                    showErrorMessage('❌ État de permission non géré: ' + permission);
+                    errorMessage = error.message || 'Erreur inconnue';
                 }
                 
-            } catch (error) {
-                console.error('❌ Erreur critique lors du test:', error);
-                showErrorMessage('❌ Erreur critique: ' + error.message);
+                showErrorMessage(`❌ Erreur lors de l'envoi des notifications: ${errorMessage}`);
             }
         }
 
-        // Mettre à jour les statistiques de notifications
-        function updateNotificationStats(notifications) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+        // ========= PLANIFICATEUR DE RÉSUMÉ QUOTIDIEN =========
+
+        function startDailyResumeScheduler() {
+            console.log('⏰ Démarrage du planificateur de résumé quotidien');
             
-            const todayNotifications = notifications.filter(n => {
-                const notifDate = n.createdAt instanceof Date ? n.createdAt : n.createdAt.toDate();
-                return notifDate >= today;
-            }).length;
+            // Vérifier chaque minute si c'est l'heure du résumé (08h00)
+            setInterval(checkDailyResumeTime, 60000);
             
-            document.getElementById('todayNotifications').textContent = `${todayNotifications} notification(s)`;
+            // Vérification immédiate pour les tests
+            setTimeout(checkDailyResumeTime, 5000);
         }
 
-        // Configuration des listeners pour notifications automatiques
-        function setupNotificationListeners() {
-            console.log('🔧 Configuration des listeners de notifications...');
+        async function checkDailyResumeTime() {
+            const now = new Date();
+            const hour = now.getHours();
+            const minute = now.getMinutes();
             
-            // Écouter SEULEMENT les NOUVEAUX ajouts d'affiches
-            const affichesQuery = query(collection(db, 'affiches'), orderBy('dateCreation', 'desc'));
-            
-            // Variable pour éviter les notifications au premier chargement
-            let isFirstLoad = true;
-            let initialLoadComplete = false;
-            
-            onSnapshot(affichesQuery, (snapshot) => {
-                console.log('📊 Snapshot affiches reçu, taille:', snapshot.size);
-                
-                // Au premier chargement, juste marquer comme initialisé
-                if (isFirstLoad) {
-                    console.log('🏁 Premier chargement - pas de notifications envoyées');
-                    isFirstLoad = false;
-                    
-                    // Marquer comme complété après un délai
-                    setTimeout(() => {
-                        initialLoadComplete = true;
-                        console.log('✅ Initialisation terminée - notifications automatiques activées');
-                    }, 3000);
-                    
-                    return;
-                }
-                
-                // Si l'initialisation n'est pas terminée, ignorer
-                if (!initialLoadComplete) {
-                    console.log('⏳ Initialisation en cours - notifications ignorées');
-                    return;
-                }
-                
-                // Traiter seulement les vrais changements
-                snapshot.docChanges().forEach((change) => {
-                    const affiche = change.doc.data();
-                    const changeType = change.type;
-                    
-                    console.log('🔄 Changement détecté:', changeType, 'pour affiche:', affiche.libelle);
-                    
-                    // SEULEMENT pour les NOUVEAUX ajouts (pas les chargements initiaux)
-                    if (changeType === 'added') {
-                        // Vérifier que c'est vraiment nouveau avec plusieurs méthodes
-                        const now = new Date();
-                        let afficheDate = null;
-                        
-                        // Méthode 1: Si serverTimestamp existe et est valide
-                        if (affiche.dateCreation) {
-                            if (affiche.dateCreation.toDate) {
-                                afficheDate = affiche.dateCreation.toDate();
-                            } else if (affiche.dateCreation.seconds) {
-                                afficheDate = new Date(affiche.dateCreation.seconds * 1000);
-                            } else {
-                                afficheDate = new Date(affiche.dateCreation);
-                            }
-                        }
-                        
-                        console.log('⏰ Date de création détectée:', afficheDate);
-                        console.log('⏰ Date actuelle:', now);
-                        
-                        // Si pas de date valide ou date bizarre (1970), considérer comme nouveau
-                        if (!afficheDate || afficheDate.getFullYear() < 2020) {
-                            console.log('🆕 Date invalide détectée, considéré comme nouveau:', affiche.libelle);
-                            sendNotification('creation', 
-                                `Nouvelle affiche créée: ${affiche.libelle} (${affiche.prix}€/${affiche.unite})`
-                            );
-                        } else {
-                            const timeDiff = now - afficheDate;
-                            console.log('⏰ Différence de temps:', timeDiff, 'ms');
-                            
-                            // Si créé il y a moins de 30 secondes = vraiment nouveau (augmenté de 10s à 30s)
-                            if (timeDiff < 30000) {
-                                console.log('🆕 Nouvelle affiche détectée (timing):', affiche.libelle);
-                                sendNotification('creation', 
-                                    `Nouvelle affiche créée: ${affiche.libelle} (${affiche.prix}€/${affiche.unite})`
-                                );
-                            } else {
-                                console.log('📚 Affiche existante ignorée (création:', afficheDate, ')');
-                            }
-                        }
-                        
-                    } else if (changeType === 'modified') {
-                        // Pour les modifications, vérifier les changements de statut importants
-                        if (affiche.statut === 'en-diffusion') {
-                            console.log('📺 Affiche mise en diffusion:', affiche.libelle);
-                            sendNotification('diffusion', 
-                                `Affiche mise en diffusion: ${affiche.libelle}`
-                            );
-                        } else if (affiche.statut === 'archivee') {
-                            console.log('📦 Affiche archivée:', affiche.libelle);
-                            sendNotification('archivage', 
-                                `Affiche archivée: ${affiche.libelle}`
-                            );
-                        }
-                    }
-                });
-            });
+            // Déclencher à 08h00 précises
+            if (hour === 8 && minute === 0) {
+                console.log('⏰ Heure du résumé quotidien - 08h00');
+                await sendDailyResume();
+            }
         }
 
-        // Vérifier les affiches expirantes
-        async function checkExpiringAffiches() {
+        async function sendDailyResume() {
+            if (!window.emailJSConfig.publicKey) {
+                console.log('❌ EmailJS non configuré pour le résumé quotidien');
+                return;
+            }
+
             try {
-                console.log('⏰ Vérification des affiches expirantes...');
+                console.log('📊 Préparation du résumé quotidien...');
                 
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                tomorrow.setHours(0, 0, 0, 0);
+                const today = new Date();
+                const yesterday = new Date(today);
+                yesterday.setDate(today.getDate() - 1);
                 
-                const q = query(
-                    collection(db, 'affiches'),
-                    where('statut', '==', 'en-diffusion')
+                // Récupérer les données pour le résumé
+                const affiches = window.lastLoadedAffiches || [];
+                
+                const stats = {
+                    nouvelles: affiches.filter(a => {
+                        const dateCreation = new Date(a.dateCreation);
+                        return dateCreation >= yesterday && dateCreation < today;
+                    }).length,
+                    enDiffusion: affiches.filter(a => a.statut === 'en-diffusion').length,
+                    expirantBientot: affiches.filter(a => {
+                        const dateFin = new Date(a.dateFin);
+                        const demain = new Date(today);
+                        demain.setDate(today.getDate() + 1);
+                        return a.statut === 'en-diffusion' && dateFin <= demain;
+                    }).length,
+                    archivees: affiches.filter(a => {
+                        const dateModification = new Date(a.dateModification || a.dateCreation);
+                        return a.statut === 'archivee' && dateModification >= yesterday && dateModification < today;
+                    }).length
+                };
+
+                const resumeText = `
+📊 Résumé quotidien - ${today.toLocaleDateString('fr-FR')}
+
+• ${stats.nouvelles} nouvelle(s) affiche(s) créée(s) hier
+• ${stats.enDiffusion} affiche(s) actuellement en diffusion
+• ${stats.expirantBientot} affiche(s) expirant demain
+• ${stats.archivees} affiche(s) archivée(s) hier
+
+Excellente journée !
+                `.trim();
+
+                const templateParams = {
+                    to_email: window.currentUser.email,
+                    to_name: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`,
+                    subject: 'Résumé quotidien - Gestion Affichage',
+                    message: resumeText,
+                    stats_nouvelles: stats.nouvelles,
+                    stats_diffusion: stats.enDiffusion,
+                    stats_expiration: stats.expirantBientot,
+                    stats_archivees: stats.archivees,
+                    user_name: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`,
+                    date: today.toLocaleDateString('fr-FR')
+                };
+
+                await emailjs.send(
+                    window.emailJSConfig.serviceId,
+                    window.emailJSConfig.templateResume,
+                    templateParams
                 );
-                const querySnapshot = await getDocs(q);
-                
-                let expiringCount = 0;
-                
-                querySnapshot.forEach((doc) => {
-                    const affiche = doc.data();
-                    const dateFin = new Date(affiche.dateFin);
-                    dateFin.setHours(0, 0, 0, 0);
-                    
-                    // Si expire demain
-                    if (dateFin.getTime() === tomorrow.getTime()) {
-                        console.log('⚠️ Affiche expire demain:', affiche.libelle);
-                        sendNotification('expiration', 
-                            `Affiche expire demain: ${affiche.libelle} (${formatDate(affiche.dateFin)})`
-                        );
-                        expiringCount++;
-                    }
+
+                // Enregistrer dans l'historique
+                await addNotification({
+                    type: 'daily_resume',
+                    message: 'Résumé quotidien envoyé',
+                    userId: window.currentUser.uid,
+                    status: 'sent',
+                    details: stats
                 });
-                
-                console.log('📊 Affiches expirant demain:', expiringCount);
+
+                console.log('✅ Résumé quotidien envoyé avec succès');
                 
             } catch (error) {
-                console.error('❌ Erreur vérification expirations:', error);
+                console.error('❌ Erreur envoi résumé quotidien:', error);
+                
+                await addNotification({
+                    type: 'daily_resume',
+                    message: 'Échec envoi résumé quotidien',
+                    userId: window.currentUser.uid,
+                    status: 'failed',
+                    error: error.message
+                });
             }
         }
 
-        // Démarrer la vérification des expirations (1 fois par heure)
-        function startExpirationCheck() {
-            console.log('⏰ Démarrage du système de vérification des expirations');
-            
-            // Première vérification après 1 minute
-            setTimeout(checkExpiringAffiches, 60000);
-            
-            // Puis toutes les heures
-            setInterval(checkExpiringAffiches, 3600000);
-        }
-
-        // ========= GESTION DES ORIGINES (inchangé) =========
+        // ========= GESTION DES ORIGINES =========
         
         async function loadOrigines() {
             try {
@@ -3121,11 +2626,8 @@
                 if (origines.length === 0) {
                     await createDefaultOrigines();
                 }
-                
-                console.log('Origines chargées:', origines.length);
             } catch (error) {
-                console.error('Erreur chargement origines:', error);
-                showErrorMessage('Erreur lors du chargement des origines');
+                console.error('❌ Erreur chargement origines:', error);
             }
         }
 
@@ -3140,7 +2642,7 @@
                         utilisateurId: window.currentUser.uid
                     });
                 } catch (error) {
-                    console.error('Erreur création origine par défaut:', error);
+                    console.error('❌ Erreur création origine par défaut:', error);
                 }
             }
             
@@ -3180,12 +2682,11 @@
                     dateCreation: serverTimestamp(),
                     utilisateurId: window.currentUser.uid
                 });
-                console.log('Origine sauvée avec ID:', docRef.id);
                 await loadOrigines();
                 updateSelectOptions();
                 return docRef.id;
             } catch (error) {
-                console.error('Erreur sauvegarde origine:', error);
+                console.error('❌ Erreur sauvegarde origine:', error);
                 throw error;
             }
         }
@@ -3202,7 +2703,7 @@
                 updateSelectOptions();
                 return true;
             } catch (error) {
-                console.error('Erreur mise à jour origine:', error);
+                console.error('❌ Erreur mise à jour origine:', error);
                 showErrorMessage('❌ Erreur lors de la mise à jour');
                 return false;
             }
@@ -3215,12 +2716,29 @@
                 await loadOrigines();
                 updateSelectOptions();
             } catch (error) {
-                console.error('Erreur suppression origine:', error);
+                console.error('❌ Erreur suppression origine:', error);
                 showErrorMessage('❌ Erreur lors de la suppression');
             }
         }
 
-        // ========= GESTION DES UNITES (inchangé) =========
+        async function loadOrigineForEdit(id) {
+            try {
+                const docRef = doc(db, 'origines', id);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    return { id: docSnap.id, ...docSnap.data() };
+                } else {
+                    showErrorMessage('❌ Origine non trouvée');
+                    return null;
+                }
+            } catch (error) {
+                console.error('❌ Erreur chargement origine:', error);
+                return null;
+            }
+        }
+
+        // ========= GESTION DES UNITÉS =========
         
         async function loadUnites() {
             try {
@@ -3241,11 +2759,8 @@
                 if (unites.length === 0) {
                     await createDefaultUnites();
                 }
-                
-                console.log('Unités chargées:', unites.length);
             } catch (error) {
-                console.error('Erreur chargement unités:', error);
-                showErrorMessage('Erreur lors du chargement des unités');
+                console.error('❌ Erreur chargement unités:', error);
             }
         }
 
@@ -3260,7 +2775,7 @@
                         utilisateurId: window.currentUser.uid
                     });
                 } catch (error) {
-                    console.error('Erreur création unité par défaut:', error);
+                    console.error('❌ Erreur création unité par défaut:', error);
                 }
             }
             
@@ -3300,12 +2815,11 @@
                     dateCreation: serverTimestamp(),
                     utilisateurId: window.currentUser.uid
                 });
-                console.log('Unité sauvée avec ID:', docRef.id);
                 await loadUnites();
                 updateSelectOptions();
                 return docRef.id;
             } catch (error) {
-                console.error('Erreur sauvegarde unité:', error);
+                console.error('❌ Erreur sauvegarde unité:', error);
                 throw error;
             }
         }
@@ -3322,7 +2836,7 @@
                 updateSelectOptions();
                 return true;
             } catch (error) {
-                console.error('Erreur mise à jour unité:', error);
+                console.error('❌ Erreur mise à jour unité:', error);
                 showErrorMessage('❌ Erreur lors de la mise à jour');
                 return false;
             }
@@ -3335,15 +2849,613 @@
                 await loadUnites();
                 updateSelectOptions();
             } catch (error) {
-                console.error('Erreur suppression unité:', error);
+                console.error('❌ Erreur suppression unité:', error);
                 showErrorMessage('❌ Erreur lors de la suppression');
             }
+        }
+
+        async function loadUniteForEdit(id) {
+            try {
+                const docRef = doc(db, 'unites', id);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    return { id: docSnap.id, ...docSnap.data() };
+                } else {
+                    showErrorMessage('❌ Unité non trouvée');
+                    return null;
+                }
+            } catch (error) {
+                console.error('❌ Erreur chargement unité:', error);
+                return null;
+            }
+        }
+
+        // ========= GESTION DES AFFICHES =========
+        
+        async function loadAffiches() {
+            try {
+                const q = query(collection(db, 'affiches'), orderBy('dateCreation', 'desc'));
+                const querySnapshot = await getDocs(q);
+                const affiches = [];
+                
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.dateCreation && data.dateCreation.toDate) {
+                        data.dateCreation = data.dateCreation.toDate();
+                    }
+                    affiches.push({ id: doc.id, ...data });
+                });
+                
+                displayAffiches(affiches);
+                window.lastLoadedAffiches = affiches;
+            } catch (error) {
+                console.error('❌ Erreur chargement affiches:', error);
+                displayAffiches([]);
+            }
+        }
+
+        async function saveAffiche(affiche) {
+            try {
+                const docRef = await addDoc(collection(db, 'affiches'), {
+                    ...affiche,
+                    dateCreation: serverTimestamp(),
+                    utilisateurId: window.currentUser.uid,
+                    createdBy: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`,
+                    notificationSent: false
+                });
+                
+                // Ajouter aux notifications en attente si le groupement est activé
+                const groupNotifications = document.getElementById('group-notifications')?.checked !== false;
+                if (groupNotifications) {
+                    addToPendingNotifications({ id: docRef.id, ...affiche });
+                } else {
+                    // Envoyer notification immédiate si groupement désactivé
+                    await sendImmediateNotification(affiche);
+                }
+                
+                await loadAffiches();
+                return docRef.id;
+            } catch (error) {
+                console.error('❌ Erreur sauvegarde affiche:', error);
+                throw error;
+            }
+        }
+
+        async function sendImmediateNotification(affiche) {
+            if (!window.emailJSConfig.publicKey) {
+                console.log('⚠️ EmailJS non configuré - notification ignorée');
+                return;
+            }
+
+            try {
+                // Réinitialiser EmailJS avec la nouvelle API v4
+                emailjs.init({
+                    publicKey: window.emailJSConfig.publicKey.trim(),
+                });
+                
+                const templateParams = {
+                    to_email: window.currentUser.email,
+                    to_name: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`,
+                    subject: 'Nouvelle affiche créée',
+                    message: 'Nouvelle affiche créée :',
+                    affiches_list: `• ${affiche.libelle} - ${affiche.prix}€/${affiche.unite} (${affiche.origine})`,
+                    user_name: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`,
+                    date: new Date().toLocaleDateString('fr-FR')
+                };
+
+                await emailjs.send(
+                    window.emailJSConfig.serviceId,
+                    window.emailJSConfig.templateCreation,
+                    templateParams
+                );
+
+                await addNotification({
+                    type: 'creation',
+                    message: `Notification immédiate envoyée : ${affiche.libelle}`,
+                    userId: window.currentUser.uid,
+                    status: 'sent'
+                });
+
+            } catch (error) {
+                console.error('❌ Erreur notification immédiate:', error);
+            }
+        }
+
+        async function updateAffiche(id, data) {
+            try {
+                const docRef = doc(db, 'affiches', id);
+                await updateDoc(docRef, {
+                    ...data,
+                    dateModification: serverTimestamp(),
+                    modifiedBy: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`
+                });
+                showSuccessMessage('✅ Affiche mise à jour avec succès');
+                await loadAffiches();
+                return true;
+            } catch (error) {
+                console.error('❌ Erreur mise à jour affiche:', error);
+                showErrorMessage('❌ Erreur lors de la mise à jour');
+                return false;
+            }
+        }
+
+        async function deleteAffiche(id) {
+            try {
+                await deleteDoc(doc(db, 'affiches', id));
+                showSuccessMessage('🗑️ Affiche supprimée avec succès');
+                await loadAffiches();
+            } catch (error) {
+                console.error('❌ Erreur suppression affiche:', error);
+                showErrorMessage('❌ Erreur lors de la suppression');
+            }
+        }
+
+        async function loadAfficheForEdit(id) {
+            try {
+                const docRef = doc(db, 'affiches', id);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    return { id: docSnap.id, ...docSnap.data() };
+                } else {
+                    showErrorMessage('❌ Affiche non trouvée');
+                    return null;
+                }
+            } catch (error) {
+                console.error('❌ Erreur chargement affiche:', error);
+                return null;
+            }
+        }
+
+        // ========= GESTION DES UTILISATEURS =========
+        
+        async function loadUsers() {
+            try {
+                const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
+                const querySnapshot = await getDocs(q);
+                const users = [];
+                
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.createdAt && data.createdAt.toDate) {
+                        data.createdAt = data.createdAt.toDate();
+                    }
+                    if (data.lastLoginAt && data.lastLoginAt.toDate) {
+                        data.lastLoginAt = data.lastLoginAt.toDate();
+                    }
+                    users.push({ id: doc.id, ...data });
+                });
+                
+                window.users = users;
+                displayUsers(users);
+                updateUserStats(users);
+            } catch (error) {
+                console.error('❌ Erreur chargement utilisateurs:', error);
+            }
+        }
+
+        function displayUsers(users) {
+            const container = document.getElementById('usersList');
+            
+            if (users.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        Aucun utilisateur enregistré.<br>
+                        Invitez des collègues pour collaborer !
+                    </div>
+                `;
+                return;
+            }
+            
+            const usersHtml = users.map(user => {
+                const initials = `${user.firstName?.charAt(0) || ''}${user.lastName?.charAt(0) || ''}`;
+                const isOnline = user.lastLoginAt && (new Date() - user.lastLoginAt) < 300000;
+                const isCurrentUser = user.userId === window.currentUser.uid;
+                
+                return `
+                    <div class="user-card">
+                        <div class="user-header">
+                            <div style="display: flex; align-items: center;">
+                                <div class="user-avatar">${initials}</div>
+                                <div class="user-main-info">
+                                    <div class="user-name">${user.firstName} ${user.lastName} ${isCurrentUser ? '(Vous)' : ''}</div>
+                                    <div class="user-email">${user.email}</div>
+                                    <span class="user-role ${user.role === 'admin' ? 'admin' : ''}">${user.role === 'admin' ? '👑 Administrateur' : '👤 Employé'}</span>
+                                </div>
+                            </div>
+                            <div class="user-actions">
+                                <button class="action-btn edit-btn" onclick="editUser('${user.id}')" title="Modifier">✏️</button>
+                                ${!isCurrentUser ? `
+                                    <button class="action-btn delete-btn" onclick="confirmDeleteUser('${user.id}', '${user.firstName} ${user.lastName}')" title="Supprimer">🗑️</button>
+                                ` : ''}
+                            </div>
+                        </div>
+                        
+                        <div class="user-preferences">
+                            <div class="user-pref-title">Préférences de notification :</div>
+                            <div class="notification-prefs">
+                                <div class="pref-option">
+                                    <span class="pref-icon ${user.notificationChannels?.email ? 'active' : 'inactive'}">${user.notificationChannels?.email ? '✅' : '❌'}</span>
+                                    <span>Email</span>
+                                </div>
+                                <div class="pref-option">
+                                    <span class="pref-icon ${user.notificationChannels?.push ? 'active' : 'inactive'}">${user.notificationChannels?.push ? '✅' : '❌'}</span>
+                                    <span>Push</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="user-status ${isOnline ? 'status-online' : 'status-offline'}">
+                            ${isOnline ? '🟢 En ligne' : '⚫ Hors ligne'} - Dernière connexion: ${formatDateTime(user.lastLoginAt)}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = usersHtml;
+        }
+
+        async function inviteUser(userData) {
+            try {
+                if (window.users.length >= 6) {
+                    showErrorMessage('❌ Limite de 6 utilisateurs atteinte');
+                    return;
+                }
+                
+                const existingUser = window.users.find(u => u.email === userData.email);
+                if (existingUser) {
+                    showErrorMessage('❌ Cet email est déjà utilisé');
+                    return;
+                }
+                
+                const newUser = {
+                    email: userData.email,
+                    firstName: userData.firstName,
+                    lastName: userData.lastName,
+                    role: userData.role,
+                    notificationPreferences: {
+                        creation: true,
+                        diffusion: true,
+                        expiration: true,
+                        archivage: true,
+                        resume: true
+                    },
+                    notificationChannels: {
+                        email: userData.defaultEmail || true,
+                        push: userData.defaultPush || true
+                    },
+                    status: 'invited',
+                    invitedBy: window.currentUser.uid,
+                    invitedAt: serverTimestamp(),
+                    createdAt: serverTimestamp()
+                };
+                
+                const docRef = await addDoc(collection(db, 'users'), newUser);
+                
+                await addNotification({
+                    type: 'user_invited',
+                    message: `Utilisateur ${userData.firstName} ${userData.lastName} invité`,
+                    userId: window.currentUser.uid,
+                    status: 'sent'
+                });
+                
+                showSuccessMessage(`✉️ Invitation envoyée à ${userData.firstName} ${userData.lastName}`);
+                await loadUsers();
+                
+                return docRef.id;
+            } catch (error) {
+                console.error('❌ Erreur invitation utilisateur:', error);
+                showErrorMessage('❌ Erreur lors de l\'invitation');
+                throw error;
+            }
+        }
+
+        async function updateUser(id, userData) {
+            try {
+                const docRef = doc(db, 'users', id);
+                await updateDoc(docRef, {
+                    ...userData,
+                    updatedAt: serverTimestamp()
+                });
+                
+                if (window.currentUserData && window.currentUserData.id === id) {
+                    window.currentUserData = { ...window.currentUserData, ...userData };
+                    updateHeaderUserInfo();
+                }
+                
+                showSuccessMessage('✅ Utilisateur mis à jour avec succès');
+                await loadUsers();
+                return true;
+            } catch (error) {
+                console.error('❌ Erreur mise à jour utilisateur:', error);
+                showErrorMessage('❌ Erreur lors de la mise à jour');
+                return false;
+            }
+        }
+
+        async function deleteUser(id) {
+            try {
+                await deleteDoc(doc(db, 'users', id));
+                showSuccessMessage('🗑️ Utilisateur supprimé avec succès');
+                await loadUsers();
+            } catch (error) {
+                console.error('❌ Erreur suppression utilisateur:', error);
+                showErrorMessage('❌ Erreur lors de la suppression');
+            }
+        }
+
+        async function loadUserForEdit(id) {
+            try {
+                const userInList = window.users.find(u => u.id === id);
+                if (userInList) {
+                    return userInList;
+                }
+                
+                const userDoc = await getDoc(doc(db, 'users', id));
+                if (userDoc.exists()) {
+                    return { id: userDoc.id, ...userDoc.data() };
+                } else {
+                    showErrorMessage('❌ Utilisateur non trouvé');
+                    return null;
+                }
+            } catch (error) {
+                console.error('❌ Erreur chargement utilisateur:', error);
+                return null;
+            }
+        }
+
+        function updateUserStats(users) {
+            document.getElementById('totalUsers').textContent = `${users.length} utilisateur(s)`;
+            
+            const activeUsers = users.filter(u => {
+                if (!u.lastLoginAt) return false;
+                const lastLogin = u.lastLoginAt instanceof Date ? u.lastLoginAt : u.lastLoginAt.toDate();
+                return (new Date() - lastLogin) < 300000;
+            }).length;
+            
+            document.getElementById('activeUsers').textContent = `${activeUsers} utilisateur(s) connecté(s)`;
+        }
+
+        // ========= GESTION DES NOTIFICATIONS =========
+        
+        async function loadNotifications() {
+            try {
+                const q = query(
+                    collection(db, 'notifications'), 
+                    where('userId', '==', window.currentUser.uid)
+                );
+                const querySnapshot = await getDocs(q);
+                const notifications = [];
+                
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.createdAt && data.createdAt.toDate) {
+                        data.createdAt = data.createdAt.toDate();
+                    }
+                    notifications.push({ id: doc.id, ...data });
+                });
+                
+                notifications.sort((a, b) => {
+                    const dateA = a.createdAt instanceof Date ? a.createdAt : new Date(a.createdAt);
+                    const dateB = b.createdAt instanceof Date ? b.createdAt : new Date(b.createdAt);
+                    return dateB - dateA;
+                });
+                
+                window.notifications = notifications;
+                displayNotificationHistory(notifications);
+                updateNotificationStats(notifications);
+            } catch (error) {
+                console.error('❌ Erreur chargement notifications:', error);
+                window.notifications = [];
+                displayNotificationHistory([]);
+                updateNotificationStats([]);
+            }
+        }
+
+        function displayNotificationHistory(notifications) {
+            const container = document.getElementById('notificationHistory');
+            
+            if (notifications.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        Aucune notification envoyée récemment
+                    </div>
+                `;
+                return;
+            }
+            
+            const recentNotifications = notifications.slice(0, 10);
+            const notificationsHtml = recentNotifications.map(notif => `
+                <div class="notification-item">
+                    <div class="notification-header">
+                        <span class="notification-type">${getNotificationTypeLabel(notif.type)}</span>
+                        <span class="notification-time">${formatDateTime(notif.createdAt)}</span>
+                    </div>
+                    <div class="notification-message">${notif.message}</div>
+                    <div class="notification-status ${notif.status === 'failed' ? 'failed' : ''}">${notif.status === 'sent' ? '✅ Envoyée' : '❌ Échec'}</div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = notificationsHtml;
+        }
+
+        async function addNotification(notificationData) {
+            try {
+                await addDoc(collection(db, 'notifications'), {
+                    ...notificationData,
+                    createdAt: serverTimestamp()
+                });
+            } catch (error) {
+                console.error('❌ Erreur ajout notification:', error);
+            }
+        }
+
+        function updateNotificationStats(notifications) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const todayNotifications = notifications.filter(n => {
+                const notifDate = n.createdAt instanceof Date ? n.createdAt : n.createdAt.toDate();
+                return notifDate >= today;
+            }).length;
+            
+            document.getElementById('todayNotifications').textContent = `${todayNotifications} notification(s)`;
+        }
+
+        async function testNotification() {
+            if (!window.emailJSConfig.publicKey) {
+                showErrorMessage('❌ Veuillez d\'abord configurer EmailJS dans Paramètres > Système');
+                return;
+            }
+
+            try {
+                const templateParams = {
+                    to_email: window.currentUser.email,
+                    to_name: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`,
+                    subject: 'Test - Gestion Affichage',
+                    message: 'Ceci est un test de notification.',
+                    affiches_list: 'Test d\'affiche - Pommes Golden - 2.50€/Kg',
+                    user_name: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`,
+                    date: new Date().toLocaleDateString('fr-FR')
+                };
+
+                await emailjs.send(
+                    window.emailJSConfig.serviceId,
+                    window.emailJSConfig.templateCreation,
+                    templateParams
+                );
+
+                showSuccessMessage('✅ Test réussi - Email envoyé !');
+            } catch (error) {
+                console.error('❌ Erreur test notification:', error);
+                showErrorMessage('❌ Échec du test: ' + error.message);
+            }
+        }
+
+        function setupNotificationListeners() {
+            console.log('🔧 Configuration des listeners de notifications...');
+            
+            const affichesQuery = query(collection(db, 'affiches'), orderBy('dateCreation', 'desc'));
+            let isFirstLoad = true;
+            let initialLoadComplete = false;
+            
+            onSnapshot(affichesQuery, (snapshot) => {
+                if (isFirstLoad) {
+                    isFirstLoad = false;
+                    setTimeout(() => {
+                        initialLoadComplete = true;
+                        console.log('✅ Listeners de notifications activés');
+                    }, 3000);
+                    return;
+                }
+                
+                if (!initialLoadComplete) return;
+                
+                snapshot.docChanges().forEach((change) => {
+                    const affiche = change.doc.data();
+                    
+                    if (change.type === 'modified') {
+                        if (affiche.statut === 'en-diffusion') {
+                            sendStatusChangeNotification('diffusion', affiche);
+                        } else if (affiche.statut === 'archivee') {
+                            sendStatusChangeNotification('archivage', affiche);
+                        }
+                    }
+                });
+            });
+        }
+
+        async function sendStatusChangeNotification(type, affiche) {
+            if (!window.emailJSConfig.publicKey) return;
+
+            try {
+                const templateParams = {
+                    to_email: window.currentUser.email,
+                    to_name: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`,
+                    subject: `Affiche ${type === 'diffusion' ? 'mise en diffusion' : 'archivée'}`,
+                    message: `Affiche ${type === 'diffusion' ? 'mise en diffusion' : 'archivée'} :`,
+                    affiches_list: `• ${affiche.libelle} - ${affiche.prix}€/${affiche.unite} (${affiche.origine})`,
+                    user_name: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`,
+                    date: new Date().toLocaleDateString('fr-FR')
+                };
+
+                await emailjs.send(
+                    window.emailJSConfig.serviceId,
+                    window.emailJSConfig.templateCreation,
+                    templateParams
+                );
+
+                await addNotification({
+                    type: type,
+                    message: `Affiche ${type === 'diffusion' ? 'mise en diffusion' : 'archivée'}: ${affiche.libelle}`,
+                    userId: window.currentUser.uid,
+                    status: 'sent'
+                });
+
+            } catch (error) {
+                console.error(`❌ Erreur notification ${type}:`, error);
+            }
+        }
+
+        async function checkExpiringAffiches() {
+            try {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                tomorrow.setHours(0, 0, 0, 0);
+                
+                const affiches = window.lastLoadedAffiches || [];
+                const expiringAffiches = affiches.filter(a => {
+                    if (a.statut !== 'en-diffusion') return false;
+                    const dateFin = new Date(a.dateFin);
+                    dateFin.setHours(0, 0, 0, 0);
+                    return dateFin.getTime() === tomorrow.getTime();
+                });
+
+                if (expiringAffiches.length > 0 && window.emailJSConfig.publicKey) {
+                    const affichesText = expiringAffiches.map(a => 
+                        `• ${a.libelle} - ${a.prix}€/${a.unite} (${a.origine})`
+                    ).join('\n');
+
+                    const templateParams = {
+                        to_email: window.currentUser.email,
+                        to_name: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`,
+                        subject: `Affiches expirant demain (${expiringAffiches.length})`,
+                        message: `${expiringAffiches.length} affiche(s) expire(nt) demain :`,
+                        affiches_list: affichesText,
+                        user_name: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`,
+                        date: new Date().toLocaleDateString('fr-FR')
+                    };
+
+                    await emailjs.send(
+                        window.emailJSConfig.serviceId,
+                        window.emailJSConfig.templateCreation,
+                        templateParams
+                    );
+
+                    for (const affiche of expiringAffiches) {
+                        await addNotification({
+                            type: 'expiration',
+                            message: `Affiche expire demain: ${affiche.libelle}`,
+                            userId: window.currentUser.uid,
+                            status: 'sent'
+                        });
+                    }
+                }
+                
+            } catch (error) {
+                console.error('❌ Erreur vérification expirations:', error);
+            }
+        }
+
+        function startExpirationCheck() {
+            setTimeout(checkExpiringAffiches, 60000);
+            setInterval(checkExpiringAffiches, 3600000);
         }
 
         // ========= MISE À JOUR DES SELECT =========
         
         function updateSelectOptions() {
-            // Mettre à jour les selects d'origines
             const origineSelects = ['origine', 'editOrigine'];
             origineSelects.forEach(selectId => {
                 const select = document.getElementById(selectId);
@@ -3369,7 +3481,6 @@
                 }
             });
             
-            // Mettre à jour les selects d'unités
             const uniteSelects = ['unite', 'editUnite'];
             uniteSelects.forEach(selectId => {
                 const select = document.getElementById(selectId);
@@ -3396,223 +3507,8 @@
             });
         }
 
-        // ========= GESTION DES AFFICHES =========
+        // ========= FONCTIONS D'AFFICHAGE =========
         
-        async function loadAffiches() {
-            try {
-                console.log('📋 Chargement des affiches...');
-                const q = query(collection(db, 'affiches'), orderBy('dateCreation', 'desc'));
-                const querySnapshot = await getDocs(q);
-                const affiches = [];
-                
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    if (data.dateCreation && data.dateCreation.toDate) {
-                        data.dateCreation = data.dateCreation.toDate();
-                    }
-                    affiches.push({ id: doc.id, ...data });
-                });
-                
-                console.log('📋 Affiches récupérées depuis Firebase:', affiches.length);
-                console.log('📋 Détail des affiches:', affiches.map(a => `${a.libelle} (${a.statut})`));
-                
-                // Mettre à jour immédiatement
-                displayAffiches(affiches);
-                
-                console.log('✅ Affiches chargées et affichées:', affiches.length);
-            } catch (error) {
-                console.error('❌ Erreur chargement affiches:', error);
-                showErrorMessage('Erreur lors du chargement des affiches');
-                
-                // En cas d'erreur, afficher avec un tableau vide
-                displayAffiches([]);
-            }
-        }
-
-        async function saveAffiche(affiche) {
-            try {
-                console.log('💾 Sauvegarde nouvelle affiche:', affiche.libelle);
-                const docRef = await addDoc(collection(db, 'affiches'), {
-                    ...affiche,
-                    dateCreation: serverTimestamp(),
-                    utilisateurId: window.currentUser.uid,
-                    createdBy: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`
-                });
-                console.log('✅ Affiche sauvée avec ID:', docRef.id);
-                console.log('🔔 Attente du déclenchement des notifications automatiques...');
-                await loadAffiches();
-                return docRef.id;
-            } catch (error) {
-                console.error('❌ Erreur sauvegarde affiche:', error);
-                throw error;
-            }
-        }
-
-        async function updateAffiche(id, data) {
-            try {
-                const docRef = doc(db, 'affiches', id);
-                await updateDoc(docRef, {
-                    ...data,
-                    dateModification: serverTimestamp(),
-                    modifiedBy: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`
-                });
-                showSuccessMessage('✅ Affiche mise à jour avec succès');
-                await loadAffiches();
-                return true;
-            } catch (error) {
-                console.error('Erreur mise à jour affiche:', error);
-                showErrorMessage('❌ Erreur lors de la mise à jour');
-                return false;
-            }
-        }
-
-        async function deleteAffiche(id) {
-            try {
-                await deleteDoc(doc(db, 'affiches', id));
-                showSuccessMessage('🗑️ Affiche supprimée avec succès');
-                await loadAffiches();
-            } catch (error) {
-                console.error('Erreur suppression affiche:', error);
-                showErrorMessage('❌ Erreur lors de la suppression');
-            }
-        }
-
-        async function loadAfficheForEdit(id) {
-            try {
-                const docRef = doc(db, 'affiches', id);
-                const docSnap = await getDoc(docRef);
-                
-                if (docSnap.exists()) {
-                    const affiche = { id: docSnap.id, ...docSnap.data() };
-                    window.currentEditingAffiche = affiche;
-                    return affiche;
-                } else {
-                    showErrorMessage('❌ Affiche non trouvée');
-                    return null;
-                }
-            } catch (error) {
-                console.error('Erreur chargement affiche:', error);
-                showErrorMessage('❌ Erreur lors du chargement');
-                return null;
-            }
-        }
-
-        async function loadOrigineForEdit(id) {
-            try {
-                const docRef = doc(db, 'origines', id);
-                const docSnap = await getDoc(docRef);
-                
-                if (docSnap.exists()) {
-                    const origine = { id: docSnap.id, ...docSnap.data() };
-                    window.currentEditingOrigine = origine;
-                    return origine;
-                } else {
-                    showErrorMessage('❌ Origine non trouvée');
-                    return null;
-                }
-            } catch (error) {
-                console.error('Erreur chargement origine:', error);
-                showErrorMessage('❌ Erreur lors du chargement');
-                return null;
-            }
-        }
-
-        async function loadUniteForEdit(id) {
-            try {
-                const docRef = doc(db, 'unites', id);
-                const docSnap = await getDoc(docRef);
-                
-                if (docSnap.exists()) {
-                    const unite = { id: docSnap.id, ...docSnap.data() };
-                    window.currentEditingUnite = unite;
-                    return unite;
-                } else {
-                    showErrorMessage('❌ Unité non trouvée');
-                    return null;
-                }
-            } catch (error) {
-                console.error('Erreur chargement unité:', error);
-                showErrorMessage('❌ Erreur lors du chargement');
-                return null;
-            }
-        }
-
-        // ========= FONCTIONS UTILITAIRES =========
-        
-        function getFamilleIconClass(famille) {
-            const mapping = {
-                'fruits-legumes': 'category-fruits',
-                'traiteur': 'category-traiteur',
-                'boucherie': 'category-boucherie',
-                'cremerie': 'category-cremerie',
-                'epicerie': 'category-epicerie',
-                'boulangerie': 'category-boulangerie',
-                'autre': 'category-autre'
-            };
-            return mapping[famille] || 'category-autre';
-        }
-
-        function getFamilleIcon(famille) {
-            const mapping = {
-                'fruits-legumes': '🍎',
-                'traiteur': '🥘',
-                'boucherie': '🥩',
-                'cremerie': '🧀',
-                'epicerie': '🛒',
-                'boulangerie': '🥖',
-                'autre': '📦'
-            };
-            return mapping[famille] || '📦';
-        }
-
-        function getStatusClass(statut) {
-            return `status-${statut}`;
-        }
-
-        function getStatusText(statut) {
-            const mapping = {
-                'a-creer': 'À créer',
-                'programmee': 'Programmée',
-                'en-diffusion': 'En diffusion',
-                'archivee': 'Archivée'
-            };
-            return mapping[statut] || 'Inconnu';
-        }
-
-        function getNotificationTypeLabel(type) {
-            const mapping = {
-                'creation': 'Création d\'affiche',
-                'diffusion': 'Mise en diffusion',
-                'expiration': 'Alerte expiration',
-                'archivage': 'Archivage',
-                'resume': 'Résumé quotidien',
-                'user_invited': 'Invitation utilisateur',
-                'test': 'Test'
-            };
-            return mapping[type] || 'Notification';
-        }
-
-        function formatDate(dateString) {
-            if (!dateString) return '';
-            const date = new Date(dateString);
-            return date.toLocaleDateString('fr-FR', { 
-                day: '2-digit', 
-                month: '2-digit'
-            });
-        }
-
-        function formatDateTime(date) {
-            if (!date) return 'Jamais';
-            const d = date instanceof Date ? date : date.toDate();
-            return d.toLocaleDateString('fr-FR', { 
-                day: '2-digit', 
-                month: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        }
-
-        // Fonctions d'affichage
         function displayAffiches(affiches) {
             console.log('🎯 displayAffiches appelée avec:', affiches.length, 'affiches');
             
@@ -3625,8 +3521,6 @@
         }
 
         function updateDashboardStats(affiches) {
-            console.log('📊 Mise à jour des statistiques dashboard avec:', affiches.length, 'affiches');
-            
             const stats = {
                 enDiffusion: affiches.filter(a => a.statut === 'en-diffusion').length,
                 aCreer: affiches.filter(a => a.statut === 'a-creer').length,
@@ -3634,57 +3528,12 @@
                 archivees: affiches.filter(a => a.statut === 'archivee').length
             };
             
-            console.log('📈 Statistiques calculées:', stats);
+            document.getElementById('statEnDiffusion').textContent = stats.enDiffusion;
+            document.getElementById('statACreer').textContent = stats.aCreer;
+            document.getElementById('statProgrammees').textContent = stats.programmees;
+            document.getElementById('statArchivees').textContent = stats.archivees;
             
-            // Mettre à jour les cartes de statistiques
-            const statCards = document.querySelectorAll('.stat-card');
-            console.log('🎴 Cartes trouvées:', statCards.length);
-            
-            if (statCards.length >= 4) {
-                // En diffusion
-                const enDiffusionCard = statCards[0];
-                if (enDiffusionCard) {
-                    const h3 = enDiffusionCard.querySelector('h3');
-                    if (h3) {
-                        h3.textContent = stats.enDiffusion;
-                        console.log('📺 En diffusion mis à jour:', stats.enDiffusion);
-                    }
-                }
-                
-                // À créer
-                const aCreerCard = statCards[1];
-                if (aCreerCard) {
-                    const h3 = aCreerCard.querySelector('h3');
-                    if (h3) {
-                        h3.textContent = stats.aCreer;
-                        console.log('🆕 À créer mis à jour:', stats.aCreer);
-                    }
-                }
-                
-                // Programmées
-                const programmeesCard = statCards[2];
-                if (programmeesCard) {
-                    const h3 = programmeesCard.querySelector('h3');
-                    if (h3) {
-                        h3.textContent = stats.programmees;
-                        console.log('📅 Programmées mis à jour:', stats.programmees);
-                    }
-                }
-                
-                // Archivées
-                const archiveesCard = statCards[3];
-                if (archiveesCard) {
-                    const h3 = archiveesCard.querySelector('h3');
-                    if (h3) {
-                        h3.textContent = stats.archivees;
-                        console.log('📦 Archivées mis à jour:', stats.archivees);
-                    }
-                }
-                
-                console.log('✅ Toutes les statistiques dashboard mises à jour');
-            } else {
-                console.error('❌ Pas assez de cartes de statistiques trouvées');
-            }
+            updateNotificationCard();
         }
 
         function updateDashboardAffiches(affiches) {
@@ -3784,40 +3633,128 @@
             }, 50);
         }
 
-        // Sauvegarde configuration SMTP
-        async function saveSmtpConfig() {
-            try {
-                const config = {
-                    server: document.getElementById('smtp-server').value,
-                    port: parseInt(document.getElementById('smtp-port').value),
-                    security: document.getElementById('smtp-security').value,
-                    sender: document.getElementById('smtp-sender').value,
-                    password: document.getElementById('smtp-password').value
-                };
-                
-                // Sauvegarder dans Firestore
-                await addDoc(collection(db, 'config'), {
-                    type: 'smtp',
-                    ...config,
-                    updatedBy: window.currentUser.uid,
-                    updatedAt: serverTimestamp()
-                });
-                
-                showSuccessMessage('✅ Configuration SMTP sauvegardée');
-            } catch (error) {
-                console.error('Erreur sauvegarde SMTP:', error);
-                showErrorMessage('❌ Erreur lors de la sauvegarde');
+        function updatePlanningTab(affiches) {
+            const container = document.querySelector('#planningAffiches');
+            if (!container) return;
+            
+            const affichesPlanning = affiches.filter(a => {
+                if (a.statut === 'archivee') return false;
+                return isAfficheActiveInWeek(a, currentWeekStart);
+            });
+            
+            if (affichesPlanning.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        Aucune affiche active pour cette semaine
+                    </div>
+                `;
+                return;
             }
+            
+            const planningHtml = affichesPlanning.map(affiche => {
+                const iconClass = getFamilleIconClass(affiche.famille);
+                const icon = getFamilleIcon(affiche.famille);
+                const statusClass = `status-${affiche.statut}`;
+                const statusText = getStatusText(affiche.statut);
+                const dateDebut = formatDate(affiche.dateDebut);
+                const dateFin = formatDate(affiche.dateFin);
+                
+                return `
+                    <div class="planning-item ${statusClass}">
+                        <div class="planning-item-icon ${iconClass}">${icon}</div>
+                        <div class="planning-item-info">
+                            <h4>${affiche.libelle}</h4>
+                            <p>${affiche.prix}€/${affiche.unite} • ${affiche.origine}</p>
+                            <p class="item-dates">${dateDebut} → ${dateFin}</p>
+                        </div>
+                        <div class="planning-item-actions">
+                            <span class="planning-status-badge ${statusClass}">${statusText}</span>
+                            <div class="planning-item-actions-buttons">
+                                <button class="action-btn edit-btn" onclick="editAffiche('${affiche.id}')">✏️</button>
+                                <button class="action-btn delete-btn" onclick="confirmDeleteAffiche('${affiche.id}', '${affiche.libelle}')">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = planningHtml;
         }
 
-        // Test connexion SMTP
-        async function testSmtpConnection() {
-            try {
-                // Simulation du test SMTP
-                showSuccessMessage('🔗 Test SMTP réussi - Configuration valide');
-            } catch (error) {
-                showErrorMessage('❌ Échec du test SMTP - Vérifiez la configuration');
-            }
+        // ========= FONCTIONS UTILITAIRES =========
+        
+        function getFamilleIconClass(famille) {
+            const mapping = {
+                'fruits-legumes': 'category-fruits',
+                'traiteur': 'category-traiteur',
+                'boucherie': 'category-boucherie',
+                'cremerie': 'category-cremerie',
+                'epicerie': 'category-epicerie',
+                'boulangerie': 'category-boulangerie',
+                'autre': 'category-autre'
+            };
+            return mapping[famille] || 'category-autre';
+        }
+
+        function getFamilleIcon(famille) {
+            const mapping = {
+                'fruits-legumes': '🍎',
+                'traiteur': '🥘',
+                'boucherie': '🥩',
+                'cremerie': '🧀',
+                'epicerie': '🛒',
+                'boulangerie': '🥖',
+                'autre': '📦'
+            };
+            return mapping[famille] || '📦';
+        }
+
+        function getStatusClass(statut) {
+            return `status-${statut}`;
+        }
+
+        function getStatusText(statut) {
+            const mapping = {
+                'a-creer': 'À créer',
+                'programmee': 'Programmée',
+                'en-diffusion': 'En diffusion',
+                'archivee': 'Archivée'
+            };
+            return mapping[statut] || 'Inconnu';
+        }
+
+        function getNotificationTypeLabel(type) {
+            const mapping = {
+                'creation': 'Création d\'affiche',
+                'creation_grouped': 'Créations groupées',
+                'diffusion': 'Mise en diffusion',
+                'expiration': 'Alerte expiration',
+                'archivage': 'Archivage',
+                'daily_resume': 'Résumé quotidien',
+                'user_invited': 'Invitation utilisateur',
+                'test': 'Test'
+            };
+            return mapping[type] || 'Notification';
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR', { 
+                day: '2-digit', 
+                month: '2-digit'
+            });
+        }
+
+        function formatDateTime(date) {
+            if (!date) return 'Jamais';
+            const d = date instanceof Date ? date : date.toDate();
+            return d.toLocaleDateString('fr-FR', { 
+                day: '2-digit', 
+                month: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
         }
 
         // Messages toast
@@ -3882,10 +3819,10 @@
         window.updateUser = updateUser;
         window.deleteUser = deleteUser;
         window.loadUserForEdit = loadUserForEdit;
-        window.sendNotification = sendNotification;
         window.testNotification = testNotification;
-        window.saveSmtpConfig = saveSmtpConfig;
-        window.testSmtpConnection = testSmtpConnection;
+        window.saveEmailJSConfig = saveEmailJSConfig;
+        window.testEmailJS = testEmailJS;
+        window.sendPendingNotifications = sendPendingNotifications;
         window.showErrorMessage = showErrorMessage;
         window.showSuccessMessage = showSuccessMessage;
         window.getFamilleIconClass = getFamilleIconClass;
@@ -3894,11 +3831,13 @@
         window.getStatusText = getStatusText;
         window.formatDate = formatDate;
         window.formatDateTime = formatDateTime;
+
     </script>
 
     <script>
         // Variables globales pour le planning
         window.lastLoadedAffiches = [];
+        window.pendingNotifications = [];
         let currentWeekStart = new Date(2025, 6, 8);
 
         // ========= FONCTIONS DE L'INTERFACE =========
@@ -4002,14 +3941,12 @@
             document.getElementById('editUserEmail').value = user.email || '';
             document.getElementById('editUserRole').value = user.role || 'employee';
             
-            // Préférences de notification
             document.getElementById('editUserNotifCreation').checked = user.notificationPreferences?.creation || false;
             document.getElementById('editUserNotifDiffusion').checked = user.notificationPreferences?.diffusion || false;
             document.getElementById('editUserNotifExpiration').checked = user.notificationPreferences?.expiration || false;
             document.getElementById('editUserNotifArchivage').checked = user.notificationPreferences?.archivage || false;
             document.getElementById('editUserNotifResume').checked = user.notificationPreferences?.resume || false;
             
-            // Canaux de notification
             document.getElementById('editUserCanalEmail').checked = user.notificationChannels?.email || false;
             document.getElementById('editUserCanalPush').checked = user.notificationChannels?.push || false;
             
@@ -4138,7 +4075,7 @@
         }
 
         function updatePlanningTab(affiches) {
-            console.log('📅 updatePlanningTab appelée avec:', affiches);
+            console.log('📅 updatePlanningTab appelée avec:', affiches.length, 'affiches');
             
             const container = document.querySelector('#planningAffiches');
             if (!container) {
@@ -4147,13 +4084,9 @@
             }
             
             const affichesPlanning = affiches.filter(a => {
-                if (a.statut === 'archivee') {
-                    return false;
-                }
+                if (a.statut === 'archivee') return false;
                 return isAfficheActiveInWeek(a, currentWeekStart);
             });
-            
-            console.log('📅 Planning - Affiches filtrées pour cette semaine:', affichesPlanning);
             
             if (affichesPlanning.length === 0) {
                 container.innerHTML = `
@@ -4195,9 +4128,7 @@
         }
 
         function isAfficheActiveInWeek(affiche, weekStart) {
-            if (!affiche.dateDebut || !affiche.dateFin) {
-                return false;
-            }
+            if (!affiche.dateDebut || !affiche.dateFin) return false;
             
             const afficheDebut = new Date(affiche.dateDebut);
             const afficheFin = new Date(affiche.dateFin);

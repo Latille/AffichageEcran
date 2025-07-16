@@ -153,6 +153,10 @@
             display: block;
         }
 
+        #dashboard {
+            padding-top: 0px !important;
+        }
+
         .dashboard-stats {
             display: grid;
             grid-template-columns: 1fr 80px 1fr;
@@ -1281,36 +1285,31 @@
 
         <!-- Dashboard -->
         <div id="dashboard" class="tab-content active">
-            <!-- Nouveau layout avec carte centrale verticale -->
-            <div class="dashboard-stats">
-                <!-- Ligne du haut gauche -->
-                <div class="stat-card">
-                    <h3 id="statEnDiffusion">0</h3>
-                    <p>En diffusion</p>
+            <!-- Nouveau layout avec structure HTML fixe -->
+            <div class="dashboard-stats" style="position: relative !important; width: 360px !important; height: 175px !important; background: #ffffff !important; border-radius: 18px !important; padding: 10px !important; margin: 5px auto !important; box-sizing: border-box !important;">
+                <div class="stat-card" style="position: absolute !important; left: 15px !important; top: 15px !important; width: 100px !important; height: 50px !important; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important; color: white !important; border-radius: 12px !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; border: 2px solid rgba(255, 255, 255, 0.3) !important; box-shadow: 0 5px 15px rgba(240, 147, 251, 0.3) !important;">
+                    <div style="font-size: 18px !important; font-weight: bold !important; margin: 0 0 2px 0 !important;" id="statEnDiffusion">0</div>
+                    <div style="font-size: 13px !important; margin: 0 !important;">En diffusion</div>
                 </div>
                 
-                <!-- Carte centrale verticale -->
-                <div id="notificationCard" class="stat-card notification-card notification-hidden" onclick="sendPendingNotifications()">
-                    <h3 id="notificationCount">0</h3>
-                    <p>À notifier</p>
+                <div class="stat-card" style="position: absolute !important; left: 130px !important; top: 15px !important; width: 100px !important; height: 50px !important; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important; color: white !important; border-radius: 12px !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; border: 2px solid rgba(255, 255, 255, 0.3) !important; box-shadow: 0 5px 15px rgba(240, 147, 251, 0.3) !important;">
+                    <div style="font-size: 18px !important; font-weight: bold !important; margin: 0 0 2px 0 !important;" id="statACreer">0</div>
+                    <div style="font-size: 13px !important; margin: 0 !important;">À créer</div>
                 </div>
                 
-                <!-- Ligne du haut droite -->
-                <div class="stat-card">
-                    <h3 id="statACreer">0</h3>
-                    <p>À créer</p>
+                <div class="stat-card" style="position: absolute !important; left: 15px !important; top: 80px !important; width: 100px !important; height: 50px !important; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important; color: white !important; border-radius: 12px !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; border: 2px solid rgba(255, 255, 255, 0.3) !important; box-shadow: 0 5px 15px rgba(240, 147, 251, 0.3) !important;">
+                    <div style="font-size: 18px !important; font-weight: bold !important; margin: 0 0 2px 0 !important;" id="statProgrammees">0</div>
+                    <div style="font-size: 13px !important; margin: 0 !important;">Programmées</div>
                 </div>
                 
-                <!-- Ligne du bas gauche -->
-                <div class="stat-card">
-                    <h3 id="statProgrammees">0</h3>
-                    <p>Programmées</p>
+                <div class="stat-card" style="position: absolute !important; left: 130px !important; top: 80px !important; width: 100px !important; height: 50px !important; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important; color: white !important; border-radius: 12px !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; border: 2px solid rgba(255, 255, 255, 0.3) !important; box-shadow: 0 5px 15px rgba(240, 147, 251, 0.3) !important;">
+                    <div style="font-size: 18px !important; font-weight: bold !important; margin: 0 0 2px 0 !important;" id="statArchivees">0</div>
+                    <div style="font-size: 13px !important; margin: 0 !important;">Archivées</div>
                 </div>
                 
-                <!-- Ligne du bas droite -->
-                <div class="stat-card">
-                    <h3 id="statArchivees">0</h3>
-                    <p>Archivées</p>
+                <div id="notificationCard" class="stat-card notification-card notification-hidden" onclick="sendPendingNotifications()" style="position: absolute !important; left: 245px !important; top: 15px !important; width: 80px !important; height: 115px !important; background: rgba(248, 249, 250, 0.5) !important; color: rgba(248, 249, 250, 0.5) !important; border-radius: 12px !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; border: 3px solid rgba(255, 255, 255, 0.8) !important; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2) !important; cursor: pointer !important; font-size: 12px !important;">
+                    <div style="font-size: 18px !important; font-weight: bold !important; margin: 0 0 2px 0 !important;" id="notificationCount">0</div>
+                    <div style="font-size: 13px !important; margin: 0 !important;">à notifier</div>
                 </div>
             </div>
 

@@ -1239,6 +1239,26 @@
                 gap: 6px !important;
             }
         }
+
+        /* Forcer l'alignement horizontal pour le bouton à notifier */
+        #notificationCard {
+            writing-mode: horizontal-tb !important;
+            text-orientation: mixed !important;
+            transform: none !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            align-items: center !important;
+            text-align: center !important;
+            height: 115px !important;
+            max-height: 115px !important;
+            min-height: 115px !important;
+        }
+
+        #notificationCard div {
+            transform: none !important;
+        }
+
     </style>
 </head>
 <body>
@@ -1325,7 +1345,7 @@
                     <div style="font-size: 13px !important; margin: 0 !important;">Archivées</div>
                 </div>
                 
-                <div id="notificationCard" class="stat-card notification-card notification-hidden" onclick="sendPendingNotifications()" style="position: absolute !important; left: 100px !important; top: 4px !important; width: 80px !important; height: 110px !important; background: rgba(248, 249, 250, 0.5) !important; color: rgba(248, 249, 250, 0.5) !important; border-radius: 12px !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; border: 3px solid rgba(255, 255, 255, 0.8) !important; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2) !important; cursor: pointer !important; font-size: 12px !important;">
+                <div id="notificationCard" class="stat-card notification-card notification-hidden" onclick="sendPendingNotifications()" style="position: absolute !important; left: 95px !important; top: 4px !important; width: 80px !important; height: 110px !important; background: rgba(248, 249, 250, 0.5) !important; color: rgba(248, 249, 250, 0.5) !important; border-radius: 12px !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; border: 3px solid rgba(255, 255, 255, 0.8) !important; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2) !important; cursor: pointer !important; font-size: 12px !important;">
                     <div style="font-size: 18px !important; font-weight: bold !important; margin: 0 0 2px 0 !important;" id="notificationCount">0</div>
                     <div style="font-size: 13px !important; margin: 0 !important;">à notifier</div>
                 </div>
@@ -2372,7 +2392,7 @@
                 notificationCard.className = 'stat-card notification-card notification-pending';
                 notificationCard.onclick = sendPendingNotifications;
                 
-                // FORCER le style inline pour la couleur verte
+                // Couleur verte
                 notificationCard.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
                 notificationCard.style.color = 'white';
                 notificationCard.style.boxShadow = '0 8px 25px rgba(40, 167, 69, 0.4)';
@@ -2384,7 +2404,7 @@
                 notificationCard.className = 'stat-card notification-card notification-hidden';
                 notificationCard.onclick = null;
                 
-                // FORCER le style inline pour l'état caché
+                // État caché
                 notificationCard.style.background = 'rgba(248, 249, 250, 0.5)';
                 notificationCard.style.color = 'rgba(248, 249, 250, 0.5)';
                 notificationCard.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.2)';

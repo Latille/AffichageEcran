@@ -201,11 +201,11 @@
         }
 
         .stat-card.notification-pending {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+            background: linear-gradient(135deg, #ff8800 0%, #ff4444 100%) !important;
             color: white !important;
             animation: pulse 2s infinite;
             cursor: pointer !important;
-            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4) !important;
+            box-shadow: 0 8px 25px rgba(255, 136, 0, 0.4) !important;
         }
 
         .stat-card.notification-pending:hover {
@@ -219,9 +219,10 @@
         }
 
         .stat-card.notification-hidden {
-            background: linear-gradient(135deg, #f8f9fa 0%, #f8f9fa 100%);
-            color: #316396;     /* #f8f9fa */
-            cursor: default;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+            color: white !important;
+            cursor: default !important;
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4) !important;
         }
 
         .stat-card.notification-hidden:hover {
@@ -2392,10 +2393,10 @@
                 notificationCard.className = 'stat-card notification-card notification-pending';
                 notificationCard.onclick = sendPendingNotifications;
                 
-                // Couleur verte
-                notificationCard.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+                // ORANGE DÉGRADÉ ROUGE quand il y a des notifications
+                notificationCard.style.background = 'linear-gradient(135deg, #ff8800 0%, #ff4444 100%)';
                 notificationCard.style.color = 'white';
-                notificationCard.style.boxShadow = '0 8px 25px rgba(40, 167, 69, 0.4)';
+                notificationCard.style.boxShadow = '0 8px 25px rgba(255, 136, 0, 0.4)';
                 notificationCard.style.cursor = 'pointer';
                 
                 notificationCount.textContent = pendingCount;
@@ -2404,14 +2405,14 @@
                 notificationCard.className = 'stat-card notification-card notification-hidden';
                 notificationCard.onclick = null;
                 
-                // État caché
-                notificationCard.style.background = 'rgba(248, 249, 250, 0.5)';
-                notificationCard.style.color = 'rgba(248, 249, 250, 0.5)';
-                notificationCard.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.2)';
+                // VERT DÉGRADÉ quand il n'y a pas de notifications
+                notificationCard.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+                notificationCard.style.color = 'white';
+                notificationCard.style.boxShadow = '0 8px 25px rgba(40, 167, 69, 0.4)';
                 notificationCard.style.cursor = 'default';
                 
                 notificationCount.textContent = '0';
-                console.log('👻 Carte notification masquée');
+                console.log('👻 Carte notification verte (aucune notification)');
             }
         }
 

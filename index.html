@@ -187,7 +187,6 @@
             box-shadow: 0 6px 20px rgba(0,0,0,0.2);
         }
 
-        /* Carte centrale verticale */
         .stat-card.notification-card {
             grid-row: 1 / -1;
             grid-column: 2;
@@ -202,14 +201,26 @@
         }
 
         .stat-card.notification-pending {
-            background: linear-gradient(135deg, #ff4757 0%, #ff3838 100%);
-            color: white;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%) !important;
+            color: white !important;
             animation: pulse 2s infinite;
+            cursor: pointer !important;
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4) !important;
+        }
+
+        .stat-card.notification-pending:hover {
+            transform: scale(1.05) !important;
+            box-shadow: 0 12px 30px rgba(40, 167, 69, 0.6) !important;
+        }
+
+        .stat-card.notification-pending:hover {
+            transform: scale(1.05) !important;
+            box-shadow: 0 12px 30px rgba(255, 71, 87, 0.6) !important;
         }
 
         .stat-card.notification-hidden {
             background: linear-gradient(135deg, #f8f9fa 0%, #f8f9fa 100%);
-            color: #f8f9fa;
+            color: #316396;     /* #f8f9fa */
             cursor: default;
         }
 
@@ -246,14 +257,6 @@
         .stat-card p {
             font-size: 12px;
             opacity: 0.9;
-        }
-
-        .stat-card.notification-pending p {
-            opacity: 1;
-        }
-
-        .stat-card.notification-hidden p {
-            opacity: 0;
         }
 
         .recent-items {
@@ -620,7 +623,6 @@
             font-size: 14px;
         }
 
-        /* Paramètres sous-onglets */
         .params-tabs {
             display: flex;
             background: #f8f9fa;
@@ -711,11 +713,40 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            width: 50%; /* Réduction de 20% par rapport à la largeur pleine */
+        }
+
+        .users-action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .logout-btn-users {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 50%; /* Même largeur que le bouton inviter */
         }
 
         .add-param-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .logout-btn-users:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
         }
 
         .empty-params {
@@ -732,7 +763,6 @@
             padding: 40px 20px;
         }
 
-        /* Planning styles */
         .agenda-header {
             display: flex;
             justify-content: space-between;
@@ -873,7 +903,6 @@
             transform: scale(1.1);
         }
 
-        /* Notifications & Users styles */
         .settings-card {
             background: white;
             border-radius: 12px;
@@ -957,7 +986,6 @@
             transform: translateX(20px);
         }
 
-        /* User card styles */
         .user-card {
             background: white;
             border-radius: 12px;
@@ -1076,7 +1104,6 @@
             color: #6c757d;
         }
 
-        /* Checkbox styles */
         .checkbox-group {
             display: flex;
             flex-direction: column;
@@ -1101,7 +1128,6 @@
             margin: 0;
         }
 
-        /* Notification history */
         .notification-item {
             background: white;
             border-radius: 8px;
@@ -1153,7 +1179,6 @@
             width: 320px;
         }
 
-        /* Test notification button */
         .test-notification-btn {
             background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
             color: white;
@@ -1171,27 +1196,6 @@
             box-shadow: 0 2px 8px rgba(23, 162, 184, 0.3);
         }
 
-        /* Responsive */
-        @media screen and (max-width: 420px) {
-            .container {
-                max-width: 100%;
-                box-shadow: none;
-            }
-            
-            .modal-content {
-                width: 95%;
-                max-width: 350px;
-            }
-            
-            .form-row {
-                grid-template-columns: 1fr 1fr !important;
-                gap: 6px !important;
-            }
-        }
-
-        /* Supprimer les anciens styles dashboard */
-
-        /* Styles pour les groupes de notifications */
         .notification-group-item {
             background: #f8f9fa;
             border: 1px solid #e9ecef;
@@ -1219,6 +1223,22 @@
             float: right;
         }
 
+        @media screen and (max-width: 420px) {
+            .container {
+                max-width: 100%;
+                box-shadow: none;
+            }
+            
+            .modal-content {
+                width: 95%;
+                max-width: 350px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr 1fr !important;
+                gap: 6px !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1260,7 +1280,6 @@
             </div>
             <div class="user-info">
                 <div id="currentUserInitials" class="user-initials">UP</div>
-                <button onclick="logoutUser()" class="logout-btn">🚪 Déconnexion</button>
             </div>
         </div>
 
@@ -1285,7 +1304,6 @@
 
         <!-- Dashboard -->
         <div id="dashboard" class="tab-content active">
-            <!-- Nouveau layout avec structure HTML fixe -->
             <div class="dashboard-stats" style="position: relative !important; width: 330px !important; height: 140px !important; background: #ffffff !important; border-radius: 18px !important; padding: 10px !important; margin: 5px auto 5px auto !important; box-sizing: border-box !important;">
                 <div class="stat-card" style="position: absolute !important; left: 4px !important; top: 15px !important; width: 100px !important; height: 50px !important; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important; color: white !important; border-radius: 12px !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; border: 2px solid rgba(255, 255, 255, 0.3) !important; box-shadow: 0 5px 15px rgba(240, 147, 251, 0.3) !important;">
                     <div style="font-size: 18px !important; font-weight: bold !important; margin: 0 0 2px 0 !important;" id="statEnDiffusion">0</div>
@@ -1307,7 +1325,7 @@
                     <div style="font-size: 13px !important; margin: 0 !important;">Archivées</div>
                 </div>
                 
-                <div id="notificationCard" class="stat-card notification-card notification-hidden" onclick="sendPendingNotifications()" style="position: absolute !important; left: 219px !important; top: 15px !important; width: 80px !important; height: 110px !important; background: rgba(248, 249, 250, 0.5) !important; color: rgba(248, 249, 250, 0.5) !important; border-radius: 12px !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; border: 3px solid rgba(255, 255, 255, 0.8) !important; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2) !important; cursor: pointer !important; font-size: 12px !important;">
+                <div id="notificationCard" class="stat-card notification-card notification-hidden" onclick="sendPendingNotifications()" style="position: absolute !important; left: 100px !important; top: 4px !important; width: 80px !important; height: 110px !important; background: rgba(248, 249, 250, 0.5) !important; color: rgba(248, 249, 250, 0.5) !important; border-radius: 12px !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; border: 3px solid rgba(255, 255, 255, 0.8) !important; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2) !important; cursor: pointer !important; font-size: 12px !important;">
                     <div style="font-size: 18px !important; font-weight: bold !important; margin: 0 0 2px 0 !important;" id="notificationCount">0</div>
                     <div style="font-size: 13px !important; margin: 0 !important;">à notifier</div>
                 </div>
@@ -1318,12 +1336,6 @@
                 <div class="empty-state">
                     Aucune affiche en diffusion pour le moment
                 </div>
-            </div>
-
-            <!-- Affiches en attente de notification -->
-            <div id="pendingNotificationsSection" class="recent-items" style="display:none;">
-                <h3>📧 Affiches à notifier</h3>
-                <div id="pendingNotificationsList"></div>
             </div>
         </div>
 
@@ -1530,9 +1542,14 @@
 
             <!-- Users -->
             <div id="users-params" class="params-content">
-                <button class="add-param-btn" onclick="openInviteUserModal()">
-                    ✉️ Inviter un utilisateur
-                </button>
+                <div class="users-action-buttons">
+                    <button class="add-param-btn" onclick="openInviteUserModal()">
+                        ✉️ Inviter un utilisateur
+                    </button>
+                    <button class="logout-btn-users" onclick="logoutUser()">
+                        🚪 Déconnexion
+                    </button>
+                </div>
 
                 <div class="settings-card">
                     <h4>👥 Utilisateurs de l'application (Max 6)</h4>
@@ -1991,17 +2008,15 @@
         </div>
     </div>
 
-    <!-- EmailJS SDK - Version 4 (dernière) -->
+    <!-- EmailJS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     
     <!-- Firebase -->
     <script type="module">
-        // Import Firebase modules
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
         import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, getDoc, serverTimestamp, query, orderBy, where, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
 
-        // Configuration Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAtZUiFPFrqU-PiMpIOrPIwrjJLv_NsKRU",
             authDomain: "gestion-affichage-publicitaire.firebaseapp.com",
@@ -2011,7 +2026,6 @@
             appId: "1:715445646165:web:4da37e196e6a772f0735dc"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -2026,6 +2040,7 @@
         window.users = [];
         window.notifications = [];
         window.pendingNotifications = [];
+        window.lastLoadedAffiches = [];
         window.emailJSConfig = {
             serviceId: 'service_ec05ih4',
             templateCreation: 'template_nrfn4mh',
@@ -2033,7 +2048,7 @@
             publicKey: ''
         };
 
-        // Initialiser EmailJS avec la nouvelle API
+        // Initialiser EmailJS
         function initEmailJS() {
             if (window.emailJSConfig.publicKey) {
                 try {
@@ -2043,7 +2058,6 @@
                         cleanKey.startsWith('user_') || 
                         /^[A-Za-z0-9_]+$/.test(cleanKey) && cleanKey.length >= 10) {
                         
-                        // Nouvelle API EmailJS v4
                         emailjs.init({
                             publicKey: cleanKey,
                         });
@@ -2193,6 +2207,7 @@
             await loadAffiches();
             await loadUsers();
             await loadNotifications();
+            await loadPendingNotifications(); // AJOUTER CETTE LIGNE
             await loadEmailJSConfig();
             
             setTimeout(() => {
@@ -2219,7 +2234,6 @@
                     const configData = configDoc.data();
                     window.emailJSConfig = { ...window.emailJSConfig, ...configData };
                     
-                    // Mettre à jour les champs du formulaire
                     document.getElementById('emailjs-service').value = window.emailJSConfig.serviceId || 'service_ec05ih4';
                     document.getElementById('emailjs-template-creation').value = window.emailJSConfig.templateCreation || 'template_nrfn4mh';
                     document.getElementById('emailjs-template-resume').value = window.emailJSConfig.templateResume || 'template_j3uluqp';
@@ -2259,7 +2273,7 @@
             }
         }
 
-        // Tester EmailJS avec la nouvelle API
+        // Tester EmailJS
         async function testEmailJS() {
             const publicKey = document.getElementById('emailjs-public-key').value.trim();
             
@@ -2277,15 +2291,9 @@
                 return;
             }
 
-            if (publicKey.includes('service_') || publicKey.includes('template_')) {
-                showErrorMessage('❌ Vous avez entré un Service ID ou Template ID au lieu de la Public Key.');
-                return;
-            }
-
             try {
                 console.log('🔧 Test avec clé:', publicKey);
                 
-                // Réinitialiser EmailJS avec la nouvelle API v4
                 emailjs.init({
                     publicKey: publicKey,
                 });
@@ -2300,14 +2308,6 @@
                     date: new Date().toLocaleDateString('fr-FR')
                 };
 
-                console.log('📧 Test EmailJS v4 avec les paramètres:', {
-                    serviceId: window.emailJSConfig.serviceId,
-                    templateId: window.emailJSConfig.templateCreation,
-                    publicKey: publicKey,
-                    toEmail: window.currentUser.email
-                });
-
-                // Nouvelle syntaxe EmailJS v4
                 await emailjs.send(
                     window.emailJSConfig.serviceId,
                     window.emailJSConfig.templateCreation,
@@ -2322,60 +2322,74 @@
                 
                 let errorMessage = 'Erreur inconnue';
                 if (error.status === 400) {
-                    errorMessage = `Erreur 400: Configuration invalide.\n\n💡 Vérifications:\n• Clé: "${publicKey}"\n• Service: "${window.emailJSConfig.serviceId}"\n• Template: "${window.emailJSConfig.templateCreation}"`;
+                    errorMessage = `Erreur 400: Configuration invalide.`;
                 } else if (error.status === 401) {
                     errorMessage = `Erreur 401: Clé publique "${publicKey}" non autorisée.`;
                 } else if (error.status === 404) {
                     errorMessage = `Erreur 404: Service ou Template introuvable.`;
-                } else if (error.status === 418) {
-                    errorMessage = `Erreur 418: Version SDK non supportée (corrigée avec v4).`;
                 } else if (error.text) {
                     errorMessage = `Erreur: ${error.text}`;
                 } else {
-                    errorMessage = `Erreur: ${error.message || 'Inconnue'}\n\nCode: ${error.status || 'N/A'}`;
+                    errorMessage = `Erreur: ${error.message || 'Inconnue'}`;
                 }
                 
-                showErrorMessage(`❌ Test EmailJS échoué:\n\n${errorMessage}`);
+                showErrorMessage(`❌ Test EmailJS échoué: ${errorMessage}`);
             }
         }
 
-        // ========= GESTION DES NOTIFICATIONS GROUPÉES =========
-
-        // Ajouter une affiche aux notifications en attente
-        function addToPendingNotifications(affiche) {
-            if (!window.pendingNotifications) {
-                window.pendingNotifications = [];
+        // Ajouter une affiche aux notifications en attente (AVEC PERSISTANCE)
+        async function addToPendingNotifications(affiche) {
+            try {
+                // Ajouter à la collection Firebase
+                await addDoc(collection(db, 'pendingNotifications'), {
+                    afficheId: affiche.id,
+                    libelle: affiche.libelle,
+                    prix: affiche.prix,
+                    unite: affiche.unite,
+                    origine: affiche.origine,
+                    dateCreation: serverTimestamp(),
+                    createdBy: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`,
+                    userId: window.currentUser.uid
+                });
+                
+                console.log('📧 Affiche ajoutée aux notifications en attente (persistante):', affiche.libelle);
+                
+                // Recharger les notifications en attente
+                await loadPendingNotifications();
+                
+            } catch (error) {
+                console.error('❌ Erreur ajout notification en attente:', error);
             }
-            
-            window.pendingNotifications.push({
-                id: affiche.id,
-                libelle: affiche.libelle,
-                prix: affiche.prix,
-                unite: affiche.unite,
-                origine: affiche.origine,
-                dateCreation: new Date(),
-                createdBy: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`
-            });
-            
-            console.log('📧 Affiche ajoutée aux notifications en attente:', affiche.libelle);
-            console.log('📧 Total en attente:', window.pendingNotifications.length);
-            
-            updateNotificationCard();
-            updatePendingNotificationsDisplay();
         }
 
         // Mettre à jour la carte de notification
         function updateNotificationCard() {
             const notificationCard = document.getElementById('notificationCard');
             const notificationCount = document.getElementById('notificationCount');
-            const pendingCount = window.pendingNotifications.length;
+            const pendingCount = window.pendingNotifications ? window.pendingNotifications.length : 0;
             
             if (pendingCount > 0) {
-                notificationCard.className = 'stat-card notification-pending';
+                notificationCard.className = 'stat-card notification-card notification-pending';
+                notificationCard.onclick = sendPendingNotifications;
+                
+                // FORCER le style inline pour la couleur verte
+                notificationCard.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+                notificationCard.style.color = 'white';
+                notificationCard.style.boxShadow = '0 8px 25px rgba(40, 167, 69, 0.4)';
+                notificationCard.style.cursor = 'pointer';
+                
                 notificationCount.textContent = pendingCount;
                 console.log('🔔 Carte notification activée:', pendingCount, 'affiches en attente');
             } else {
-                notificationCard.className = 'stat-card notification-hidden';
+                notificationCard.className = 'stat-card notification-card notification-hidden';
+                notificationCard.onclick = null;
+                
+                // FORCER le style inline pour l'état caché
+                notificationCard.style.background = 'rgba(248, 249, 250, 0.5)';
+                notificationCard.style.color = 'rgba(248, 249, 250, 0.5)';
+                notificationCard.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.2)';
+                notificationCard.style.cursor = 'default';
+                
                 notificationCount.textContent = '0';
                 console.log('👻 Carte notification masquée');
             }
@@ -2383,30 +2397,15 @@
 
         // Mettre à jour l'affichage des notifications en attente
         function updatePendingNotificationsDisplay() {
-            const section = document.getElementById('pendingNotificationsSection');
-            const list = document.getElementById('pendingNotificationsList');
-            
-            if (window.pendingNotifications.length > 0) {
-                section.style.display = 'block';
-                
-                const itemsHtml = window.pendingNotifications.map(notif => `
-                    <div class="notification-group-item">
-                        <h6>${notif.libelle}</h6>
-                        <p>${notif.prix}€/${notif.unite} • ${notif.origine}</p>
-                        <span class="time">${notif.dateCreation.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
-                    </div>
-                `).join('');
-                
-                list.innerHTML = itemsHtml;
-            } else {
-                section.style.display = 'none';
-            }
+            // Ne fait plus rien - on utilise seulement le bouton
+            console.log('📧 Notifications en attente:', window.pendingNotifications.length);
         }
 
-        // Envoyer les notifications en attente avec la nouvelle API
+        // Envoyer les notifications en attente (AVEC SUPPRESSION)
         async function sendPendingNotifications() {
             if (window.pendingNotifications.length === 0) {
                 console.log('📧 Aucune notification en attente');
+                showErrorMessage('📧 Aucune notification en attente');
                 return;
             }
 
@@ -2418,7 +2417,6 @@
             try {
                 console.log('📧 Envoi des notifications groupées...');
                 
-                // Réinitialiser EmailJS avec la nouvelle API v4
                 emailjs.init({
                     publicKey: window.emailJSConfig.publicKey.trim(),
                 });
@@ -2436,12 +2434,6 @@
                     user_name: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`,
                     date: new Date().toLocaleDateString('fr-FR')
                 };
-
-                console.log('📧 Envoi avec EmailJS v4:', {
-                    serviceId: window.emailJSConfig.serviceId,
-                    templateId: window.emailJSConfig.templateCreation,
-                    count: window.pendingNotifications.length
-                });
 
                 await emailjs.send(
                     window.emailJSConfig.serviceId,
@@ -2461,9 +2453,16 @@
                     }
                 });
 
+                // SUPPRIMER les notifications en attente de Firebase
+                for (const notification of window.pendingNotifications) {
+                    if (notification.docId) {
+                        await deleteDoc(doc(db, 'pendingNotifications', notification.docId));
+                    }
+                }
+
                 showSuccessMessage(`✅ Notification envoyée pour ${window.pendingNotifications.length} affiche(s)`);
                 
-                // Vider les notifications en attente
+                // Vider les notifications en attente en mémoire
                 window.pendingNotifications = [];
                 updateNotificationCard();
                 updatePendingNotificationsDisplay();
@@ -2474,14 +2473,10 @@
                 console.error('❌ Erreur envoi notifications groupées:', error);
                 
                 let errorMessage = 'Erreur inconnue';
-                if (error.status === 418) {
-                    errorMessage = 'Version SDK obsolète (corrigée avec v4)';
-                } else if (error.status === 400) {
+                if (error.status === 400) {
                     errorMessage = 'Configuration EmailJS invalide';
                 } else if (error.status === 401) {
                     errorMessage = 'Clé publique non autorisée';
-                } else if (error.status === 404) {
-                    errorMessage = 'Service ou Template introuvable';
                 } else if (error.text) {
                     errorMessage = error.text;
                 } else {
@@ -2492,15 +2487,11 @@
             }
         }
 
-        // ========= PLANIFICATEUR DE RÉSUMÉ QUOTIDIEN =========
-
+        // Planificateur de résumé quotidien
         function startDailyResumeScheduler() {
             console.log('⏰ Démarrage du planificateur de résumé quotidien');
             
-            // Vérifier chaque minute si c'est l'heure du résumé (08h00)
             setInterval(checkDailyResumeTime, 60000);
-            
-            // Vérification immédiate pour les tests
             setTimeout(checkDailyResumeTime, 5000);
         }
 
@@ -2509,7 +2500,6 @@
             const hour = now.getHours();
             const minute = now.getMinutes();
             
-            // Déclencher à 08h00 précises
             if (hour === 8 && minute === 0) {
                 console.log('⏰ Heure du résumé quotidien - 08h00');
                 await sendDailyResume();
@@ -2529,7 +2519,6 @@
                 const yesterday = new Date(today);
                 yesterday.setDate(today.getDate() - 1);
                 
-                // Récupérer les données pour le résumé
                 const affiches = window.lastLoadedAffiches || [];
                 
                 const stats = {
@@ -2580,7 +2569,6 @@ Excellente journée !
                     templateParams
                 );
 
-                // Enregistrer dans l'historique
                 await addNotification({
                     type: 'daily_resume',
                     message: 'Résumé quotidien envoyé',
@@ -2604,8 +2592,7 @@ Excellente journée !
             }
         }
 
-        // ========= GESTION DES ORIGINES =========
-        
+        // Gestion des origines
         async function loadOrigines() {
             try {
                 const q = query(collection(db, 'origines'), orderBy('nom', 'asc'));
@@ -2737,8 +2724,7 @@ Excellente journée !
             }
         }
 
-        // ========= GESTION DES UNITÉS =========
-        
+        // Gestion des unités
         async function loadUnites() {
             try {
                 const q = query(collection(db, 'unites'), orderBy('nom', 'asc'));
@@ -2870,8 +2856,7 @@ Excellente journée !
             }
         }
 
-        // ========= GESTION DES AFFICHES =========
-        
+        // Gestion des affiches
         async function loadAffiches() {
             try {
                 const q = query(collection(db, 'affiches'), orderBy('dateCreation', 'desc'));
@@ -2904,14 +2889,12 @@ Excellente journée !
                     notificationSent: false
                 });
                 
-                // Ajouter aux notifications en attente si le groupement est activé
-                const groupNotifications = document.getElementById('group-notifications')?.checked !== false;
-                if (groupNotifications) {
-                    addToPendingNotifications({ id: docRef.id, ...affiche });
-                } else {
-                    // Envoyer notification immédiate si groupement désactivé
-                    await sendImmediateNotification(affiche);
-                }
+            const groupNotifications = document.getElementById('group-notifications')?.checked !== false;
+            if (groupNotifications) {
+                await addToPendingNotifications({ id: docRef.id, ...affiche });
+            } else {
+                await sendImmediateNotification(affiche);
+            }
                 
                 await loadAffiches();
                 return docRef.id;
@@ -2928,7 +2911,6 @@ Excellente journée !
             }
 
             try {
-                // Réinitialiser EmailJS avec la nouvelle API v4
                 emailjs.init({
                     publicKey: window.emailJSConfig.publicKey.trim(),
                 });
@@ -3007,8 +2989,7 @@ Excellente journée !
             }
         }
 
-        // ========= GESTION DES UTILISATEURS =========
-        
+        // Gestion des utilisateurs
         async function loadUsers() {
             try {
                 const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
@@ -3216,8 +3197,7 @@ Excellente journée !
             document.getElementById('activeUsers').textContent = `${activeUsers} utilisateur(s) connecté(s)`;
         }
 
-        // ========= GESTION DES NOTIFICATIONS =========
-        
+        // Gestion des notifications
         async function loadNotifications() {
             try {
                 const q = query(
@@ -3249,6 +3229,46 @@ Excellente journée !
                 window.notifications = [];
                 displayNotificationHistory([]);
                 updateNotificationStats([]);
+            }
+        }
+
+        // Charger les notifications en attente depuis Firebase
+        async function loadPendingNotifications() {
+            try {
+                const q = query(
+                    collection(db, 'pendingNotifications'), 
+                    where('userId', '==', window.currentUser.uid),
+                    orderBy('dateCreation', 'desc')
+                );
+                const querySnapshot = await getDocs(q);
+                
+                window.pendingNotifications = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.dateCreation && data.dateCreation.toDate) {
+                        data.dateCreation = data.dateCreation.toDate();
+                    }
+                    window.pendingNotifications.push({ 
+                        docId: doc.id, // ID du document Firebase
+                        ...data 
+                    });
+                });
+                
+                console.log('📧 Notifications en attente chargées:', window.pendingNotifications.length);
+                updateNotificationCard();
+                updatePendingNotificationsDisplay();
+
+                // Debug: forcer la mise à jour après un délai
+                setTimeout(() => {
+                    console.log('🔄 Force update notification card');
+                    updateNotificationCard();
+                }, 500);
+
+            } catch (error) {
+                console.error('❌ Erreur chargement notifications en attente:', error);
+                window.pendingNotifications = [];
+                updateNotificationCard();
+                updatePendingNotificationsDisplay();
             }
         }
 
@@ -3452,8 +3472,7 @@ Excellente journée !
             setInterval(checkExpiringAffiches, 3600000);
         }
 
-        // ========= MISE À JOUR DES SELECT =========
-        
+        // Mise à jour des select
         function updateSelectOptions() {
             const origineSelects = ['origine', 'editOrigine'];
             origineSelects.forEach(selectId => {
@@ -3506,8 +3525,7 @@ Excellente journée !
             });
         }
 
-        // ========= FONCTIONS D'AFFICHAGE =========
-        
+        // Fonctions d'affichage
         function displayAffiches(affiches) {
             console.log('🎯 displayAffiches appelée avec:', affiches.length, 'affiches');
             
@@ -3680,8 +3698,7 @@ Excellente journée !
             container.innerHTML = planningHtml;
         }
 
-        // ========= FONCTIONS UTILITAIRES =========
-        
+        // Fonctions utilitaires
         function getFamilleIconClass(famille) {
             const mapping = {
                 'fruits-legumes': 'category-fruits',
@@ -3822,6 +3839,7 @@ Excellente journée !
         window.saveEmailJSConfig = saveEmailJSConfig;
         window.testEmailJS = testEmailJS;
         window.sendPendingNotifications = sendPendingNotifications;
+        window.loadPendingNotifications = loadPendingNotifications;
         window.showErrorMessage = showErrorMessage;
         window.showSuccessMessage = showSuccessMessage;
         window.getFamilleIconClass = getFamilleIconClass;
@@ -3830,17 +3848,15 @@ Excellente journée !
         window.getStatusText = getStatusText;
         window.formatDate = formatDate;
         window.formatDateTime = formatDateTime;
+        window.updatePlanningTab = updatePlanningTab;
 
     </script>
 
     <script>
         // Variables globales pour le planning
-        window.lastLoadedAffiches = [];
-        window.pendingNotifications = [];
         let currentWeekStart = new Date(2025, 6, 8);
 
-        // ========= FONCTIONS DE L'INTERFACE =========
-        
+        // Fonctions de l'interface
         function showTab(tabName) {
             console.log('🔄 Changement vers onglet:', tabName);
             
@@ -3859,7 +3875,7 @@ Excellente journée !
                 
                 if (window.lastLoadedAffiches && window.lastLoadedAffiches.length > 0) {
                     console.log('🔄 Forcer mise à jour planning avec données existantes:', window.lastLoadedAffiches.length, 'affiches');
-                    updatePlanningTab(window.lastLoadedAffiches);
+                    window.updatePlanningTab(window.lastLoadedAffiches);
                 }
             }
         }
@@ -3875,8 +3891,7 @@ Excellente journée !
             event.target.closest('.params-tab').classList.add('active');
         }
 
-        // ========= MODALS AFFICHES =========
-        
+        // Modals affiches
         function openModal() {
             document.getElementById('createModal').style.display = 'block';
         }
@@ -3911,7 +3926,6 @@ Excellente journée !
 
         function closeEditModal() {
             document.getElementById('editModal').style.display = 'none';
-            window.currentEditingAffiche = null;
         }
 
         function confirmDeleteAffiche(id, libelle) {
@@ -3920,8 +3934,7 @@ Excellente journée !
             }
         }
 
-        // ========= MODALS UTILISATEURS =========
-        
+        // Modals utilisateurs
         function openInviteUserModal() {
             document.getElementById('inviteUserModal').style.display = 'block';
         }
@@ -3962,8 +3975,7 @@ Excellente journée !
             }
         }
 
-        // ========= MODALS ORIGINES =========
-        
+        // Modals origines
         function openAddOriginModal() {
             document.getElementById('addOriginModal').style.display = 'block';
         }
@@ -3984,7 +3996,6 @@ Excellente journée !
 
         function closeEditOriginModal() {
             document.getElementById('editOriginModal').style.display = 'none';
-            window.currentEditingOrigine = null;
         }
 
         function confirmDeleteOrigine(id, nom) {
@@ -3993,8 +4004,7 @@ Excellente journée !
             }
         }
 
-        // ========= MODALS UNITES =========
-        
+        // Modals unités
         function openAddUniteModal() {
             document.getElementById('addUniteModal').style.display = 'block';
         }
@@ -4015,7 +4025,6 @@ Excellente journée !
 
         function closeEditUniteModal() {
             document.getElementById('editUniteModal').style.display = 'none';
-            window.currentEditingUnite = null;
         }
 
         function confirmDeleteUnite(id, nom) {
@@ -4024,15 +4033,14 @@ Excellente journée !
             }
         }
 
-        // ========= PLANNING =========
-        
+        // Planning
         function changeWeek(direction) {
             currentWeekStart.setDate(currentWeekStart.getDate() + (direction * 7));
             updateWeekHeader();
             
             if (window.lastLoadedAffiches && window.lastLoadedAffiches.length > 0) {
                 console.log('🔄 Mise à jour planning après changement de semaine');
-                updatePlanningTab(window.lastLoadedAffiches);
+                window.updatePlanningTab(window.lastLoadedAffiches);
             }
         }
 
@@ -4073,59 +4081,6 @@ Excellente journée !
             return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
         }
 
-        function updatePlanningTab(affiches) {
-            console.log('📅 updatePlanningTab appelée avec:', affiches.length, 'affiches');
-            
-            const container = document.querySelector('#planningAffiches');
-            if (!container) {
-                console.log('❌ Container #planningAffiches non trouvé');
-                return;
-            }
-            
-            const affichesPlanning = affiches.filter(a => {
-                if (a.statut === 'archivee') return false;
-                return isAfficheActiveInWeek(a, currentWeekStart);
-            });
-            
-            if (affichesPlanning.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        Aucune affiche active pour cette semaine
-                    </div>
-                `;
-                return;
-            }
-            
-            const planningHtml = affichesPlanning.map(affiche => {
-                const iconClass = window.getFamilleIconClass(affiche.famille);
-                const icon = window.getFamilleIcon(affiche.famille);
-                const statusClass = `status-${affiche.statut}`;
-                const statusText = window.getStatusText(affiche.statut);
-                const dateDebut = window.formatDate(affiche.dateDebut);
-                const dateFin = window.formatDate(affiche.dateFin);
-                
-                return `
-                    <div class="planning-item ${statusClass}">
-                        <div class="planning-item-icon ${iconClass}">${icon}</div>
-                        <div class="planning-item-info">
-                            <h4>${affiche.libelle}</h4>
-                            <p>${affiche.prix}€/${affiche.unite} • ${affiche.origine}</p>
-                            <p class="item-dates">${dateDebut} → ${dateFin}</p>
-                        </div>
-                        <div class="planning-item-actions">
-                            <span class="planning-status-badge ${statusClass}">${statusText}</span>
-                            <div class="planning-item-actions-buttons">
-                                <button class="action-btn edit-btn" onclick="editAffiche('${affiche.id}')">✏️</button>
-                                <button class="action-btn delete-btn" onclick="confirmDeleteAffiche('${affiche.id}', '${affiche.libelle}')">🗑️</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
-            container.innerHTML = planningHtml;
-        }
-
         function isAfficheActiveInWeek(affiche, weekStart) {
             if (!affiche.dateDebut || !affiche.dateFin) return false;
             
@@ -4142,8 +4097,7 @@ Excellente journée !
             return afficheDebut <= weekEnd && afficheFin >= weekStart;
         }
 
-        // ========= RECHERCHE ET FILTRES =========
-        
+        // Recherche et filtres
         function setupSearch() {
             const affichesSearch = document.querySelector('#affiches .search-bar input');
             if (affichesSearch) {
@@ -4205,8 +4159,7 @@ Excellente journée !
             });
         }
 
-        // ========= EVENT LISTENERS =========
-        
+        // Event listeners
         document.addEventListener('DOMContentLoaded', function() {
             // Définir les dates par défaut
             const today = new Date();
@@ -4231,7 +4184,6 @@ Excellente journée !
                 
                 const formData = new FormData(this);
                 
-                // Gérer les valeurs "autre" pour origine et unité
                 let origine = formData.get('origine');
                 let unite = formData.get('unite');
                 
@@ -4276,7 +4228,6 @@ Excellente journée !
                     closeModal();
                     this.reset();
                     
-                    // Remettre les dates par défaut
                     const today = new Date();
                     const nextWeek = new Date();
                     nextWeek.setDate(today.getDate() + 7);
@@ -4506,7 +4457,6 @@ Excellente journée !
                                 window.currentUserData.notificationChannels[prefType] = this.checked;
                             }
                             
-                            // Sauvegarder en base
                             await window.updateUser(window.currentUserData.id, {
                                 notificationPreferences: window.currentUserData.notificationPreferences,
                                 notificationChannels: window.currentUserData.notificationChannels
@@ -4515,7 +4465,7 @@ Excellente journée !
                             window.showSuccessMessage('✅ Préférences mises à jour');
                         } catch (error) {
                             window.showErrorMessage('❌ Erreur lors de la sauvegarde');
-                            this.checked = !this.checked; // Revenir à l'état précédent
+                            this.checked = !this.checked;
                         }
                     }
                 });
@@ -4547,7 +4497,6 @@ Excellente journée !
         window.confirmDeleteUnite = confirmDeleteUnite;
         window.changeWeek = changeWeek;
         window.updateWeekHeader = updateWeekHeader;
-        window.updatePlanningTab = updatePlanningTab;
     </script>
 </body>
 </html>

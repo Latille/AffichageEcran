@@ -2231,6 +2231,13 @@
             await loadPendingNotifications(); // AJOUTER CETTE LIGNE
             await loadEmailJSConfig();
             
+            // AJOUTER CES LIGNES :
+            // Corriger les retards d'état
+            await fixCurrentStateDelays();
+            
+            // Démarrer le système automatique
+            startAutomaticStateChecker();
+            
             setTimeout(() => {
                 setupSearch();
                 setupFilters();
@@ -3253,6 +3260,190 @@ Excellente journée !
             }
         }
 
+        // À ajouter après la fonction loadNotifications()
+        async function checkAndUpdateAfficheStates() {
+            try {
+                console.log('🔄 Vérification automatique des états d\'affiches...');
+                
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                
+                // Récupérer toutes les affiches depuis Firebase
+                const q = query(collection(db, 'affiches'), orderBy('dateCreation', 'desc'));
+                const querySnapshot = await getDocs(q);
+                const affiches = [];
+                
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    affiches.push({ id: doc.id, ...data });
+                });
+                
+                let changementsEffectues = 0;
+                
+                for (const affiche of affiches) {
+                    const dateDebut = new Date(affiche.dateDebut);
+                    const dateFin = new Date(affiche.dateFin);
+                    
+                    // Normaliser les dates (ignorer l'heure)
+                    const debutNormalized = new Date(dateDebut.getFullYear(), dateDebut.getMonth(), dateDebut.getDate());
+                    const finNormalized = new Date(dateFin.getFullYear(), dateFin.getMonth(), dateFin.getDate());
+                    
+                    let nouvelEtat = null;
+                    let motif = '';
+                    
+                    // RÈGLE 1: Programmée → En diffusion (si date début = aujourd'hui ou passée)
+                    if (affiche.statut === 'programmee' && today >= debutNormalized) {
+                        nouvelEtat = 'en-diffusion';
+                        motif = `Date début atteinte (${dateDebut.toLocaleDateString('fr-FR')})`;
+                    }
+                    
+                    // RÈGLE 2: En diffusion → Archivée (si date fin = hier ou avant)
+                    else if (affiche.statut === 'en-diffusion' && today > finNormalized) {
+                        nouvelEtat = 'archivee';
+                        motif = `Date fin dépassée (${dateFin.toLocaleDateString('fr-FR')})`;
+                    }
+                    
+                    // Effectuer la mise à jour si nécessaire
+                    if (nouvelEtat && nouvelEtat !== affiche.statut) {
+                        await updateAffiche(affiche.id, { 
+                            statut: nouvelEtat,
+                            changementAutomatique: true,
+                            dateChangementAuto: serverTimestamp(),
+                            motifChangement: motif
+                        });
+                        
+                        console.log(`✅ Affiche "${affiche.libelle}" passée de "${affiche.statut}" à "${nouvelEtat}" - ${motif}`);
+                        changementsEffectues++;
+                        
+                        // Envoyer notification de changement d'état
+                        await sendStatusChangeNotification(nouvelEtat, affiche);
+                    }
+                }
+                
+                if (changementsEffectues > 0) {
+                    console.log(`🎯 ${changementsEffectues} affiche(s) mise(s) à jour automatiquement`);
+                    // Recharger les données pour mettre à jour l'interface
+                    await loadAffiches();
+                } else {
+                    console.log('✅ Toutes les affiches sont à jour');
+                }
+                
+            } catch (error) {
+                console.error('❌ Erreur lors de la vérification automatique:', error);
+            }
+        }
+
+        // À ajouter après checkAndUpdateAfficheStates()
+        function startAutomaticStateChecker() {
+            console.log('⏰ Démarrage du planificateur automatique des états d\'affiches');
+            
+            // Vérification immédiate au démarrage (après 10 secondes)
+            setTimeout(() => {
+                console.log('🚀 Vérification initiale des états');
+                checkAndUpdateAfficheStates();
+            }, 10000);
+            
+            // Vérification toutes les heures
+            setInterval(() => {
+                console.log('⏰ Vérification horaire automatique des états');
+                checkAndUpdateAfficheStates();
+            }, 3600000); // 3600000 ms = 1 heure
+            
+            // Vérification spécifique aux heures critiques
+            setInterval(() => {
+                const now = new Date();
+                const hour = now.getHours();
+                const minute = now.getMinutes();
+                
+                // À 00h01 : vérifier spécifiquement les passages en diffusion
+                if (hour === 0 && minute === 1) {
+                    console.log('🌅 Vérification 00h01 - Passages en diffusion');
+                    checkAndUpdateAfficheStates();
+                }
+                
+                // À 23h59 : vérifier spécifiquement les archivages
+                if (hour === 23 && minute === 59) {
+                    console.log('🌙 Vérification 23h59 - Archivages');
+                    checkAndUpdateAfficheStates();
+                }
+                
+            }, 60000); // Vérifier chaque minute pour détecter les heures critiques
+        }
+
+        // À ajouter après startAutomaticStateChecker()
+        async function fixCurrentStateDelays() {
+            try {
+                console.log('🔧 Correction des retards d\'état actuels...');
+                
+                // Date actuelle : 18/07/2025 05h00
+                const aujourdhui = new Date(2025, 6, 18); // Mois 6 = juillet (0-indexé)
+                const hier = new Date(2025, 6, 17);
+                
+                const q = query(collection(db, 'affiches'));
+                const querySnapshot = await getDocs(q);
+                const affiches = [];
+                
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    affiches.push({ id: doc.id, ...data });
+                });
+                
+                let correctionsEffectuees = 0;
+                
+                for (const affiche of affiches) {
+                    const dateDebut = new Date(affiche.dateDebut);
+                    const dateFin = new Date(affiche.dateFin);
+                    
+                    // CORRECTION 1: Affiches "Programmée" avec début = 18/07/2025 → "En diffusion"
+                    if (affiche.statut === 'programmee' && 
+                        dateDebut.getFullYear() === 2025 && 
+                        dateDebut.getMonth() === 6 && 
+                        dateDebut.getDate() === 18) {
+                        
+                        await updateAffiche(affiche.id, { 
+                            statut: 'en-diffusion',
+                            changementAutomatique: true,
+                            correctionRetard: true,
+                            dateChangementAuto: serverTimestamp()
+                        });
+                        
+                        console.log(`✅ CORRECTION: ${affiche.libelle} → En diffusion (début 18/07)`);
+                        correctionsEffectuees++;
+                    }
+                    
+                    // CORRECTION 2: Affiches "En diffusion" avec fin = 17/07/2025 → "Archivée"
+                    else if (affiche.statut === 'en-diffusion' && 
+                            dateFin.getFullYear() === 2025 && 
+                            dateFin.getMonth() === 6 && 
+                            dateFin.getDate() === 17) {
+                        
+                        await updateAffiche(affiche.id, { 
+                            statut: 'archivee',
+                            changementAutomatique: true,
+                            correctionRetard: true,
+                            dateChangementAuto: serverTimestamp()
+                        });
+                        
+                        console.log(`✅ CORRECTION: ${affiche.libelle} → Archivée (fin 17/07)`);
+                        correctionsEffectuees++;
+                    }
+                }
+                
+                if (correctionsEffectuees > 0) {
+                    console.log(`🎯 ${correctionsEffectuees} correction(s) de retard effectuée(s)`);
+                    showSuccessMessage(`🔧 ${correctionsEffectuees} affiche(s) corrigée(s) automatiquement`);
+                    // Recharger les affiches après correction
+                    await loadAffiches();
+                } else {
+                    console.log('✅ Aucune correction de retard nécessaire');
+                }
+                
+            } catch (error) {
+                console.error('❌ Erreur lors de la correction des retards:', error);
+                showErrorMessage('❌ Erreur lors de la correction automatique');
+            }
+        }
+
         // Charger les notifications en attente depuis Firebase
         async function loadPendingNotifications() {
             try {
@@ -3861,6 +4052,9 @@ Excellente journée !
         window.testEmailJS = testEmailJS;
         window.sendPendingNotifications = sendPendingNotifications;
         window.loadPendingNotifications = loadPendingNotifications;
+        window.checkAndUpdateAfficheStates = checkAndUpdateAfficheStates;
+        window.fixCurrentStateDelays = fixCurrentStateDelays;
+        window.startAutomaticStateChecker = startAutomaticStateChecker;
         window.showErrorMessage = showErrorMessage;
         window.showSuccessMessage = showSuccessMessage;
         window.getFamilleIconClass = getFamilleIconClass;

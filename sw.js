@@ -1,34 +1,26 @@
-// Service Worker pour les notifications push - Gestion Affichage (Corrigé)
-const CACHE_NAME = 'gestion-affichage-v7';
-
-// URLs à mettre en cache (corrigées pour GitHub Pages)
-const urlsToCache = [
-    // Ne pas mettre d'URLs pour éviter les erreurs de cache
-    // Le cache sera géré dynamiquement lors des requêtes
-];
+// Service Worker pour notifications push - Version finale v7
+const CACHE_NAME = 'gestion-affichage-v7-final';
 
 // Installation du Service Worker
 self.addEventListener('install', function(event) {
-    console.log('🔧 Service Worker: Installation v7');
+    console.log('🔧 Service Worker: Installation v7-final');
+    
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(function(cache) {
-                console.log('📦 Service Worker: Cache ouvert (sans URLs prédéfinies)');
-                // Pas d'addAll pour éviter les erreurs
+                console.log('📦 Service Worker: Cache créé (vide au départ)');
                 return Promise.resolve();
-            })
-            .catch(function(error) {
-                console.error('❌ Service Worker: Erreur cache:', error);
             })
     );
     
-    // Activer immédiatement le nouveau Service Worker
+    // Activer immédiatement
     self.skipWaiting();
 });
 
 // Activation du Service Worker
 self.addEventListener('activate', function(event) {
-    console.log('✅ Service Worker: Activation v7');
+    console.log('✅ Service Worker: Activation v7-final');
+    
     event.waitUntil(
         caches.keys().then(function(cacheNames) {
             return Promise.all(
@@ -40,47 +32,76 @@ self.addEventListener('activate', function(event) {
                 })
             );
         }).then(() => {
-            // Prendre le contrôle de tous les clients immédiatement
             return self.clients.claim();
         })
     );
 });
 
-// Gestion des requêtes (stratégie network-first pour éviter les erreurs)
-self.addEventListener('fetch', function(event) {
-    // Ignorer les requêtes non-GET
-    if (event.request.method !== 'GET') {
-        return;
+// Fonction pour vérifier si une URL est valide pour le cache
+function isValidCacheRequest(request) {
+    const url = new URL(request.url);
+    
+    // Ignorer les schemes non-HTTP
+    if (!url.protocol.startsWith('http')) {
+        return false;
     }
     
-    // Ignorer les requêtes vers des APIs externes
-    if (event.request.url.includes('firebase') || 
-        event.request.url.includes('emailjs') ||
-        event.request.url.includes('gstatic')) {
+    // Ignorer les extensions de navigateur
+    if (url.protocol === 'chrome-extension:' || 
+        url.protocol === 'moz-extension:' || 
+        url.protocol === 'safari-extension:') {
+        return false;
+    }
+    
+    // Ignorer les APIs externes sensibles
+    if (url.hostname.includes('firebase') || 
+        url.hostname.includes('emailjs') ||
+        url.hostname.includes('gstatic') ||
+        url.hostname.includes('googleapis')) {
+        return false;
+    }
+    
+    // Ignorer les requêtes non-GET
+    if (request.method !== 'GET') {
+        return false;
+    }
+    
+    return true;
+}
+
+// Gestion des requêtes (stratégie réseau d'abord, puis cache)
+self.addEventListener('fetch', function(event) {
+    // Vérifier si la requête est valide pour le cache
+    if (!isValidCacheRequest(event.request)) {
+        // Laisser passer sans traitement pour les requêtes non-cachables
         return;
     }
     
     event.respondWith(
         fetch(event.request)
             .then(function(response) {
-                // Cloner la réponse car elle ne peut être consommée qu'une fois
+                // Vérifier que la réponse est valide
+                if (!response || response.status !== 200 || response.type !== 'basic') {
+                    return response;
+                }
+                
+                // Cloner la réponse pour la mettre en cache
                 const responseClone = response.clone();
                 
-                // Mettre en cache seulement les réponses OK
-                if (response.status === 200) {
-                    caches.open(CACHE_NAME)
-                        .then(function(cache) {
+                // Mettre en cache de manière sécurisée
+                caches.open(CACHE_NAME)
+                    .then(function(cache) {
+                        try {
                             cache.put(event.request, responseClone);
-                        })
-                        .catch(function(error) {
-                            console.log('⚠️ Erreur mise en cache:', error);
-                        });
-                }
+                        } catch (error) {
+                            console.log('⚠️ Impossible de mettre en cache:', event.request.url, error.message);
+                        }
+                    });
                 
                 return response;
             })
             .catch(function(error) {
-                console.log('🔍 Tentative cache pour:', event.request.url);
+                console.log('🔍 Tentative récupération cache pour:', event.request.url);
                 // En cas d'échec réseau, essayer le cache
                 return caches.match(event.request);
             })
@@ -89,16 +110,25 @@ self.addEventListener('fetch', function(event) {
 
 // Gestion des notifications push reçues en arrière-plan
 self.addEventListener('push', function(event) {
-    console.log('📱 Service Worker: Push reçu v7', event);
+    console.log('📱 Service Worker: Push reçu v7-final', event);
+    
+    let notificationData = {
+        title: 'Gestion Affichage',
+        body: 'Nouvelle notification disponible',
+        icon: './favicon.ico',
+        badge: './badge.png',
+        tag: 'gestion-affichage-default'
+    };
     
     if (event.data) {
         try {
             const data = event.data.json();
             console.log('📧 Service Worker: Données push:', data);
             
-            const options = {
+            notificationData = {
+                title: data.title || 'Gestion Affichage',
                 body: data.body || 'Nouvelle notification',
-                icon: './favicon.ico',
+                icon: data.icon || './favicon.ico',
                 badge: './badge.png',
                 tag: data.tag || 'gestion-affichage',
                 data: data.data || {},
@@ -107,8 +137,7 @@ self.addEventListener('push', function(event) {
                 actions: [
                     {
                         action: 'open',
-                        title: 'Ouvrir l\'app',
-                        icon: './favicon.ico'
+                        title: 'Ouvrir l\'app'
                     },
                     {
                         action: 'close',
@@ -116,28 +145,19 @@ self.addEventListener('push', function(event) {
                     }
                 ]
             };
-            
-            event.waitUntil(
-                self.registration.showNotification(data.title || 'Gestion Affichage', options)
-            );
         } catch (error) {
-            console.error('❌ Service Worker: Erreur traitement push:', error);
-            
-            // Notification de fallback
-            event.waitUntil(
-                self.registration.showNotification('Gestion Affichage', {
-                    body: 'Nouvelle notification disponible',
-                    icon: './favicon.ico',
-                    tag: 'gestion-affichage-fallback'
-                })
-            );
+            console.error('❌ Service Worker: Erreur parsing push data:', error);
         }
     }
+    
+    event.waitUntil(
+        self.registration.showNotification(notificationData.title, notificationData)
+    );
 });
 
 // Gestion du clic sur une notification
 self.addEventListener('notificationclick', function(event) {
-    console.log('👆 Service Worker: Clic notification v7:', event.notification.tag);
+    console.log('👆 Service Worker: Clic notification v7-final:', event.notification.tag);
     
     event.notification.close();
     
@@ -146,33 +166,29 @@ self.addEventListener('notificationclick', function(event) {
         return;
     }
     
-    // Pour l'action 'open' ou clic normal
+    // Ouvrir ou focuser l'application
     event.waitUntil(
-        clients.matchAll({
-            type: 'window',
-            includeUncontrolled: true
-        }).then(function(clientList) {
-            console.log('🔍 Service Worker: Recherche fenêtres ouvertes:', clientList.length);
-            
-            // Chercher une fenêtre existante de l'app
-            for (let i = 0; i < clientList.length; i++) {
-                const client = clientList[i];
+        clients.matchAll({ type: 'window', includeUncontrolled: true })
+            .then(function(clientList) {
+                console.log('🔍 Service Worker: Recherche fenêtres:', clientList.length);
                 
-                // Vérifier si c'est notre app
-                if (client.url.includes('github.io') && 'focus' in client) {
-                    console.log('🎯 Service Worker: Focus sur fenêtre existante');
-                    return client.focus();
+                // Chercher une fenêtre existante
+                for (let client of clientList) {
+                    if (client.url.includes('github.io') || client.url.includes('localhost')) {
+                        console.log('🎯 Service Worker: Focus fenêtre existante');
+                        return client.focus();
+                    }
                 }
-            }
-            
-            // Sinon, ouvrir une nouvelle fenêtre
-            if (clients.openWindow) {
-                console.log('🪟 Service Worker: Ouverture nouvelle fenêtre');
-                return clients.openWindow('/');
-            }
-        }).catch(function(error) {
-            console.error('❌ Service Worker: Erreur gestion clic:', error);
-        })
+                
+                // Ouvrir nouvelle fenêtre
+                if (clients.openWindow) {
+                    console.log('🪟 Service Worker: Nouvelle fenêtre');
+                    return clients.openWindow('/');
+                }
+            })
+            .catch(function(error) {
+                console.error('❌ Service Worker: Erreur clic notification:', error);
+            })
     );
 });
 
@@ -183,29 +199,34 @@ self.addEventListener('notificationclose', function(event) {
 
 // Gestion des messages depuis l'app principale
 self.addEventListener('message', function(event) {
-    console.log('💬 Service Worker: Message reçu v7:', event.data);
+    if (!event.data) return;
     
-    if (event.data && event.data.type === 'SKIP_WAITING') {
-        console.log('⏩ Service Worker: Skip waiting demandé');
-        self.skipWaiting();
-    }
+    console.log('💬 Service Worker: Message v7-final:', event.data);
     
-    if (event.data && event.data.type === 'GET_VERSION') {
-        event.ports[0].postMessage({
-            version: CACHE_NAME,
-            timestamp: Date.now()
-        });
-    }
-    
-    if (event.data && event.data.type === 'TEST_PUSH') {
-        console.log('🧪 Service Worker: Test push demandé');
-        // Répondre que le Service Worker est actif
-        if (event.ports && event.ports[0]) {
-            event.ports[0].postMessage({
-                status: 'active',
-                version: CACHE_NAME
-            });
-        }
+    switch (event.data.type) {
+        case 'SKIP_WAITING':
+            console.log('⏩ Service Worker: Skip waiting');
+            self.skipWaiting();
+            break;
+            
+        case 'GET_VERSION':
+            if (event.ports && event.ports[0]) {
+                event.ports[0].postMessage({
+                    version: CACHE_NAME,
+                    timestamp: Date.now()
+                });
+            }
+            break;
+            
+        case 'TEST_PUSH':
+            console.log('🧪 Service Worker: Test push');
+            if (event.ports && event.ports[0]) {
+                event.ports[0].postMessage({
+                    status: 'active',
+                    version: CACHE_NAME
+                });
+            }
+            break;
     }
 });
 
@@ -216,6 +237,8 @@ self.addEventListener('error', function(event) {
 
 self.addEventListener('unhandledrejection', function(event) {
     console.error('❌ Service Worker: Promise rejetée:', event.reason);
+    // Empêcher l'erreur de remonter
+    event.preventDefault();
 });
 
-console.log('🚀 Service Worker v7: Script chargé et prêt');
+console.log('🚀 Service Worker v7-final: Chargé et prêt');

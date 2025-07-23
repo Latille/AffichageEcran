@@ -1386,7 +1386,7 @@
                             border-radius: 12px; 
                             font-size: 12px;
                             font-weight: 500;
-                        ">GestionAffiches230725_v7v6 Notif</span>
+                        ">GestionAffiches230725_v7v7 Notif</span>
                     </div>
                     <div style="font-size: 11px; color: #999;">
                         📝 Push Notifications
@@ -2204,13 +2204,14 @@
                     const registration = await navigator.serviceWorker.register('./sw.js');
                     console.log('✅ Service Worker enregistré:', registration.scope);
                     
-                    window.pushConfig.registration = registration;
+                    // Plus besoin de stocker dans pushConfig
                     return registration;
                 } catch (error) {
                     console.error('❌ Erreur enregistrement Service Worker:', error);
                     return null;
                 }
             }
+            return null;
         }
 
         // Mettre à jour les préférences push utilisateur

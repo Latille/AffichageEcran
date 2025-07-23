@@ -1552,6 +1552,26 @@
                 </div>
 
                 <div class="settings-card">
+                    <h4>🔔 État des notifications push</h4>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h5>Permissions navigateur</h5>
+                            <p id="pushPermissionStatus">Vérification...</p>
+                        </div>
+                        <button class="test-notification-btn" onclick="requestPushPermission()">
+                            🔑 Demander l'autorisation
+                        </button>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h5>Support du navigateur</h5>
+                            <p id="pushSupportStatus">Vérification...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-card">
                     <h4>📝 Historique des notifications</h4>
                     <div id="notificationHistory">
                         <div class="empty-state">
@@ -2069,6 +2089,13 @@
             publicKey: ''
         };
 
+        // Configuration notifications push
+        window.pushConfig = {
+            supported: false,
+            permission: 'default',
+            registration: null
+        };
+
         // Initialiser EmailJS
         function initEmailJS() {
             if (window.emailJSConfig.publicKey) {
@@ -2097,6 +2124,262 @@
             }
         }
 
+        // Initialiser les notifications push
+        async function initPushNotifications() {
+            console.log('🔔 Initialisation des notifications push...');
+            
+            // Vérifier le support du navigateur
+            if (!('Notification' in window)) {
+                console.log('❌ Ce navigateur ne supporte pas les notifications');
+                window.pushConfig.supported = false;
+                updatePushUI();
+                return false;
+            }
+            
+            window.pushConfig.supported = true;
+            
+            // Vérifier les permissions actuelles
+            let permission = Notification.permission;
+            window.pushConfig.permission = permission;
+            
+            if (permission === 'default') {
+                console.log('⚠️ Permissions notifications non demandées');
+                updatePushUI();
+                return false;
+            }
+            
+            if (permission === 'granted') {
+                console.log('✅ Notifications push autorisées');
+                
+                // Enregistrer le Service Worker si supporté
+                if ('serviceWorker' in navigator) {
+                    await registerServiceWorker();
+                }
+                
+                updatePushUI();
+                return true;
+            } else {
+                console.log('❌ Notifications push refusées');
+                
+                // Désactiver automatiquement les préférences push
+                await updateUserPushPreference(false);
+                updatePushUI();
+                return false;
+            }
+        }
+
+        // Enregistrer le Service Worker
+        async function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.register('./sw.js');
+                    console.log('✅ Service Worker enregistré:', registration.scope);
+                    
+                    window.pushConfig.registration = registration;
+                    return registration;
+                } catch (error) {
+                    console.error('❌ Erreur enregistrement Service Worker:', error);
+                    return null;
+                }
+            }
+        }
+
+        // Mettre à jour les préférences push utilisateur
+        async function updateUserPushPreference(enabled) {
+            if (window.currentUserData) {
+                window.currentUserData.notificationChannels.push = enabled;
+                
+                await window.updateUser(window.currentUserData.id, {
+                    notificationChannels: window.currentUserData.notificationChannels
+                });
+                
+                // Mettre à jour l'interface
+                const pushCheckbox = document.getElementById('canal-push');
+                if (pushCheckbox) {
+                    pushCheckbox.checked = enabled;
+                }
+            }
+        }
+
+        // Envoyer une notification push
+        function sendPushNotification(title, options = {}) {
+            if (Notification.permission !== 'granted') {
+                console.log('❌ Permissions notifications non accordées');
+                return null;
+            }
+            
+            // Vérifier si l'utilisateur a activé les notifications push
+            if (!window.currentUserData?.notificationChannels?.push) {
+                console.log('📴 Notifications push désactivées par l\'utilisateur');
+                return null;
+            }
+            
+            const defaultOptions = {
+                icon: './favicon.ico',
+                badge: './badge.png',
+                tag: 'gestion-affichage',
+                requireInteraction: false,
+                silent: false,
+                vibrate: [200, 100, 200],
+                timestamp: Date.now(),
+                data: {
+                    url: window.location.origin
+                }
+            };
+            
+            const finalOptions = { ...defaultOptions, ...options };
+            
+            // Ajustements pour mobile
+            if (isMobileDevice()) {
+                finalOptions.vibrate = [200, 100, 200, 100, 200];
+                finalOptions.requireInteraction = true;
+            }
+            
+            try {
+                // Créer la notification
+                const notification = new Notification(title, finalOptions);
+                
+                // Gérer le clic sur la notification
+                notification.onclick = function(event) {
+                    event.preventDefault();
+                    notification.close();
+                    
+                    if (window.focus) {
+                        window.focus();
+                    }
+                    
+                    if (finalOptions.data?.targetTab) {
+                        showTab(finalOptions.data.targetTab);
+                    }
+                };
+                
+                // Auto-fermeture après 5 secondes si pas d'interaction requise
+                if (!finalOptions.requireInteraction) {
+                    setTimeout(() => {
+                        notification.close();
+                    }, 5000);
+                }
+                
+                return notification;
+            } catch (error) {
+                console.error('❌ Erreur création notification:', error);
+                return null;
+            }
+        }
+
+        // Détecter les appareils mobiles
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
+        // Wrapper sécurisé pour les notifications push
+        async function safeSendPushNotification(title, options = {}) {
+            try {
+                if (!window.currentUserData?.notificationChannels?.push) {
+                    return false;
+                }
+                
+                if (Notification.permission !== 'granted') {
+                    console.log('🔒 Permissions push non accordées');
+                    return false;
+                }
+                
+                return sendPushNotification(title, options);
+                
+            } catch (error) {
+                console.error('❌ Erreur notification push:', error);
+                
+                await addNotification({
+                    type: 'push_error',
+                    message: `Erreur notification push: ${error.message}`,
+                    userId: window.currentUser.uid,
+                    status: 'failed'
+                });
+                
+                return false;
+            }
+        }
+
+        // Mettre à jour l'interface des notifications push
+        function updatePushUI() {
+            // Statut des permissions
+            const statusElement = document.getElementById('pushPermissionStatus');
+            if (statusElement) {
+                if (!window.pushConfig.supported) {
+                    statusElement.textContent = '❌ Non supporté par ce navigateur';
+                    statusElement.style.color = '#dc3545';
+                } else {
+                    const permission = window.pushConfig.permission;
+                    const statusMap = {
+                        'granted': { text: '✅ Autorisées', color: '#28a745' },
+                        'denied': { text: '❌ Refusées', color: '#dc3545' },
+                        'default': { text: '⚠️ Non demandées', color: '#ffc107' }
+                    };
+                    
+                    const status = statusMap[permission];
+                    statusElement.textContent = status.text;
+                    statusElement.style.color = status.color;
+                }
+            }
+            
+            // Support du navigateur
+            const supportElement = document.getElementById('pushSupportStatus');
+            if (supportElement) {
+                const hasNotification = 'Notification' in window;
+                const hasServiceWorker = 'serviceWorker' in navigator;
+                
+                if (hasNotification && hasServiceWorker) {
+                    supportElement.textContent = '✅ Entièrement supporté';
+                    supportElement.style.color = '#28a745';
+                } else if (hasNotification) {
+                    supportElement.textContent = '⚠️ Support partiel (pas de Service Worker)';
+                    supportElement.style.color = '#ffc107';
+                } else {
+                    supportElement.textContent = '❌ Non supporté';
+                    supportElement.style.color = '#dc3545';
+                }
+            }
+        }
+
+        // Demander l'autorisation pour les notifications push
+        async function requestPushPermission() {
+            if (!window.pushConfig.supported) {
+                window.showErrorMessage('❌ Votre navigateur ne supporte pas les notifications push');
+                return false;
+            }
+            
+            try {
+                const permission = await Notification.requestPermission();
+                window.pushConfig.permission = permission;
+                
+                if (permission === 'granted') {
+                    console.log('✅ Permissions accordées');
+                    
+                    // Enregistrer le Service Worker
+                    if ('serviceWorker' in navigator) {
+                        await registerServiceWorker();
+                    }
+                    
+                    // Activer automatiquement les notifications push pour l'utilisateur
+                    await updateUserPushPreference(true);
+                    
+                    updatePushUI();
+                    window.showSuccessMessage('✅ Notifications push activées');
+                    return true;
+                } else {
+                    console.log('❌ Permissions refusées');
+                    await updateUserPushPreference(false);
+                    updatePushUI();
+                    window.showErrorMessage('❌ Notifications push refusées');
+                    return false;
+                }
+            } catch (error) {
+                console.error('❌ Erreur demande permissions:', error);
+                window.showErrorMessage('❌ Erreur lors de la demande d\'autorisation');
+                return false;
+            }
+        }
+
         // Vérifier l'état de connexion
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -2107,6 +2390,10 @@
                 document.getElementById('appContainer').style.display = 'block';
                 await loadAllData();
                 initEmailJS();
+                
+                // NOUVEAU : Initialiser les notifications push
+                await initPushNotifications();
+                
                 setupNotificationListeners();
                 startExpirationCheck();
                 startDailyResumeScheduler();
@@ -2481,10 +2768,22 @@
                     }
                 });
 
-                // SUPPRIMER les notifications en attente de Firebase
-                for (const notification of window.pendingNotifications) {
-                    if (notification.docId) {
-                        await deleteDoc(doc(db, 'pendingNotifications', notification.docId));
+                // NOUVEAU : Push notification pour les créations groupées
+                if (window.currentUserData?.notificationChannels?.push) {
+                    const title = `📝 ${window.pendingNotifications.length} nouvelle(s) affiche(s)`;
+                    const body = window.pendingNotifications.map(n => n.libelle).join(', ');
+                    const truncatedBody = body.length > 100 ? body.substring(0, 97) + '...' : body;
+                    
+                    const pushSent = await safeSendPushNotification(title, {
+                        body: truncatedBody,
+                        data: {
+                            targetTab: 'affiches',
+                            count: window.pendingNotifications.length
+                        }
+                    });
+                    
+                    if (pushSent) {
+                        console.log('📱 Push notification créations groupées envoyée');
                     }
                 }
 
@@ -3535,32 +3834,62 @@ Excellente journée !
         }
 
         async function testNotification() {
-            if (!window.emailJSConfig.publicKey) {
-                showErrorMessage('❌ Veuillez d\'abord configurer EmailJS dans Paramètres > Système');
-                return;
+            const user = window.currentUserData;
+            let emailSuccess = false;
+            let pushSuccess = false;
+            
+            // Test Email (existant)
+            if (user?.notificationChannels?.email && window.emailJSConfig.publicKey) {
+                try {
+                    const templateParams = {
+                        to_email: window.currentUser.email,
+                        to_name: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`,
+                        subject: 'Test EmailJS - Gestion Affichage',
+                        message: 'Ceci est un message de test pour vérifier la configuration EmailJS.',
+                        affiches_list: 'Test d\'affiche - Pommes Golden - 2.50€/Kg',
+                        user_name: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`,
+                        date: new Date().toLocaleDateString('fr-FR')
+                    };
+
+                    await emailjs.send(
+                        window.emailJSConfig.serviceId,
+                        window.emailJSConfig.templateCreation,
+                        templateParams
+                    );
+
+                    emailSuccess = true;
+                } catch (error) {
+                    console.error('❌ Erreur test email:', error);
+                }
             }
-
-            try {
-                const templateParams = {
-                    to_email: window.currentUser.email,
-                    to_name: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`,
-                    subject: 'Test - Gestion Affichage',
-                    message: 'Ceci est un test de notification.',
-                    affiches_list: 'Test d\'affiche - Pommes Golden - 2.50€/Kg',
-                    user_name: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`,
-                    date: new Date().toLocaleDateString('fr-FR')
-                };
-
-                await emailjs.send(
-                    window.emailJSConfig.serviceId,
-                    window.emailJSConfig.templateCreation,
-                    templateParams
-                );
-
-                showSuccessMessage('✅ Test réussi - Email envoyé !');
-            } catch (error) {
-                console.error('❌ Erreur test notification:', error);
-                showErrorMessage('❌ Échec du test: ' + error.message);
+            
+            // NOUVEAU : Test Push
+            if (user?.notificationChannels?.push) {
+                if (Notification.permission === 'granted') {
+                    const pushSent = await safeSendPushNotification('🧪 Test - Gestion Affichage', {
+                        body: 'Ceci est un test de notification push.',
+                        data: {
+                            targetTab: 'parametres'
+                        }
+                    });
+                    
+                    if (pushSent) {
+                        pushSuccess = true;
+                    }
+                }
+            }
+            
+            // Messages de résultat
+            if (emailSuccess && pushSuccess) {
+                showSuccessMessage('✅ Tests réussis - Email et Push envoyés !');
+            } else if (emailSuccess) {
+                showSuccessMessage('✅ Test email réussi - Push non configuré');
+            } else if (pushSuccess) {
+                showSuccessMessage('✅ Test push réussi - Email non configuré');
+            } else if (!user?.notificationChannels?.email && !user?.notificationChannels?.push) {
+                showErrorMessage('❌ Aucun canal de notification activé');
+            } else {
+                showErrorMessage('❌ Échec des tests de notification');
             }
         }
 
@@ -3598,34 +3927,65 @@ Excellente journée !
         }
 
         async function sendStatusChangeNotification(type, affiche) {
-            if (!window.emailJSConfig.publicKey) return;
+            const user = window.currentUserData;
+            
+            // Email (existant)
+            if (user?.notificationChannels?.email && window.emailJSConfig.publicKey) {
+                try {
+                    const templateParams = {
+                        to_email: window.currentUser.email,
+                        to_name: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`,
+                        subject: `Affiche ${type === 'diffusion' ? 'mise en diffusion' : 'archivée'}`,
+                        message: `Affiche ${type === 'diffusion' ? 'mise en diffusion' : 'archivée'} :`,
+                        affiches_list: `• ${affiche.libelle} - ${affiche.prix}€/${affiche.unite} (${affiche.origine})`,
+                        user_name: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`,
+                        date: new Date().toLocaleDateString('fr-FR')
+                    };
 
-            try {
-                const templateParams = {
-                    to_email: window.currentUser.email,
-                    to_name: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`,
-                    subject: `Affiche ${type === 'diffusion' ? 'mise en diffusion' : 'archivée'}`,
-                    message: `Affiche ${type === 'diffusion' ? 'mise en diffusion' : 'archivée'} :`,
-                    affiches_list: `• ${affiche.libelle} - ${affiche.prix}€/${affiche.unite} (${affiche.origine})`,
-                    user_name: `${window.currentUserData.firstName} ${window.currentUserData.lastName}`,
-                    date: new Date().toLocaleDateString('fr-FR')
+                    await emailjs.send(
+                        window.emailJSConfig.serviceId,
+                        window.emailJSConfig.templateCreation,
+                        templateParams
+                    );
+
+                    await addNotification({
+                        type: type,
+                        message: `Email envoyé - Affiche ${type === 'diffusion' ? 'mise en diffusion' : 'archivée'}: ${affiche.libelle}`,
+                        userId: window.currentUser.uid,
+                        status: 'sent'
+                    });
+
+                } catch (error) {
+                    console.error(`❌ Erreur notification email ${type}:`, error);
+                }
+            }
+            
+            // NOUVEAU : Push notification
+            if (user?.notificationChannels?.push && Notification.permission === 'granted') {
+                const titles = {
+                    'diffusion': '📺 Affiche en diffusion',
+                    'archivage': '📦 Affiche archivée'
                 };
-
-                await emailjs.send(
-                    window.emailJSConfig.serviceId,
-                    window.emailJSConfig.templateCreation,
-                    templateParams
-                );
-
-                await addNotification({
-                    type: type,
-                    message: `Affiche ${type === 'diffusion' ? 'mise en diffusion' : 'archivée'}: ${affiche.libelle}`,
-                    userId: window.currentUser.uid,
-                    status: 'sent'
+                
+                const title = titles[type] || 'Notification';
+                const body = `${affiche.libelle} - ${affiche.prix}€/${affiche.unite}`;
+                
+                const pushSent = await safeSendPushNotification(title, {
+                    body: body,
+                    data: {
+                        targetTab: 'dashboard',
+                        afficheId: affiche.id
+                    }
                 });
-
-            } catch (error) {
-                console.error(`❌ Erreur notification ${type}:`, error);
+                
+                if (pushSent) {
+                    await addNotification({
+                        type: `${type}_push`,
+                        message: `Push envoyé - Affiche ${type === 'diffusion' ? 'mise en diffusion' : 'archivée'}: ${affiche.libelle}`,
+                        userId: window.currentUser.uid,
+                        status: 'sent'
+                    });
+                }
             }
         }
 
@@ -3671,6 +4031,25 @@ Excellente journée !
                             userId: window.currentUser.uid,
                             status: 'sent'
                         });
+                    }
+
+                    // NOUVEAU : Push notification pour les expirations
+                    if (window.currentUserData?.notificationChannels?.push) {
+                        const title = `⚠️ ${expiringAffiches.length} affiche(s) expire(nt) demain`;
+                        const body = expiringAffiches.map(a => a.libelle).join(', ');
+                        const truncatedBody = body.length > 100 ? body.substring(0, 97) + '...' : body;
+                        
+                        const pushSent = await safeSendPushNotification(title, {
+                            body: truncatedBody,
+                            requireInteraction: true, // Important pour les expirations
+                            data: {
+                                targetTab: 'planning'
+                            }
+                        });
+                        
+                        if (pushSent) {
+                            console.log('📱 Push notification expirations envoyée');
+                        }
                     }
                 }
                 
@@ -4064,6 +4443,14 @@ Excellente journée !
         window.formatDate = formatDate;
         window.formatDateTime = formatDateTime;
         window.updatePlanningTab = updatePlanningTab;
+        // Exposer les fonctions push globalement
+        window.initPushNotifications = initPushNotifications;
+        window.registerServiceWorker = registerServiceWorker;
+        window.sendPushNotification = sendPushNotification;
+        window.safeSendPushNotification = safeSendPushNotification;
+        window.requestPushPermission = requestPushPermission;
+        window.updatePushUI = updatePushUI;
+        window.isMobileDevice = isMobileDevice;
 
     </script>
 
@@ -4712,6 +5099,7 @@ Excellente journée !
         window.confirmDeleteUnite = confirmDeleteUnite;
         window.changeWeek = changeWeek;
         window.updateWeekHeader = updateWeekHeader;
+        window.requestPushPermission = requestPushPermission;
     </script>
 </body>
 </html>

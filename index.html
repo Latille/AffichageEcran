@@ -1386,7 +1386,7 @@
                             border-radius: 12px; 
                             font-size: 12px;
                             font-weight: 500;
-                        ">23/07/2025v7</span>
+                        ">GestionAffiches230725_v7v2 Notif</span>
                     </div>
                     <div style="font-size: 11px; color: #999;">
                         📝 Push Notifications
@@ -1596,7 +1596,7 @@
                             <h5>Permissions navigateur</h5>
                             <p id="pushPermissionStatus">Vérification...</p>
                         </div>
-                        <button class="test-notification-btn" onclick="requestPushPermission()">
+                        <button class="test-notification-btn" onclick="handleRequestPushPermission()">
                             🔑 Demander l'autorisation
                         </button>
                     </div>
@@ -5112,6 +5112,22 @@ Excellente journée !
             });
         });
 
+        // Fonction wrapper pour demander les permissions push
+        async function handleRequestPushPermission() {
+            try {
+                // Vérifier que la fonction existe
+                if (typeof window.requestPushPermission === 'function') {
+                    await window.requestPushPermission();
+                } else {
+                    console.error('❌ Fonction requestPushPermission non disponible');
+                    window.showErrorMessage('❌ Fonctions push non chargées. Rechargez la page.');
+                }
+            } catch (error) {
+                console.error('❌ Erreur demande permissions push:', error);
+                window.showErrorMessage('❌ Erreur lors de la demande d\'autorisation');
+            }
+        }
+
         // Exposer les fonctions nécessaires globalement
         window.showTab = showTab;
         window.showParamsTab = showParamsTab;
@@ -5138,6 +5154,7 @@ Excellente journée !
         window.changeWeek = changeWeek;
         window.updateWeekHeader = updateWeekHeader;
         window.requestPushPermission = requestPushPermission;
+        window.handleRequestPushPermission = handleRequestPushPermission;
     </script>
 </body>
 </html>

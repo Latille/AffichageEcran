@@ -1386,7 +1386,7 @@
                             border-radius: 12px; 
                             font-size: 12px;
                             font-weight: 500;
-                        ">GestionAffiches230725_v7v2 Notif</span>
+                        ">GestionAffiches230725_v7v3 Notif</span>
                     </div>
                     <div style="font-size: 11px; color: #999;">
                         📝 Push Notifications
@@ -5115,16 +5115,40 @@ Excellente journée !
         // Fonction wrapper pour demander les permissions push
         async function handleRequestPushPermission() {
             try {
-                // Vérifier que la fonction existe
+                console.log('🔑 Demande permissions push...');
+                
+                // Vérifier que les fonctions push sont disponibles
                 if (typeof window.requestPushPermission === 'function') {
                     await window.requestPushPermission();
+                } else if (typeof window.initPushNotifications === 'function') {
+                    // Fallback : essayer d'initialiser d'abord
+                    await window.initPushNotifications();
+                    if (typeof window.requestPushPermission === 'function') {
+                        await window.requestPushPermission();
+                    } else {
+                        throw new Error('Fonctions push non disponibles');
+                    }
                 } else {
-                    console.error('❌ Fonction requestPushPermission non disponible');
-                    window.showErrorMessage('❌ Fonctions push non chargées. Rechargez la page.');
+                    throw new Error('Fonctions push non chargées');
                 }
             } catch (error) {
                 console.error('❌ Erreur demande permissions push:', error);
-                window.showErrorMessage('❌ Erreur lors de la demande d\'autorisation');
+                
+                // Essayer de demander directement les permissions navigateur
+                if ('Notification' in window) {
+                    try {
+                        const permission = await Notification.requestPermission();
+                        if (permission === 'granted') {
+                            window.showSuccessMessage('✅ Permissions accordées ! Rechargez la page pour finaliser.');
+                        } else {
+                            window.showErrorMessage('❌ Permissions refusées');
+                        }
+                    } catch (fallbackError) {
+                        window.showErrorMessage('❌ Impossible de demander les permissions');
+                    }
+                } else {
+                    window.showErrorMessage('❌ Notifications non supportées par ce navigateur');
+                }
             }
         }
 

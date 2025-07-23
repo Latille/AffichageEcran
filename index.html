@@ -1386,7 +1386,7 @@
                             border-radius: 12px; 
                             font-size: 12px;
                             font-weight: 500;
-                        ">GestionAffiches230725_v7v3 Notif</span>
+                        ">GestionAffiches230725_v7v4 Notif</span>
                     </div>
                     <div style="font-size: 11px; color: #999;">
                         📝 Push Notifications
@@ -2432,6 +2432,9 @@
                 // NOUVEAU : Initialiser les notifications push
                 await initPushNotifications();
                 
+                // Marquer que l'initialisation est terminée
+                window.pushInitialized = true;
+                console.log('✅ Initialisation push terminée');
                 setupNotificationListeners();
                 startExpirationCheck();
                 startDailyResumeScheduler();
@@ -4490,6 +4493,9 @@ Excellente journée !
         window.updatePushUI = updatePushUI;
         window.isMobileDevice = isMobileDevice;
 
+        // Marquer que les fonctions push sont chargées
+        window.pushFunctionsLoaded = true;
+        console.log('✅ Fonctions push exposées globalement');
     </script>
 
     <script>
@@ -5117,33 +5123,41 @@ Excellente journée !
             try {
                 console.log('🔑 Demande permissions push...');
                 
-                // Vérifier que les fonctions push sont disponibles
+                // Attendre que les fonctions Firebase soient chargées
+                let retries = 0;
+                const maxRetries = 10;
+                
+                while (retries < maxRetries && typeof window.requestPushPermission !== 'function') {
+                    console.log('⏳ Attente chargement fonctions push...', retries + 1);
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    retries++;
+                }
+                
                 if (typeof window.requestPushPermission === 'function') {
                     await window.requestPushPermission();
-                } else if (typeof window.initPushNotifications === 'function') {
-                    // Fallback : essayer d'initialiser d'abord
-                    await window.initPushNotifications();
-                    if (typeof window.requestPushPermission === 'function') {
-                        await window.requestPushPermission();
-                    } else {
-                        throw new Error('Fonctions push non disponibles');
-                    }
                 } else {
-                    throw new Error('Fonctions push non chargées');
+                    throw new Error('Fonctions push non disponibles après attente');
                 }
+                
             } catch (error) {
                 console.error('❌ Erreur demande permissions push:', error);
                 
-                // Essayer de demander directement les permissions navigateur
+                // Fallback : demander directement les permissions navigateur
                 if ('Notification' in window) {
                     try {
                         const permission = await Notification.requestPermission();
                         if (permission === 'granted') {
                             window.showSuccessMessage('✅ Permissions accordées ! Rechargez la page pour finaliser.');
+                            
+                            // Mettre à jour l'interface
+                            if (typeof window.updatePushUI === 'function') {
+                                window.updatePushUI();
+                            }
                         } else {
                             window.showErrorMessage('❌ Permissions refusées');
                         }
                     } catch (fallbackError) {
+                        console.error('❌ Erreur fallback:', fallbackError);
                         window.showErrorMessage('❌ Impossible de demander les permissions');
                     }
                 } else {
@@ -5177,7 +5191,6 @@ Excellente journée !
         window.confirmDeleteUnite = confirmDeleteUnite;
         window.changeWeek = changeWeek;
         window.updateWeekHeader = updateWeekHeader;
-        window.requestPushPermission = requestPushPermission;
         window.handleRequestPushPermission = handleRequestPushPermission;
     </script>
 </body>

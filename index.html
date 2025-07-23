@@ -1386,7 +1386,7 @@
                             border-radius: 12px; 
                             font-size: 12px;
                             font-weight: 500;
-                        ">GestionAffiches230725_v7v5 Notif</span>
+                        ">GestionAffiches230725_v7v6 Notif</span>
                     </div>
                     <div style="font-size: 11px; color: #999;">
                         📝 Push Notifications
@@ -2162,16 +2162,14 @@
             // Vérifier le support du navigateur
             if (!('Notification' in window)) {
                 console.log('❌ Ce navigateur ne supporte pas les notifications');
-                window.pushConfig.supported = false;
                 updatePushUI();
                 return false;
             }
             
-            window.pushConfig.supported = true;
+            console.log('✅ Navigateur supporte les notifications');
             
             // Vérifier les permissions actuelles
             let permission = Notification.permission;
-            window.pushConfig.permission = permission;
             
             if (permission === 'default') {
                 console.log('⚠️ Permissions notifications non demandées');
@@ -2242,11 +2240,11 @@
             // Statut des permissions
             const statusElement = document.getElementById('pushPermissionStatus');
             if (statusElement) {
-                if (!window.pushConfig.supported) {
+                if (!('Notification' in window)) {
                     statusElement.textContent = '❌ Non supporté par ce navigateur';
                     statusElement.style.color = '#dc3545';
                 } else {
-                    const permission = window.pushConfig.permission;
+                    const permission = Notification.permission;
                     const statusMap = {
                         'granted': { text: '✅ Autorisées', color: '#28a745' },
                         'denied': { text: '❌ Refusées', color: '#dc3545' },
@@ -2280,14 +2278,13 @@
 
         // Demander l'autorisation pour les notifications push
         async function requestPushPermission() {
-            if (!window.pushConfig.supported) {
+            if (!('Notification' in window)) {
                 window.showErrorMessage('❌ Votre navigateur ne supporte pas les notifications push');
                 return false;
             }
             
             try {
                 const permission = await Notification.requestPermission();
-                window.pushConfig.permission = permission;
                 
                 if (permission === 'granted') {
                     console.log('✅ Permissions accordées');
